@@ -275,6 +275,7 @@ function urkund_get_form_elements($mform) {
 
     $mform->addElement('header', 'plagiarismdesc');
     $mform->addElement('select', 'use_urkund', get_string("useurkund", "plagiarism_urkund"), $ynoptions);
+    $mform->addElement('text', 'urkund_receiver', get_string("urkundreceiver", "plagiarism_urkund"));
     $mform->addElement('select', 'urkund_show_student_score', get_string("urkund_show_student_score", "plagiarism_urkund"), $tiioptions);
     $mform->addHelpButton('urkund_show_student_score', 'urkund_show_student_score', 'plagiarism_urkund');
     $mform->addElement('select', 'urkund_show_student_report', get_string("urkund_show_student_report", "plagiarism_urkund"), $tiioptions);
@@ -312,7 +313,7 @@ function urkund_update_record($cmid, $userid, $identifier) {
         $plagiarism_file->attempt = 0;
         $plagiarism_file->timesubmitted = time();
         if (!$pid = $DB->insert_record('urkund_files', $plagiarism_file)) {
-            debugging("insert into turnitin_files failed");
+            debugging("insert into urkund_files failed");
         }
         $plagiarism_file->id = $pid;
         return $plagiarism_file;
@@ -326,5 +327,9 @@ function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
 
     urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file);
 
+
+}
+
+function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file) {
 
 }
