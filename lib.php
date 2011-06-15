@@ -21,6 +21,7 @@
  * @since 2.0
  * @package    plagiarism_urkund
  * @subpackage plagiarism
+ * @author     Dan Marsden <dan@danmarsden.com>
  * @copyright  2010 Dan Marsden http://danmarsden.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
