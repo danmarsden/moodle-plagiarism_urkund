@@ -16,15 +16,15 @@
 
 /**
  *
- * @package   plagiarism_new
+ * @package   plagiarism_urkund
  * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['studentdisclosuredefault']  ='All files uploaded will be submitted to a plagiarism detection service';
+$string['studentdisclosuredefault']  ='All files uploaded will be submitted to the plagiarism detection service URKUND';
 $string['studentdisclosure'] = 'Student Disclosure';
 $string['studentdisclosure_help'] = 'This text will be displayed to all students on the file upload page.';
-$string['newexplain'] = 'For more information on this plugin see: ';
-$string['new'] = 'New template plagiarism plugin';
-$string['usenew'] ='Enable New';
+$string['urkundexplain'] = 'For more information on this plugin see: http://www.urkund.com/int/en/';
+$string['urkund'] = 'URKUND plagiarism plugin';
+$string['useurkund'] ='Enable URKUND';
 $string['savedconfigsuccess'] = 'Plagiarism Settings Saved';

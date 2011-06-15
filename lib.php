@@ -19,7 +19,7 @@
  * lib.php - Contains Plagiarism plugin specific functions called by Modules.
  *
  * @since 2.0
- * @package    plagiarism_new
+ * @package    plagiarism_urkund
  * @subpackage plagiarism
  * @copyright  2010 Dan Marsden http://danmarsden.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
@@ -34,7 +34,7 @@ global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
 
 ///// Turnitin Class ////////////////////////////////////////////////////
-class plagiarism_plugin_new extends plagiarism_plugin {
+class plagiarism_plugin_urkund extends plagiarism_plugin {
      /**
      * hook to allow plagiarism specific information to be displayed beside a submission 
      * @param array  $linkarraycontains all relevant information for the plugin to generate a link
@@ -83,7 +83,7 @@ class plagiarism_plugin_new extends plagiarism_plugin {
         echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
         $formatoptions = new stdClass;
         $formatoptions->noclean = true;
-        echo format_text($plagiarismsettings['new_student_disclosure'], FORMAT_MOODLE, $formatoptions);
+        echo format_text($plagiarismsettings['urkund_student_disclosure'], FORMAT_MOODLE, $formatoptions);
         echo $OUTPUT->box_end();
     }
 
