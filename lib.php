@@ -300,7 +300,7 @@ function urkund_get_form_elements($mform) {
 * @param varied $identifier - identifier for this plagiarism record - hash of file, id of quiz question etc
 * @return int - id of turnitin_files record
 */
-function urkund_update_record($cmid, $userid, $identifier) {
+function urkund_get_plagiarism_file($cmid, $userid, $identifier) {
     global $DB;
 
     //now update or insert record into turnitin_files
@@ -327,7 +327,7 @@ function urkund_update_record($cmid, $userid, $identifier) {
     }
 }
 function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
-    $plagiarism_file = urkund_update_record($cmid, $userid, $file->get_contenthash());
+    $plagiarism_file = urkund_get_plagiarism_file($cmid, $userid, $file->get_contenthash());
 
     //check if $plagiarism_file actually needs to be submitted.
     if ($plagiarism_file->statuscode <> 'pending') {
@@ -387,5 +387,13 @@ function urkund_check_attempt_timeout($plagiarism_file) {
 }
 
 function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file) {
-
+    global $DB;
+    $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$plagiarism_file->cm),'','name,value');
+    $c = new curl(array('proxy'=>true));
+    $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
+    $url = $plagiarismsettings['urkund_api'].'/rest/submissions/' .$plagiarismvalues->urkund_receiver.'/'.md5(get_site_identifier()).'_'.$plagiarism_file->id;
+    $html = $c->post($url);
+    $response = $c->getResponse();
+    print_object($response);
+    return false;
 }

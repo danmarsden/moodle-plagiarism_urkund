@@ -68,10 +68,13 @@ pl * plagiarism.php - allows the admin to configure plagiarism stuff
                 }
             }
         }
+        $c = new curl(array('proxy'=>true));
+        $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$data->urkund_username.":".$data->urkund_password));
+        $html = $c->post($data->urkund_api.'/rest/submissions');
+        $response = $c->getResponse();
         //now check to see if username/password is correct. - this check could probably be improved further.
-        $curloptions = array(CURLOPT_HTTPAUTH =>CURLAUTH_BASIC, CURLOPT_USERPWD=>$data->urkund_username.":".$data->urkund_password);
-        $file = download_file_content($data->urkund_api.'/rest/submissions',null, null, true, 300, 20, false, NULL, false, $curloptions);
-        if ($file->status == '401') {
+        //$file = download_file_content(,null, null, true, 300, 20, false, NULL, false, $curloptions);
+        if ($response['HTTP/1.1'] == '401 Unauthorized') {
             //disable turnitin as this config isn't correct.
             $rec = $DB->get_record('config_plugins', array('name'=>'urkund_use', 'plugin'=>'plagiarism'));
             $rec->value = 0;
