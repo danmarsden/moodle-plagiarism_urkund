@@ -185,10 +185,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function cron() {
+        global $CFG;
         //do any scheduled task stuff
+        require_once("$CFG->dirroot/mod/assignment/lib.php"); //weird hack to include filelib correctly before allowing use in event_handler.
     }
     public function event_handler($eventdata) {
         global $DB, $CFG;
+
         $result = true;
         $supportedmodules = array('assignment');
         if (empty($eventdata->modulename) || !in_array($eventdata->modulename, $supportedmodules)) {
@@ -410,12 +413,18 @@ function urkund_check_attempt_timeout($plagiarism_file) {
 
 function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file) {
     global $DB;
+    mtrace("sendfile".$plagiarism_file->id);
     $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$plagiarism_file->cm),'','name,value');
+    $useremail = $DB->get_field('user','email', array('id'=>$plagiarism_file->userid));
     $c = new curl(array('proxy'=>true));
     $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
+    $headers = array('x-urkund-submitter' => $useremail,
+                    'Accept-Language' => $plagiarismsettings['urkund_lang'],
+                    'Content-Disposition' => 'attachment; filename=' .$file->get_filename());
+    $c->setHeader($headers);
     $url = $plagiarismsettings['urkund_api'].'/rest/submissions/' .$plagiarismvalues['urkund_receiver'].'/'.md5(get_site_identifier()).'_'.$plagiarism_file->id;
     $html = $c->post($url);
     $response = $c->getResponse();
-    print_object($response);
+    print_object($html);
     return false;
 }
