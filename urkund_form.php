@@ -2,7 +2,7 @@
 
 require_once($CFG->dirroot.'/lib/formslib.php');
 
-class plagiarism_setup_form extends moodleform {
+class urkund_setup_form extends moodleform {
 
 /// Define the form
     function definition () {
@@ -13,7 +13,7 @@ class plagiarism_setup_form extends moodleform {
         $mform->addElement('html', get_string('urkundexplain', 'plagiarism_urkund'));
         $mform->addElement('checkbox', 'urkund_use', get_string('useurkund', 'plagiarism_urkund'));
 
-        $mform->addElement('text', 'urkund_api', get_string('urkundapi', 'plagiarism_urkund'));
+        $mform->addElement('text', 'urkund_api', get_string('urkund_api', 'plagiarism_urkund'));
         $mform->addHelpButton('urkund_api', 'urkund_api', 'plagiarism_urkund');
         $mform->addRule('urkund_api', null, 'required', null, 'client');
         $mform->setDefault('urkund_api', 'https://secure.urkund.com/ws/integration/1.0/rest/submissions/');
@@ -39,3 +39,12 @@ class plagiarism_setup_form extends moodleform {
     }
 }
 
+class urkund_defaults_form extends moodleform {
+
+/// Define the form
+    function definition () {
+        $mform =& $this->_form;
+        urkund_get_form_elements($mform);
+        $this->add_action_buttons(true);
+    }
+}

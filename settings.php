@@ -27,7 +27,7 @@ pl * plagiarism.php - allows the admin to configure plagiarism stuff
     require_once($CFG->libdir.'/adminlib.php');
     require_once($CFG->libdir.'/plagiarismlib.php');
     require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-    require_once($CFG->dirroot.'/plagiarism/urkund/plagiarism_form.php');
+    require_once($CFG->dirroot.'/plagiarism/urkund/urkund_form.php');
 
     require_login();
     admin_externalpage_setup('plagiarismurkund');
@@ -36,8 +36,7 @@ pl * plagiarism.php - allows the admin to configure plagiarism stuff
 
     require_capability('moodle/site:config', $context, $USER->id, true, "nopermissions");
 
-    require_once('plagiarism_form.php');
-    $mform = new plagiarism_setup_form();
+    $mform = new urkund_setup_form();
     $plagiarismplugin = new plagiarism_plugin_urkund();
 
     if ($mform->is_cancelled()) {
@@ -45,7 +44,8 @@ pl * plagiarism.php - allows the admin to configure plagiarism stuff
     }
 
     echo $OUTPUT->header();
-
+    $currenttab='urkundsettings';
+    require_once('urkund_tabs.php');
     if (($data = $mform->get_data()) && confirm_sesskey()) {
         if (!isset($data->urkund_use)) {
             $data->urkund_use = 0;
@@ -68,7 +68,18 @@ pl * plagiarism.php - allows the admin to configure plagiarism stuff
                 }
             }
         }
-        notify(get_string('savedconfigsuccess', 'plagiarism_urkund'), 'notifysuccess');
+        //now check to see if username/password is correct. - this check could probably be improved further.
+        $curloptions = array(CURLOPT_HTTPAUTH =>CURLAUTH_BASIC, CURLOPT_USERPWD=>$data->urkund_username.":".$data->urkund_password);
+        $file = download_file_content($data->urkund_api.'/rest/submissions',null, null, true, 300, 20, false, NULL, false, $curloptions);
+        if ($file->status == '401') {
+            //disable turnitin as this config isn't correct.
+            $rec = $DB->get_record('config_plugins', array('name'=>'urkund_use', 'plugin'=>'plagiarism'));
+            $rec->value = 0;
+            $DB->update_record('config_plugins', $rec);
+            echo $OUTPUT->notification(get_string('savedconfigfailed', 'plagiarism_urkund'));
+        } else {
+            echo $OUTPUT->notification(get_string('savedconfigsuccess', 'plagiarism_urkund'), 'notifysuccess');
+        }
     }
     $plagiarismsettings = (array)get_config('plagiarism');
     $mform->set_data($plagiarismsettings);
