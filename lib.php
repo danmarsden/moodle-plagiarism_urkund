@@ -86,7 +86,29 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      * @param object $data - data from an mform submission.
     */
     public function save_form_elements($data) {
+        global $DB;
+        if (!$this->get_settings()) {
+            return;
+        }
+        if (isset($data->use_urkund)) {
+            //array of posible plagiarism config options.
+            $plagiarismelements = $this->config_options();
+            //first get existing values
+            $existingelements = $DB->get_records_menu('urkund_config', array('cm'=>$data->coursemodule),'','name,id');
+            foreach($plagiarismelements as $element) {
+                $newelement = new object();
+                $newelement->cm = $data->coursemodule;
+                $newelement->name = $element;
+                $newelement->value = (isset($data->$element) ? $data->$element : 0);
+                if (isset($existingelements[$element])) { //update
+                    $newelement->id = $existingelements[$element];
+                    $DB->update_record('urkund_config', $newelement);
+                } else { //insert
+                    $DB->insert_record('urkund_config', $newelement);
+                }
 
+            }
+        }
     }
 
     /**
@@ -391,7 +413,7 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
     $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$plagiarism_file->cm),'','name,value');
     $c = new curl(array('proxy'=>true));
     $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
-    $url = $plagiarismsettings['urkund_api'].'/rest/submissions/' .$plagiarismvalues->urkund_receiver.'/'.md5(get_site_identifier()).'_'.$plagiarism_file->id;
+    $url = $plagiarismsettings['urkund_api'].'/rest/submissions/' .$plagiarismvalues['urkund_receiver'].'/'.md5(get_site_identifier()).'_'.$plagiarism_file->id;
     $html = $c->post($url);
     $response = $c->getResponse();
     print_object($response);
