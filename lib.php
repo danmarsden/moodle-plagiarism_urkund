@@ -433,15 +433,16 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
     $useremail = $DB->get_field('user','email', array('id'=>$plagiarism_file->userid));
     $c = new curl(array('proxy'=>true));
     $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
-    $headers = array('x-urkund-submitter' => $useremail,
-                    'Accept-Language' => $plagiarismsettings['urkund_lang'],
-                    'x-urkund-filename' => $file->get_filename(),
-                    'Content-Type' => $mimetype);
+    $headers = array('x-urkund-submitter: '.$useremail,
+                    'Accept-Language: '.$plagiarismsettings['urkund_lang'],
+                    'x-urkund-filename: '.$file->get_filename(),
+                    'Content-Type: '.$mimetype);
     $c->setHeader($headers);
     $url = $plagiarismsettings['urkund_api'].'/rest/submissions/' .$plagiarismvalues['urkund_receiver'].'/'.md5(get_site_identifier()).'_'.$plagiarism_file->id;
     $html = $c->post($url);
     $response = $c->getResponse();
     print_object($html);
+    print_object($response);
     return false;
 }
 
