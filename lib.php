@@ -352,10 +352,19 @@ function urkund_get_plagiarism_file($cmid, $userid, $identifier) {
     }
 }
 function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
+    global $DB;
     $plagiarism_file = urkund_get_plagiarism_file($cmid, $userid, $file->get_contenthash());
 
     //check if $plagiarism_file actually needs to be submitted.
     if ($plagiarism_file->statuscode <> 'pending') {
+        return true;
+    }
+
+    //check to see if this is a valid file
+    $mimetype = urkund_check_file_type($file->get_filename());
+    if (empty($mimetype)) {
+        $plagiarism_file->statuscode = 'invalid';
+        $DB->update_record('urkund_files', $plagiarism_file);
         return true;
     }
     //check if we need to delay this submission
@@ -413,6 +422,12 @@ function urkund_check_attempt_timeout($plagiarism_file) {
 
 function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file) {
     global $DB;
+
+    $mimetype = urkund_check_file_type($file->get_filename());
+    if (empty($mimetype)) {//sanity check on filetype - this should already have been checked.
+        debugging("no mime type for this file found.");
+        return false;
+    }
     mtrace("sendfile".$plagiarism_file->id);
     $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$plagiarism_file->cm),'','name,value');
     $useremail = $DB->get_field('user','email', array('id'=>$plagiarism_file->userid));
@@ -420,11 +435,39 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
     $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
     $headers = array('x-urkund-submitter' => $useremail,
                     'Accept-Language' => $plagiarismsettings['urkund_lang'],
-                    'Content-Disposition' => 'attachment; filename=' .$file->get_filename());
+                    'x-urkund-filename' => $file->get_filename(),
+                    'Content-Type' => $mimetype);
     $c->setHeader($headers);
     $url = $plagiarismsettings['urkund_api'].'/rest/submissions/' .$plagiarismvalues['urkund_receiver'].'/'.md5(get_site_identifier()).'_'.$plagiarism_file->id;
     $html = $c->post($url);
     $response = $c->getResponse();
     print_object($html);
     return false;
+}
+
+//function to check for the allowed file types, returns the mimetype that URKUND expects.
+function urkund_check_file_type($filename) {
+    $pathinfo = pathinfo($filename);
+
+    if (empty($pathinfo['extension'])) {
+        return '';
+    }
+    $ext = $pathinfo['extension'];
+    $filetypes = array('doc'  => 'application/msword',
+                       'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+                       'sxw'  => 'application/vnd.sun.xml.writer',
+                       'ppt'  => 'application/vnd.ms-powerpoint',
+                       'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+                       'pdf'  => 'application/pdf',
+                       'txt'  => 'text/plain',
+                       'rtf'  => 'application/rtf',
+                       'html' => 'text/html',
+                       'htm'  => 'text/html',
+                       'wps'  => 'application/vnd.ms-works',
+                       'odt'  => 'application/vnd.oasis.opendocument.text');
+
+    if (!empty($filetypes[$ext])) {
+        return $filetypes[$ext];
+    }
+    return '';
 }
