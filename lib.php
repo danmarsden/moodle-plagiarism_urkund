@@ -55,6 +55,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      */
     public function get_settings() {
         global $DB;
+        static $plagiarismsettings;
+        if (!empty($plagiarism_settings) || $plagiarismsettings === false) {
+            return $plagiarismsettings;
+        }
         $plagiarismsettings = (array)get_config('plagiarism');
         //check if tii enabled.
         if (isset($plagiarismsettings['urkund_use']) && $plagiarismsettings['urkund_use']) {
@@ -78,12 +82,37 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function get_links($linkarray) {
-        //$userid, $file, $cmid, $course, $module
-        $cmid = $linkarray['cmid'];
-        $userid = $linkarray['userid'];
-        $file = $linkarray['file'];
+        global $DB, $USER;
         $output = '';
-        //add link/information about this file to $output
+        if ($plagiarismsettings = $this->get_settings()) {
+            $cmid = $linkarray['cmid'];
+            $userid = $linkarray['userid'];
+            $file = $linkarray['file'];
+            if (!urkund_cm_use($cmid)) {
+                return '';
+            }
+            //TODO: the following check is hardcoded to the Assignment module - needs updating to be generic.
+            if (isset($linkarray['assignment'])) {
+                $module = $linkarray['assignment'];
+            } else {
+                $sql = "SELECT a.* FROM {assignment} a, {course_modules} cm WHERE cm.id= ? AND cm.instance = a.id";
+                $module = $DB->get_record_sql($sql, array($cmid));
+            }
+            $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
+
+            //check if this is a user trying to look at their details, or a teacher with viewsimilarityscore rights.
+            if (($USER->id == $userid) || has_capability('moodle/plagiarism_urkund:viewsimilarityscore', $modulecontext)) {
+                $plagiarismfile = $DB->get_record_sql(
+                            "SELECT * FROM {urkund_files}
+                            WHERE cm = ? AND userid = ? AND " .
+                            $DB->sql_compare_text('identifier') . " = ?",
+                            array($cmid, $userid,$linkarray['file']->get_contenthash()));
+                if (isset($plagiarismfile->similarityscore) && $plagiarismfile->statuscode=='Analyzed') { //if TII has returned a succesful score.
+                    //check for open mod.
+
+            }
+
+        }
         return $output;
     }
 
@@ -167,20 +196,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public function print_disclosure($cmid) {
         global $OUTPUT,$DB;
 
-        if (!empty($plagiarismsettings['urkund_student_disclosure'])) {
-                $sql = 'SELECT value
-                        FROM {urkund_config}
-                        WHERE cm = ?
-                        AND ' . $DB->sql_compare_text('name', 255) . ' = ' . $DB->sql_compare_text('?', 255);
-                $params = array($cmid, 'use_urkund');
-                $showdisclosure = $DB->get_field_sql($sql, $params);
-                if ($showdisclosure) {
-                    echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
-                    $formatoptions = new stdClass;
-                    $formatoptions->noclean = true;
-                    echo format_text($plagiarismsettings['urkund_student_disclosure'], FORMAT_MOODLE, $formatoptions);
-                    echo $OUTPUT->box_end();
-                }
+        if (!empty($plagiarismsettings['urkund_student_disclosure']) &&
+            urkund_cm_use($cmid)) {
+                echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
+                $formatoptions = new stdClass;
+                $formatoptions->noclean = true;
+                echo format_text($plagiarismsettings['urkund_student_disclosure'], FORMAT_MOODLE, $formatoptions);
+                echo $OUTPUT->box_end();
             }
     }
 
@@ -585,4 +607,13 @@ function urkund_get_url($baseurl, $plagiarism_file) {
     $receiver = $DB->get_field('urkund_config', 'value', array('cm'=>$plagiarism_file->cm,'name'=>'urkund_receiver'));
     return $baseurl.'/rest/submissions/' .$receiver.'/'.md5(get_site_identifier()).
            '_'.$plagiarism_file->cm.'_'.$plagiarism_file->id;
+}
+//helper function to save multiple db calls.
+function urkund_cm_use($cmid) {
+    global $DB;
+    static $useurkund = array();
+    if (!isset($useurkund[$cmid])) {
+        $useurkund[$cmid] = $DB->get_field('urkund_config', 'value',array('cm'=>$cmid,'name', 'use_urkund'));
+    }
+    return $useurkund[$cmid];
 }
