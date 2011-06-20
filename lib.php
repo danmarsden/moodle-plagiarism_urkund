@@ -339,17 +339,17 @@ function urkund_get_form_elements($mform) {
 }
 
 /**
- * updates a turnitin_files record
+ * updates a urkund_files record
  *
  * @param int $cmid - course module id
  * @param int $userid - user id
  * @param varied $identifier - identifier for this plagiarism record - hash of file, id of quiz question etc
- * @return int - id of turnitin_files record
+ * @return int - id of urkund_files record
  */
 function urkund_get_plagiarism_file($cmid, $userid, $identifier) {
     global $DB;
 
-    //now update or insert record into turnitin_files
+    //now update or insert record into urkund_files
     $plagiarism_file = $DB->get_record_sql(
                                 "SELECT * FROM {urkund_files}
                                  WHERE cm = ? AND userid = ? AND " .
@@ -518,7 +518,7 @@ function urkund_check_file_type($filename) {
 }
 
 /**
-* used to obtain similarity scores from Turnitin for submitted files.
+* used to obtain similarity scores from URKUND for submitted files.
 *
 * @param object $plagiarismsettings - from a call to plagiarism_get_settings
 *
@@ -577,9 +577,6 @@ function urkund_get_scores($plagiarismsettings) {
             $DB->update_record('urkund_files', $plagiarism_file);
         }
     }
-/* if (!empty($plagiarismsettings['turnitin_enablegrademark'])) {
-mtrace("check for external Grades");
-}*/
 }
 
 function urkund_get_url($baseurl, $plagiarism_file) {
