@@ -23,7 +23,7 @@ $capabilities = array(
          'manager' => CAP_ALLOW
         )
     ),
-    'moodle/plagiarism_urkund:viewsimilarityscore' => array(
+    'moodle/plagiarism_urkund:viewreport' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
          'legacy' => array(

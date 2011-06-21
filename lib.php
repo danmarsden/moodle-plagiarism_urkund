@@ -82,13 +82,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function get_links($linkarray) {
-        global $DB, $USER;
+        global $DB, $USER, $COURSE, $OUTPUT;
         $output = '';
         if ($plagiarismsettings = $this->get_settings()) {
             $cmid = $linkarray['cmid'];
             $userid = $linkarray['userid'];
             $file = $linkarray['file'];
-            if (!urkund_cm_use($cmid)) {
+            $plagiarismvalues = urkund_cm_use($cmid);
+            if (empty($plagiarismvalues)) {
                 return '';
             }
             //TODO: the following check is hardcoded to the Assignment module - needs updating to be generic.
@@ -101,7 +102,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
 
             //check if this is a user trying to look at their details, or a teacher with viewsimilarityscore rights.
-            if (($USER->id == $userid) || has_capability('moodle/plagiarism_urkund:viewsimilarityscore', $modulecontext)) {
+            if (($USER->id == $userid) || has_capability('moodle/plagiarism_urkund:viewreport', $modulecontext)) {
                 $plagiarismfile = $DB->get_record_sql(
                             "SELECT * FROM {urkund_files}
                             WHERE cm = ? AND userid = ? AND " .
@@ -109,7 +110,42 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             array($cmid, $userid,$linkarray['file']->get_contenthash()));
                 if (isset($plagiarismfile->similarityscore) && $plagiarismfile->statuscode=='Analyzed') { //if TII has returned a succesful score.
                     //check for open mod.
-
+                    $assignclosed = false;
+                    $time = time();
+                    if (!empty($module->preventlate) && !empty($module->timedue)) {
+                        $assignclosed = ($module->timeavailable <= $time && $time <= $module->timedue);
+                    } elseif (!empty($module->timeavailable)) {
+                        $assignclosed = ($module->timeavailable <= $time);
+                    }
+                    $rank = urkund_get_css_rank($plagiarismfile->similarityscore);
+                    if ($USER->id <> $userid) { //this is a teacher with moodle/plagiarism_urkund:viewsimilarityscore
+                        $output .= '<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':</a><span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></span>';
+                    } elseif (isset($plagiarismvalues['urkund_show_student_report']) && isset($plagiarismvalues['urkund_show_student_score']) and //if report and score fields are set.
+                             ($plagiarismvalues['urkund_show_student_report']== 1 or $plagiarismvalues['urkund_show_student_score'] ==1 or //if show always is set
+                             ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed) or //if student score to be show when assignment closed
+                             ($plagiarismvalues['urkund_show_student_report']==2 && $assignclosed))) { //if student report to be shown when assignment closed
+                        if (($plagiarismvalues['urkund_show_student_report']==2 && $assignclosed) or $plagiarismvalues['urkund_show_student_report']==1) {
+                            $output .= '<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">';
+                            if ($plagiarismvalues['urkund_show_student_score']==1 or ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed)) {
+                                $output .= get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
+                            }
+                            $output .= '<img src="'.$OUTPUT->pix_url('report', 'plagiarism_urkund') . '" alt="'.
+                                        get_string('report','plagiarism_urkund').'" />';
+                            $output .= $OUTPUT->help_icon('something', 'plagiarism_urkund', '');
+                            $output .= '</a></span>';
+                        } else {
+                            $output .= '<span class="plagiarismreport">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
+                        }
+                    }
+                } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_ACCEPTED) {
+                    $output .= '<span class="plagiarismreport">'.
+                               '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') . '" alt="'.
+                                get_string('processing','plagiarism_urkund').'" /></span>';
+                } else {
+                    $output .= '<span class="plagiarismreport">'.
+                               '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') . '" alt="'.
+                                '" /></span>';
+                }
             }
 
         }
@@ -195,9 +231,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      */
     public function print_disclosure($cmid) {
         global $OUTPUT,$DB;
-
+        $urkunduse = urkund_cm_use($cmid);
+        $plagiarismsettings = $this->get_settings();
         if (!empty($plagiarismsettings['urkund_student_disclosure']) &&
-            urkund_cm_use($cmid)) {
+            !empty($urkunduse)) {
                 echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
                 $formatoptions = new stdClass;
                 $formatoptions->noclean = true;
@@ -613,7 +650,33 @@ function urkund_cm_use($cmid) {
     global $DB;
     static $useurkund = array();
     if (!isset($useurkund[$cmid])) {
-        $useurkund[$cmid] = $DB->get_field('urkund_config', 'value',array('cm'=>$cmid,'name', 'use_urkund'));
+        $pvalues = $DB->get_records_menu('urkund_config', array('cm'=>$cmid),'','name,value');
+        if (!empty($pvalues['use_urkund'])) {
+            $useurkund[$cmid] = $pvalues;
+        } else {
+            $useurkund[$cmid] = false;
+        }
     }
     return $useurkund[$cmid];
+}
+
+/**
+* Function that returns the name of the css class to use for a given similarity score
+* @param integer $score - the similarity score
+* @return string - string name of css class
+*/
+function urkund_get_css_rank ($score) {
+    $rank = "none";
+    if($score > 90) { $rank = "1"; }
+    else if($score > 80) { $rank = "2"; }
+    else if($score > 70) { $rank = "3"; }
+    else if($score > 60) { $rank = "4"; }
+    else if($score > 50) { $rank = "5"; }
+    else if($score > 40) { $rank = "6"; }
+    else if($score > 30) { $rank = "7"; }
+    else if($score > 20) { $rank = "8"; }
+    else if($score > 10) { $rank = "9"; }
+    else if($score >= 0) { $rank = "10"; }
+
+    return "rank$rank";
 }

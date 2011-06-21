@@ -50,3 +50,5 @@ $string['urkund_receiver_help'] = 'This is the unique address provided from URKU
 $string['defaultupdated'] = 'Default values updated';
 $string['defaultsdesc'] = 'The following settings are the defaults set when enabling URKUND within an Activity Module';
 $string['urkunddefaults'] = 'URKUND defaults';
+$string['similarity'] = 'Similarity';
+$string['processing'] = 'This file has been submitted to Urkund, now waiting for the analysis to be available';
