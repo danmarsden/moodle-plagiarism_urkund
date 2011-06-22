@@ -631,9 +631,8 @@ function urkund_get_scores($plagiarismsettings) {
                     if ($httpstatus == URKUND_STATUSCODE_PROCESSED) {
                         //get similarity score from xml.
                         $xml = new SimpleXMLElement($response);
-                        print_object($xml);
+                        //print_object($xml);
                         $status = (string)$xml->SubmissionData[0]->Status[0]->State[0];
-                        echo $status;
                         if (!empty($status) && in_array($status, $successfulstates)) {
                             $plagiarism_file->statuscode = $status;
                         }
