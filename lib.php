@@ -129,9 +129,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             if ($plagiarismvalues['urkund_show_student_score']==1 or ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed)) {
                                 $output .= get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
                             }
-                            $output .= '<img src="'.$OUTPUT->pix_url('report', 'plagiarism_urkund') . '" alt="'.
-                                        get_string('report','plagiarism_urkund').'" />';
-                            $output .= $OUTPUT->help_icon('something', 'plagiarism_urkund', '');
+                            $output .= '<img src="'.$OUTPUT->pix_url('report', 'plagiarism_urkund') . '" alt="" />';
                             $output .= '</a></span>';
                         } else {
                             $output .= '<span class="plagiarismreport">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
@@ -139,12 +137,28 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     }
                 } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_ACCEPTED) {
                     $output .= '<span class="plagiarismreport">'.
-                               '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') . '" alt="'.
-                                get_string('processing','plagiarism_urkund').'" /></span>';
+                               '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
+                                '" alt="'.get_string('processing', 'plagiarism_urkund').'" '.
+                                '" title="'.get_string('processing', 'plagiarism_urkund').'" />'.
+                                '</span>';
+                } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_UNSUPPORTED) {
+                    $output .= '<span class="plagiarismreport">'.
+                               '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                                '" alt="'.get_string('unsupportfiletype', 'plagiarism_urkund').'" '.
+                                '" title="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" />'.
+                                '</span>';
+                } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_TOO_LARGE) {
+                    $output .= '<span class="plagiarismreport">'.
+                               '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                                '" alt="'.get_string('toolarge', 'plagiarism_urkund').'" '.
+                                '" title="'.get_string('toolarge', 'plagiarism_urkund').'" />'.
+                                '</span>';
                 } else {
                     $output .= '<span class="plagiarismreport">'.
-                               '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') . '" alt="'.
-                                '" /></span>';
+                               '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                                '" alt="'.get_string('unknownwarning', 'plagiarism_urkund').'" '.
+                                '" title="'.get_string('unknownwarning', 'plagiarism_urkund').'" />'.
+                                '</span>';
                 }
             }
 
