@@ -108,6 +108,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             WHERE cm = ? AND userid = ? AND " .
                             $DB->sql_compare_text('identifier') . " = ?",
                             array($cmid, $userid,$linkarray['file']->get_contenthash()));
+                if (empty($plagiarismfile)) {
+                    $output .= '<span class="plagiarismreport">'.
+                               '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
+                                '" alt="'.get_string('pending', 'plagiarism_urkund').'" '.
+                                '" title="'.get_string('pending', 'plagiarism_urkund').'" />'.
+                                '</span>';
+                }
                 if (isset($plagiarismfile->similarityscore) && $plagiarismfile->statuscode=='Analyzed') { //if TII has returned a succesful score.
                     //check for open mod.
                     $assignclosed = false;
@@ -119,7 +126,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     }
                     $rank = urkund_get_css_rank($plagiarismfile->similarityscore);
                     if ($USER->id <> $userid) { //this is a teacher with moodle/plagiarism_urkund:viewsimilarityscore
-                        $output .= '<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':</a><span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></span>';
+                        $output .= '<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></a></span>';
                     } elseif (isset($plagiarismvalues['urkund_show_student_report']) && isset($plagiarismvalues['urkund_show_student_score']) and //if report and score fields are set.
                              ($plagiarismvalues['urkund_show_student_report']== 1 or $plagiarismvalues['urkund_show_student_score'] ==1 or //if show always is set
                              ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed) or //if student score to be show when assignment closed
@@ -144,7 +151,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_UNSUPPORTED) {
                     $output .= '<span class="plagiarismreport">'.
                                '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
-                                '" alt="'.get_string('unsupportfiletype', 'plagiarism_urkund').'" '.
+                                '" alt="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" '.
                                 '" title="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" />'.
                                 '</span>';
                 } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_TOO_LARGE) {
@@ -481,11 +488,15 @@ function urkund_check_attempt_timeout($plagiarism_file) {
         return true;
     }
     $now = time();
+    //set some initial defaults.
+    $submissiondelay = 15;
+    $maxsubmissiondelay = 60;
+    $maxattempts = 4;
     if ($plagiarism_file->statuscode == 'pending') {
         $submissiondelay = URKUND_SUBMISSION_DELAY; //initial wait time - doubled each time a check is made until the max delay is met.
         $maxsubmissiondelay = URKUND_MAX_SUBMISSION_DELAY; //maximum time to wait between submissions
         $maxattempts = URKUND_MAX_SUBMISSION_ATTEMPTS; //maximum number of times to try and send a submission.
-    } else if ($plagiarism_file->statuscode =='submitted') {
+    } else if ($plagiarism_file->statuscode ==URKUND_STATUSCODE_ACCEPTED) {
         $submissiondelay = URKUND_STATUS_DELAY; //initial wait time - this is doubled each time a check is made until the max delay is met.
         $maxsubmissiondelay = URKUND_MAX_STATUS_DELAY; //maximum time to wait between checks
         $maxattempts = URKUND_MAX_STATUS_ATTEMPTS; //maximum number of times to try and send a submission.
@@ -570,7 +581,7 @@ function urkund_check_file_type($filename) {
     if (empty($pathinfo['extension'])) {
         return '';
     }
-    $ext = $pathinfo['extension'];
+    $ext = strtolower($pathinfo['extension']);
     $filetypes = array('doc'  => 'application/msword',
                        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                        'sxw'  => 'application/vnd.sun.xml.writer',
