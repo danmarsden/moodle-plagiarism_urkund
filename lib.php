@@ -609,7 +609,7 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
 }
 
 //function to check for the allowed file types, returns the mimetype that URKUND expects.
-function urkund_check_file_type($filename) {
+function urkund_check_file_type($filename, $checkdb=true) {
     $pathinfo = pathinfo($filename);
 
     if (empty($pathinfo['extension'])) {
@@ -631,7 +631,11 @@ function urkund_check_file_type($filename) {
         return $filetypes[$ext];
     }
     //check for updated allowed filetypes.
-    return get_config('plagiarism_urkund','ext_'.$ext);
+    if ($checkdb) {
+        return get_config('plagiarism_urkund','ext_'.$ext);
+    } else {
+        return false;
+    }
 }
 
 /**
@@ -770,7 +774,7 @@ function urkund_update_allowed_filetypes() {
             $type = (string)$format->attributes()->type;
             $suffix = (string)$format->attributes()->suffix;
             unset($existing['ext_'.$suffix]);
-            if (!urkund_check_file_type('test.'.$suffix)) {
+            if (!urkund_check_file_type('test.'.$suffix, false)) {
                 set_config('ext_'.$suffix, $type, 'plagiarism_urkund');
             }
         }
