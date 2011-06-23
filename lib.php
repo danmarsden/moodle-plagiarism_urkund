@@ -21,7 +21,7 @@
  * @package    plagiarism_urkund
  * @subpackage plagiarism
  * @author     Dan Marsden <dan@danmarsden.com>
- * @copyright  2010 Dan Marsden http://danmarsden.com
+ * @copyright  2011 Dan Marsden http://danmarsden.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -45,13 +45,15 @@ define('URKUND_STATUSCODE_BAD_REQUEST', '400');
 define('URKUND_STATUSCODE_NOT_FOUND', '404');
 define('URKUND_STATUSCODE_UNSUPPORTED', '415');
 define('URKUND_STATUSCODE_TOO_LARGE', '413');
+define('URKUND_FILETYPE_URL','https://secure.urkund.com/ws/integration/accepted-formats.xml'); //url to external xml that states URKUNDS allowed file type list.
+define('URKUND_FILETYPE_URL_UPDATE','168'); //how often to check for updated file types (defined in hours)
 
 ///// URKUND Class ////////////////////////////////////////////////////
 class plagiarism_plugin_urkund extends plagiarism_plugin {
     /**
      * This function should be used to initialise settings and check if plagiarism is enabled
      * *
-     * @return mixed - false if not enabled, or returns an array of relavant settings.
+     * @return mixed - false if not enabled, or returns an array of relevant settings.
      */
     public function get_settings() {
         global $DB;
@@ -71,6 +73,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return false;
         }
     }
+    /**
+     * function which returns an array of all the module instance settings
+     *
+     * @return array
+     *
+     */
     public function config_options() {
         return array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
                      'urkund_draft_submit', 'urkund_receiver');
@@ -109,6 +117,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             $DB->sql_compare_text('identifier') . " = ?",
                             array($cmid, $userid,$linkarray['file']->get_contenthash()));
                 if (empty($plagiarismfile)) {
+                    //TODO: check to make sure there is a pending event entry for this file - if not add one.
                     $output .= '<span class="plagiarismreport">'.
                                '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
                                 '" alt="'.get_string('pending', 'plagiarism_urkund').'" '.
@@ -127,20 +136,29 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     $rank = urkund_get_css_rank($plagiarismfile->similarityscore);
                     if ($USER->id <> $userid) { //this is a teacher with moodle/plagiarism_urkund:viewsimilarityscore
                         $output .= '<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></a></span>';
-                    } elseif (isset($plagiarismvalues['urkund_show_student_report']) && isset($plagiarismvalues['urkund_show_student_score']) and //if report and score fields are set.
-                             ($plagiarismvalues['urkund_show_student_report']== 1 or $plagiarismvalues['urkund_show_student_score'] ==1 or //if show always is set
+                    } else {
+                        $output .= '<span class="plagiarismreport">';
+                        if (isset($plagiarismvalues['urkund_show_student_report']) && isset($plagiarismvalues['urkund_show_student_score']) and //if report and score fields are set.
+                            ($plagiarismvalues['urkund_show_student_report']== 1 or $plagiarismvalues['urkund_show_student_score'] ==1 or //if show always is set
                              ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed) or //if student score to be show when assignment closed
                              ($plagiarismvalues['urkund_show_student_report']==2 && $assignclosed))) { //if student report to be shown when assignment closed
-                        if (($plagiarismvalues['urkund_show_student_report']==2 && $assignclosed) or $plagiarismvalues['urkund_show_student_report']==1) {
-                            $output .= '<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">';
-                            if ($plagiarismvalues['urkund_show_student_score']==1 or ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed)) {
+                            if (($plagiarismvalues['urkund_show_student_report']==2 && $assignclosed) or $plagiarismvalues['urkund_show_student_report']==1) {
+                                $output .= '<a href="'.$plagiarismfile->reporturl.'" target="_blank">';
+                                if ($plagiarismvalues['urkund_show_student_score']==1 or ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed)) {
+                                    $output .= get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
+                                }
+                                $output .= '</a>';
+                            } else {
                                 $output .= get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
                             }
-                            $output .= '<img src="'.$OUTPUT->pix_url('report', 'plagiarism_urkund') . '" alt="" />';
-                            $output .= '</a></span>';
-                        } else {
-                            $output .= '<span class="plagiarismreport">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
                         }
+                        //display opt-out link
+                        if (!empty($plagiarismfile->optout)) {
+                            $output .= '<span class"plagiarismoptout">'.
+                                       '<a href="'.$plagiarismfile->optout.'" target="_blank">'.get_string('optout','plagiarism_urkund').
+                                       '</a></span>';
+                        }
+                        $output .= '</span>';
                     }
                 } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_ACCEPTED) {
                     $output .= '<span class="plagiarismreport">'.
@@ -182,7 +200,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return;
         }
         if (isset($data->use_urkund)) {
-            //array of posible plagiarism config options.
+            //array of possible plagiarism config options.
             $plagiarismelements = $this->config_options();
             //first get existing values
             $existingelements = $DB->get_records_menu('urkund_config', array('cm'=>$data->coursemodule), '', 'name, id');
@@ -198,6 +216,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     $DB->insert_record('urkund_config', $newelement);
                 }
 
+            }
+            if (!empty($data->urkund_receiver)) {
+                set_user_preference('urkund_receiver', $data->urkund_receiver);
             }
         }
     }
@@ -236,7 +257,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         //now set defaults.
         foreach ($plagiarismelements as $element) {
-            if (isset($plagiarismvalues[$element])) {
+            if ($element='urkund_receiver') {
+                $def = get_user_preferences($element);
+                if (!empty($def)) {
+                    $mform->setDefault($element, $def);
+                } else if (isset($plagiarismvalues[$element])) {
+                    $mform->setDefault($element, $plagiarismvalues[$element]);
+                }
+            } else if (isset($plagiarismvalues[$element])) {
                 $mform->setDefault($element, $plagiarismvalues[$element]);
             } else if (isset($plagiarismdefaults[$element])) {
                 $mform->setDefault($element, $plagiarismdefaults[$element]);
@@ -281,13 +309,17 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public function cron() {
         global $CFG;
         //do any scheduled task stuff
-
+        urkund_update_allowed_filetypes();
         //weird hack to include filelib correctly before allowing use in event_handler.
         require_once("$CFG->dirroot/mod/assignment/lib.php");
         if ($plagiarismsettings = $this->get_settings()) {
             urkund_get_scores($plagiarismsettings);
         }
     }
+    /**
+     * generic handler function for all events - triggers sending of files.
+     * @return boolean
+     */
     public function event_handler($eventdata) {
         global $DB, $CFG;
 
@@ -517,9 +549,11 @@ function urkund_check_attempt_timeout($plagiarism_file) {
         $wait = $wait * $plagiarism_file->attempt;
         $i++;
     }
+    $wait = (int)$wait*60;
+    $timetocheck = (int)($plagiarism_file->timesubmitted +$wait);
     //calculate when this should be checked next
-    $timetocheck = $plagiarism_file->timesubmitted +($wait*60); //$wait is in minutes - multiply to get seconds.
-    if ($timetocheck > $now) {
+
+    if ($timetocheck < $now) {
         return true;
     } else {
         return false;
@@ -585,8 +619,6 @@ function urkund_check_file_type($filename) {
     $filetypes = array('doc'  => 'application/msword',
                        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
                        'sxw'  => 'application/vnd.sun.xml.writer',
-                       'ppt'  => 'application/vnd.ms-powerpoint',
-                       'pptx' => 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
                        'pdf'  => 'application/pdf',
                        'txt'  => 'text/plain',
                        'rtf'  => 'application/rtf',
@@ -598,7 +630,8 @@ function urkund_check_file_type($filename) {
     if (!empty($filetypes[$ext])) {
         return $filetypes[$ext];
     }
-    return '';
+    //check for updated allowed filetypes.
+    return get_config('plagiarism_urkund','ext_'.$ext);
 }
 
 /**
@@ -650,6 +683,7 @@ function urkund_get_scores($plagiarismsettings) {
                         if (!empty($status) && $status=='Analyzed') {
                             $plagiarism_file->reporturl = (string)$xml->SubmissionData[0]->Report[0]->ReportUrl[0];
                             $plagiarism_file->similarityscore = (int)$xml->SubmissionData[0]->Report[0]->Significance[0];
+                            $plagiarism_file->optout = (string)$xml->SubmissionData[0]->Document[0]->OptOutInfo[0]->Url[0];
                         }
                     } else {
                         $plagiarism_file->statuscode = $httpstatus;
@@ -703,4 +737,49 @@ function urkund_get_css_rank ($score) {
     else if($score >= 0) { $rank = "10"; }
 
     return "rank$rank";
+}
+
+/**
+* Function that checks Urkund to see if there are any newly supported filetypes
+*
+*/
+function urkund_update_allowed_filetypes() {
+    global $CFG;
+    $configvars = get_config('plagiarism_urkund');
+    $now = time();
+    $wait = (int)URKUND_FILETYPE_URL_UPDATE*60*60;
+    $timetocheck = (int)($configvars->lastupdatedfiletypes+$wait);
+
+    if (empty($configvars->lastupdatedfiletypes) ||
+        $timetocheck < $now ) {
+        //need to update filetypes
+        //get list of existing options.
+        $existing = array();
+        foreach($configvars as $name =>$value) {
+            if (strpos($name,'ext_') !==false) {
+                $existing[$name] = $value;
+            }
+        }
+
+        require_once($CFG->libdir.'/filelib.php');
+        $url = URKUND_FILETYPE_URL;
+        $c = new curl(array('proxy'=>true));
+        $response = $c->get($url);
+        $xml = new SimpleXMLElement($response);
+        foreach ($xml->format as $format) {
+            $type = (string)$format->attributes()->type;
+            $suffix = (string)$format->attributes()->suffix;
+            unset($existing['ext_'.$suffix]);
+            if (!urkund_check_file_type('test.'.$suffix)) {
+                set_config('ext_'.$suffix, $type, 'plagiarism_urkund');
+            }
+        }
+        //clean up old vars.
+        if (!empty($existing)) {
+            foreach($existing as $name => $value) {
+                $DB->delete_records('config_plugins', array('plugin'=>'plagiarism_urkund', 'name'=> $name));
+            }
+        }
+        set_config('lastupdatedfiletypes', $now, 'plagiarism_urkund');
+    }
 }

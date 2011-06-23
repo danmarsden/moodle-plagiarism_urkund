@@ -21,7 +21,8 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$string['studentdisclosuredefault']  ='All files uploaded will be submitted to the plagiarism detection service URKUND';
+$string['studentdisclosuredefault']  ='All files uploaded will be submitted to the plagiarism detection service URKUND,
+If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use the opt-out link provided after the report has been generated.';
 $string['studentdisclosure'] = 'Student Disclosure';
 $string['studentdisclosure_help'] = 'This text will be displayed to all students on the file upload page.';
 $string['urkundexplain'] = 'For more information on this plugin see: <a href="http://www.urkund.com/int/en/" target="_blank">http://www.urkund.com/int/en/</a>';
@@ -50,9 +51,10 @@ $string['urkund_receiver_help'] = 'This is the unique address provided from URKU
 $string['defaultupdated'] = 'Default values updated';
 $string['defaultsdesc'] = 'The following settings are the defaults set when enabling URKUND within an Activity Module';
 $string['urkunddefaults'] = 'URKUND defaults';
-$string['similarity'] = 'Similarity';
+$string['similarity'] = 'URKUND';
 $string['processing'] = 'This file has been submitted to URKUND, now waiting for the analysis to be available';
 $string['pending'] = 'This file is pending submission to URKUND';
 $string['unknownwarning'] = 'An Unknown error occurred trying to send this file to URKUND';
 $string['unsupportedfiletype'] = 'This filetype is not supported by URKUND';
 $string['toolarge'] = 'This file is too large for URKUND to process';
+$string['optout'] = 'Opt-out';
