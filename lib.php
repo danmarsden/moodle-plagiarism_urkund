@@ -81,7 +81,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      */
     public function config_options() {
         return array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
-                     'urkund_draft_submit', 'urkund_receiver');
+                     'urkund_draft_submit', 'urkund_receiver','urkund_studentemail');
     }
     /**
      * hook to allow plagiarism specific information to be displayed beside a submission
@@ -390,6 +390,23 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true; //Don't need to handle this event
         }
     }
+    function urkund_send_student_email($plagiarism_file) {
+        global $DB, $CFG;
+        if (empty($plagiarism_file->userid)) { //sanity check.
+            return false;
+        }
+        $user = $DB->get_record('user', array('id'=>$plagiarism_file->userid));
+        $site = get_site();
+        $a = new stdClass();
+        $cm = get_coursemodule_from_id('', $plagiarism_file->cm);
+        $a->modulename = format_string($cm->name);
+        $a->modulelink = $CFG->wwwroot.'/mod/'.$cm->modname.'/view.php?id='.$cm->id;
+        $a->coursename = format_string($DB->get_field('course','fullname', array('id'=>$cm->course)));
+        $a->optoutlink = $plagiarism_file->optout;
+        $emailsubject = get_string('studentemailsubject', 'plagiarism_urkund');
+        $emailcontent = get_string('studentemailsubject', 'plagiarism_urkund', $a);
+        email_to_user($user, $site->shortname, $emailsubject, $emailcontent);
+    }
 }
 
 function event_file_uploaded($eventdata) {
@@ -448,6 +465,7 @@ function urkund_get_form_elements($mform) {
     if ($mform->elementExists('var4')) {
         $mform->addElement('select', 'urkund_draft_submit', get_string("urkund_draft_submit", "plagiarism_urkund"), $tiidraftoptions);
     }
+    $mform->addElement('select', 'urkund_studentemail', get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
 }
 
 /**
@@ -688,6 +706,11 @@ function urkund_get_scores($plagiarismsettings) {
                             $plagiarism_file->reporturl = (string)$xml->SubmissionData[0]->Report[0]->ReportUrl[0];
                             $plagiarism_file->similarityscore = (int)$xml->SubmissionData[0]->Report[0]->Significance[0];
                             $plagiarism_file->optout = (string)$xml->SubmissionData[0]->Document[0]->OptOutInfo[0]->Url[0];
+                            //now send e-mail to user
+                            $emailstudents = $DB->get_field('urkund_config', 'value', array('cm'=>$plagiarism_file->cm, 'name'=>'urkund_studentemail'));
+                            if (!empty($emailstudents)) {
+                                urkund_send_student_email($plagiarism_file);
+                            }
                         }
                     } else {
                         $plagiarism_file->statuscode = $httpstatus;
@@ -787,3 +810,4 @@ function urkund_update_allowed_filetypes() {
         set_config('lastupdatedfiletypes', $now, 'plagiarism_urkund');
     }
 }
+

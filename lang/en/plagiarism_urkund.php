@@ -58,3 +58,10 @@ $string['unknownwarning'] = 'An Unknown error occurred trying to send this file 
 $string['unsupportedfiletype'] = 'This filetype is not supported by URKUND';
 $string['toolarge'] = 'This file is too large for URKUND to process';
 $string['optout'] = 'Opt-out';
+
+$string['studentemailsubject'] = 'File processed by URKUND';
+$string['studentemailcontent'] = 'The file you submitted to {$a->modulename} in {$a->coursename} has now been processed by the Plagiarism tool URKUND.
+{$a->modulelink}
+
+If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use this link to opt-out:.
+{$a->optoutlink}';
