@@ -135,7 +135,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     }
                     $rank = urkund_get_css_rank($plagiarismfile->similarityscore);
                     if ($USER->id <> $userid) { //this is a teacher with moodle/plagiarism_urkund:viewsimilarityscore
-                        $output .= '<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></a></span>';
+                        $output .= '<br/>&nbsp;&nbsp;&nbsp;&nbsp;<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></a></span>';
                     } else {
                         $output .= '<span class="plagiarismreport">';
                         if (isset($plagiarismvalues['urkund_show_student_report']) && isset($plagiarismvalues['urkund_show_student_score']) and //if report and score fields are set.
