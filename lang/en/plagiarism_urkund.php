@@ -38,12 +38,12 @@ $string['urkund_password_help'] = 'Password provided by URKUND to access the API
 $string['useurkund'] ='Enable URKUND';
 $string['savedconfigsuccess'] = 'Plagiarism Settings Saved';
 $string['savedconfigfailed'] = 'An incorrect username/password combination has been entered, URKUND has been disabled, please try again.';
-$string['urkund_show_student_score']='Show similarity score to student';
-$string['urkund_show_student_score_help']='The similarity score is the percentage of the submission that has been matched with other content - a high score is usually bad.';
-$string['urkund_show_student_report']='Show similarity report to student';
-$string['urkund_show_student_report_help']='The similarity report gives a breakdown on what parts of the submission were plagiarised and the location that Turnitin first saw this content';
+$string['urkund_show_student_score'] = 'Show similarity score to student';
+$string['urkund_show_student_score_help'] = 'The similarity score is the percentage of the submission that has been matched with other content.';
+$string['urkund_show_student_report'] = 'Show similarity report to student';
+$string['urkund_show_student_report_help'] = 'The similarity report gives a breakdown on what parts of the submission were plagiarised and the location that URKUND first saw this content';
 $string['urkund_draft_submit'] = 'When should the file be submitted to URKUND';
-$string['showwhenclosed']='When Activity closed';
+$string['showwhenclosed'] = 'When Activity closed';
 $string['submitondraft'] = 'Submit file when first uploaded';
 $string['submitonfinal'] = 'Submit file when student sends for marking';
 $string['urkund_receiver'] = 'Reciever address';
@@ -58,7 +58,8 @@ $string['unknownwarning'] = 'An Unknown error occurred trying to send this file 
 $string['unsupportedfiletype'] = 'This filetype is not supported by URKUND';
 $string['toolarge'] = 'This file is too large for URKUND to process';
 $string['optout'] = 'Opt-out';
-
+$string['urkund_studentemail'] = 'Send Student email';
+$string['urkund_studentemail_help'] = 'This will send an e-mail to the student when a file has been processed to let them know that a report is available, the e-mail also includes the opt-out link.';
 $string['studentemailsubject'] = 'File processed by URKUND';
 $string['studentemailcontent'] = 'The file you submitted to {$a->modulename} in {$a->coursename} has now been processed by the Plagiarism tool URKUND.
 {$a->modulelink}

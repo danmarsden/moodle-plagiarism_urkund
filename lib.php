@@ -123,6 +123,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                                 '" alt="'.get_string('pending', 'plagiarism_urkund').'" '.
                                 '" title="'.get_string('pending', 'plagiarism_urkund').'" />'.
                                 '</span>';
+                    return $output;
                 }
                 if (isset($plagiarismfile->similarityscore) && $plagiarismfile->statuscode=='Analyzed') { //if TII has returned a succesful score.
                     //check for open mod.
@@ -160,19 +161,19 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                         }
                         $output .= '</span>';
                     }
-                } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_ACCEPTED) {
+                } else if (isset($plagiarismfile->statuscode) && $plagiarismfile->statuscode==URKUND_STATUSCODE_ACCEPTED) {
                     $output .= '<span class="plagiarismreport">'.
                                '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
                                 '" alt="'.get_string('processing', 'plagiarism_urkund').'" '.
                                 '" title="'.get_string('processing', 'plagiarism_urkund').'" />'.
                                 '</span>';
-                } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_UNSUPPORTED) {
+                } else if (isset($plagiarismfile->statuscode) && $plagiarismfile->statuscode==URKUND_STATUSCODE_UNSUPPORTED) {
                     $output .= '<span class="plagiarismreport">'.
                                '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
                                 '" alt="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" '.
                                 '" title="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" />'.
                                 '</span>';
-                } else if ($plagiarismfile->statuscode==URKUND_STATUSCODE_TOO_LARGE) {
+                } else if (isset($plagiarismfile->statuscode) && $plagiarismfile->statuscode==URKUND_STATUSCODE_TOO_LARGE) {
                     $output .= '<span class="plagiarismreport">'.
                                '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
                                 '" alt="'.get_string('toolarge', 'plagiarism_urkund').'" '.
@@ -466,6 +467,7 @@ function urkund_get_form_elements($mform) {
         $mform->addElement('select', 'urkund_draft_submit', get_string("urkund_draft_submit", "plagiarism_urkund"), $tiidraftoptions);
     }
     $mform->addElement('select', 'urkund_studentemail', get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
+    $mform->addHelpButton('urkund_studentemail', 'urkund_studentemail', 'plagiarism_urkund');
 }
 
 /**
