@@ -52,3 +52,7 @@ span.plagiarismreport span.rank9 {
 span.plagiarismreport span.rank10 {
        background: #669934;
 }
+
+span.plagiarismreport img {
+       vertical-align: bottom;
+}
