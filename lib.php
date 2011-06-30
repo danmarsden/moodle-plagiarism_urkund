@@ -155,7 +155,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                         }
                         //display opt-out link
                         if (!empty($plagiarismfile->optout)) {
-                            $output .= '<span class"plagiarismoptout">'.
+                            $output .= '&nbsp;<span class"plagiarismoptout">'.
                                        '<a href="'.$plagiarismfile->optout.'" target="_blank">'.get_string('optout','plagiarism_urkund').
                                        '</a></span>';
                         }
