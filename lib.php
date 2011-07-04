@@ -115,7 +115,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             "SELECT * FROM {urkund_files}
                             WHERE cm = ? AND userid = ? AND " .
                             $DB->sql_compare_text('identifier') . " = ?",
-                            array($cmid, $userid,$linkarray['file']->get_contenthash()));
+                            array($cmid, $userid,$file->get_contenthash()));
                 if (empty($plagiarismfile)) {
                     //TODO: check to make sure there is a pending event entry for this file - if not add one.
                     $output .= '<span class="plagiarismreport">'.
@@ -124,6 +124,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                                 '" title="'.get_string('pending', 'plagiarism_urkund').'" />'.
                                 '</span>';
                     return $output;
+                }
+                //now check for differing filename and display info related to it.
+                $previouslysubmitted = '';
+                if ($file->get_filename() !== $plagiarismfile->filename) {
+                    $previouslysubmitted = '('.get_string('previouslysubmitted','plagiarism_urkund').': '.$plagiarismfile->filename.')';
                 }
                 if (isset($plagiarismfile->similarityscore) && $plagiarismfile->statuscode=='Analyzed') { //if TII has returned a succesful score.
                     //check for open mod.
@@ -136,7 +141,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     }
                     $rank = urkund_get_css_rank($plagiarismfile->similarityscore);
                     if ($USER->id <> $userid) { //this is a teacher with moodle/plagiarism_urkund:viewsimilarityscore
-                        $output .= '<br/>&nbsp;&nbsp;&nbsp;&nbsp;<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></a></span>';
+                        $output .= '<br/>&nbsp;&nbsp;&nbsp;&nbsp;<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></a>'.$previouslysubmitted.'</span>';
                     } else {
                         $output .= '<span class="plagiarismreport">';
                         if (isset($plagiarismvalues['urkund_show_student_report']) && isset($plagiarismvalues['urkund_show_student_score']) and //if report and score fields are set.
@@ -159,7 +164,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                                        '<a href="'.$plagiarismfile->optout.'" target="_blank">'.get_string('optout','plagiarism_urkund').
                                        '</a></span>';
                         }
-                        $output .= '</span>';
+                        $output .= $previouslysubmitted.'</span>';
                     }
                 } else if (isset($plagiarismfile->statuscode) && $plagiarismfile->statuscode==URKUND_STATUSCODE_ACCEPTED) {
                     $output .= '<span class="plagiarismreport">'.
@@ -478,7 +483,7 @@ function urkund_get_form_elements($mform) {
  * @param varied $identifier - identifier for this plagiarism record - hash of file, id of quiz question etc
  * @return int - id of urkund_files record
  */
-function urkund_get_plagiarism_file($cmid, $userid, $identifier) {
+function urkund_get_plagiarism_file($cmid, $userid, $file) {
     global $DB;
 
     //now update or insert record into urkund_files
@@ -486,14 +491,15 @@ function urkund_get_plagiarism_file($cmid, $userid, $identifier) {
                                 "SELECT * FROM {urkund_files}
                                  WHERE cm = ? AND userid = ? AND " .
                                 $DB->sql_compare_text('identifier') . " = ?",
-                                array($cmid, $userid, $identifier));
+                                array($cmid, $userid, $file->get_contenthash()));
     if (!empty($plagiarism_file)) {
             return $plagiarism_file;
     } else {
         $plagiarism_file = new object();
         $plagiarism_file->cm = $cmid;
         $plagiarism_file->userid = $userid;
-        $plagiarism_file->identifier = $identifier;
+        $plagiarism_file->identifier = $file->get_contenthash();
+        $plagiarism_file->filename = $file->get_filename();
         $plagiarism_file->statuscode = 'pending';
         $plagiarism_file->attempt = 0;
         $plagiarism_file->timesubmitted = time();
@@ -506,13 +512,17 @@ function urkund_get_plagiarism_file($cmid, $userid, $identifier) {
 }
 function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
     global $DB;
-    $plagiarism_file = urkund_get_plagiarism_file($cmid, $userid, $file->get_contenthash());
+    $plagiarism_file = urkund_get_plagiarism_file($cmid, $userid, $file);
 
     //check if $plagiarism_file actually needs to be submitted.
     if ($plagiarism_file->statuscode <> 'pending') {
         return true;
     }
-
+    if ($plagiarism_file->filename !== $file->get_filename()) {
+        //this is a file that was previously submitted and not sent to urkund but the filename has changed so fix it.
+        $plagiarism_file->filename = $file->get_filename();
+        $DB->update_record('urkund_files', $plagiarism_file);
+    }
     //check to see if this is a valid file
     $mimetype = urkund_check_file_type($file->get_filename());
     if (empty($mimetype)) {

@@ -54,6 +54,7 @@ $string['urkunddefaults'] = 'URKUND defaults';
 $string['similarity'] = 'URKUND';
 $string['processing'] = 'This file has been submitted to URKUND, now waiting for the analysis to be available';
 $string['pending'] = 'This file is pending submission to URKUND';
+$string['previouslysubmitted'] = 'Previously submitted as';
 $string['unknownwarning'] = 'An Unknown error occurred trying to send this file to URKUND';
 $string['unsupportedfiletype'] = 'This filetype is not supported by URKUND';
 $string['toolarge'] = 'This file is too large for URKUND to process';
