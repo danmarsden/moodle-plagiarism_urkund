@@ -409,7 +409,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $a->coursename = format_string($DB->get_field('course','fullname', array('id'=>$cm->course)));
         $a->optoutlink = $plagiarism_file->optout;
         $emailsubject = get_string('studentemailsubject', 'plagiarism_urkund');
-        $emailcontent = get_string('studentemailsubject', 'plagiarism_urkund', $a);
+        $emailcontent = get_string('studentemailcontent', 'plagiarism_urkund', $a);
         email_to_user($user, $site->shortname, $emailsubject, $emailcontent);
     }
 }
@@ -719,7 +719,8 @@ function urkund_get_scores($plagiarismsettings) {
                             //now send e-mail to user
                             $emailstudents = $DB->get_field('urkund_config', 'value', array('cm'=>$plagiarism_file->cm, 'name'=>'urkund_studentemail'));
                             if (!empty($emailstudents)) {
-                                urkund_send_student_email($plagiarism_file);
+                                $urkund = new plagiarism_plugin_urkund();
+                                $urkund->urkund_send_student_email($plagiarism_file);
                             }
                         }
                     } else {
