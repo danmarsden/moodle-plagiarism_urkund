@@ -332,7 +332,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $result = true;
         $supportedmodules = array('assignment');
         if (empty($eventdata->modulename) || !in_array($eventdata->modulename, $supportedmodules)) {
-            debugging("this module isn't handled:".$eventdata->modulename); //TODO: remove this debug when working.
             return true;
         }
 
