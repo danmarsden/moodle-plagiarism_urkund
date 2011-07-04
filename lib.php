@@ -263,15 +263,15 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         //now set defaults.
         foreach ($plagiarismelements as $element) {
-            if ($element='urkund_receiver') {
+            if (isset($plagiarismvalues[$element])) {
+                $mform->setDefault($element, $plagiarismvalues[$element]);
+            } else if ($element=='urkund_receiver') {
                 $def = get_user_preferences($element);
                 if (!empty($def)) {
                     $mform->setDefault($element, $def);
-                } else if (isset($plagiarismvalues[$element])) {
-                    $mform->setDefault($element, $plagiarismvalues[$element]);
+                } else if (isset($plagiarismdefaults[$element])) {
+                    $mform->setDefault($element, $plagiarismdefaults[$element]);
                 }
-            } else if (isset($plagiarismvalues[$element])) {
-                $mform->setDefault($element, $plagiarismvalues[$element]);
             } else if (isset($plagiarismdefaults[$element])) {
                 $mform->setDefault($element, $plagiarismdefaults[$element]);
             }
@@ -708,7 +708,6 @@ function urkund_get_scores($plagiarismsettings) {
                     if ($httpstatus == URKUND_STATUSCODE_PROCESSED) {
                         //get similarity score from xml.
                         $xml = new SimpleXMLElement($response);
-                        //print_object($xml);
                         $status = (string)$xml->SubmissionData[0]->Status[0]->State[0];
                         if (!empty($status) && in_array($status, $successfulstates)) {
                             $plagiarism_file->statuscode = $status;
