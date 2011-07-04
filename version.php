@@ -16,4 +16,4 @@
 
 $plugin->version =  2011062200;
 $plugin->requires = 2010042803;
-$plugin->cron     = 0;
+$plugin->cron     = 300; //only run every 5 minutes
