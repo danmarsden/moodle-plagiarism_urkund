@@ -55,7 +55,7 @@ $string['similarity'] = 'URKUND';
 $string['processing'] = 'This file has been submitted to URKUND, now waiting for the analysis to be available';
 $string['pending'] = 'This file is pending submission to URKUND';
 $string['previouslysubmitted'] = 'Previously submitted as';
-$string['unknownwarning'] = 'An Unknown error occurred trying to send this file to URKUND';
+$string['unknownwarning'] = 'An error occurred trying to send this file to URKUND';
 $string['unsupportedfiletype'] = 'This filetype is not supported by URKUND';
 $string['toolarge'] = 'This file is too large for URKUND to process';
 $string['optout'] = 'Opt-out';
@@ -67,3 +67,5 @@ $string['studentemailcontent'] = 'The file you submitted to {$a->modulename} in 
 
 If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use this link to opt-out:.
 {$a->optoutlink}';
+
+$string['filereset'] = 'A file has been reset for re-submission to URKUND';

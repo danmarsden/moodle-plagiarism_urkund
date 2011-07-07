@@ -32,4 +32,13 @@ $capabilities = array(
          'manager' => CAP_ALLOW
         )
     ),
+    'moodle/plagiarism_urkund:resetfile' => array(
+        'captype' => 'write',
+        'contextlevel' => CONTEXT_COURSE,
+         'legacy' => array(
+         'editingteacher' => CAP_ALLOW,
+         'teacher' => CAP_ALLOW,
+         'manager' => CAP_ALLOW
+        )
+    ),
 );

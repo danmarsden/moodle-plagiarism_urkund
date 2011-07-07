@@ -116,7 +116,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             WHERE cm = ? AND userid = ? AND " .
                             $DB->sql_compare_text('identifier') . " = ?",
                             array($cmid, $userid,$file->get_contenthash()));
-                if (empty($plagiarismfile)) {
+                if (empty($plagiarismfile) || $plagiarismfile->statuscode == 'pending') {
                     //TODO: check to make sure there is a pending event entry for this file - if not add one.
                     $output .= '<span class="plagiarismreport">'.
                                '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
@@ -185,11 +185,22 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                                 '" title="'.get_string('toolarge', 'plagiarism_urkund').'" />'.
                                 '</span>';
                 } else {
+                    $title = get_string('unknownwarning', 'plagiarism_urkund');
+                    $reset = '';
+                    if (has_capability('moodle/plagiarism_urkund:resetfile', $modulecontext) &&
+                        !empty($plagiarismfile->errorresponse)) { //this is a teacher viewing the responses.
+                        //strip out some possible known text to tidy it up
+                        $plagiarismfile->erroresponse = format_text($plagiarismfile->errorresponse, FORMAT_PLAIN);
+                        $plagiarismfile->erroresponse = str_replace('{&quot;LocalisedMessage&quot;:&quot;','', $plagiarismfile->erroresponse);
+                        $plagiarismfile->erroresponse = str_replace('&quot;,&quot;Message&quot;:null}','', $plagiarismfile->erroresponse);
+                        $title .= ': '.$plagiarismfile->erroresponse;
+                        $url = new moodle_url('/plagiarism/urkund/reset.php', array('cmid'=>$cmid, 'pf'=>$plagiarismfile->id, 'sesskey'=>sesskey()));
+                        $reset = "<a href='$url'>".get_string('reset')."</a>";
+                    }
                     $output .= '<span class="plagiarismreport">'.
                                '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
                                 '" alt="'.get_string('unknownwarning', 'plagiarism_urkund').'" '.
-                                '" title="'.get_string('unknownwarning', 'plagiarism_urkund').'" />'.
-                                '</span>';
+                                '" title="'.$title.'" />'.$reset.'</span>';
                 }
             }
 
