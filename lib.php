@@ -621,12 +621,14 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
                      'CURLOPT_USERPWD'=>$plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
 
     $c->setHeader($headers);
-    $html = $c->post($url, $file->get_content());
+    $response = $c->post($url, $file->get_content());
     $status = $c->info['http_code'];
     if (!empty($status)) {
         if (in_array($status, $allowedstatus)) {
             if ($status == URKUND_STATUSCODE_ACCEPTED) {
                 $plagiarism_file->attempt = 0; //reset attempts for status checks.
+            } else {
+                $plagiarism_file->errorresponse = $response;
             }
             $plagiarism_file->statuscode = $status;
             $DB->update_record('urkund_files', $plagiarism_file);

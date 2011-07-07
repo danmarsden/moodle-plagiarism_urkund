@@ -15,8 +15,9 @@
         <FIELD NAME="optout" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" PREVIOUS="reporturl" NEXT="statuscode"/>
         <FIELD NAME="statuscode" TYPE="char" LENGTH="10" NOTNULL="false" SEQUENCE="false" PREVIOUS="optout" NEXT="similarityscore"/>
         <FIELD NAME="similarityscore" TYPE="int" LENGTH="5" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="statuscode" NEXT="attempt"/>
-        <FIELD NAME="attempt" TYPE="int" LENGTH="5" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="similarityscore" NEXT="timesubmitted"/>
-        <FIELD NAME="timesubmitted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="attempt"/>
+        <FIELD NAME="attempt" TYPE="int" LENGTH="5" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="similarityscore" NEXT="errorresponse"/>
+        <FIELD NAME="errorresponse" TYPE="text" LENGTH="small" NOTNULL="false" SEQUENCE="false" PREVIOUS="attempt" NEXT="timesubmitted"/>
+        <FIELD NAME="timesubmitted" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="errorresponse"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id" NEXT="cm"/>
