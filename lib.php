@@ -267,6 +267,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     $mform->disabledIf($element, 'use_urkund', 'eq', 0);
                 }
             }
+            //check if files have been submitted and we need to disable the receiver address:
+            $sql = 'SELECT * FROM {urkund_files} WHERE cm = ? AND (statuscode = ? or statuscode = ?)';
+            if ($DB->record_exists_sql($sql, array($cmid, 'pending', 'Analyzed'))) {
+                $mform->disabledIf('urkund_receiver','use_urkund');
+            }
         } else { //add plagiarism settings as hidden vars.
             foreach ($plagiarismelements as $element) {
                 $mform->addElement('hidden', $element);
