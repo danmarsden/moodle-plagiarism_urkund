@@ -21,6 +21,7 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+$string['pluginname'] = 'URKUND plagiarism plugin';
 $string['studentdisclosuredefault']  ='All files uploaded will be submitted to the plagiarism detection service URKUND,
 If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use the opt-out link provided after the report has been generated.';
 $string['studentdisclosure'] = 'Student Disclosure';
