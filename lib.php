@@ -756,7 +756,7 @@ function urkund_get_url($baseurl, $plagiarism_file) {
     //get url of api
     global $DB;
     $receiver = $DB->get_field('urkund_config', 'value', array('cm'=>$plagiarism_file->cm,'name'=>'urkund_receiver'));
-    return $baseurl.'/rest/submissions/' .$receiver.'/'.md5(get_site_identifier()).
+    return $baseurl.'/' .$receiver.'/'.md5(get_site_identifier()).
            '_'.$plagiarism_file->cm.'_'.$plagiarism_file->id;
 }
 //helper function to save multiple db calls.

@@ -31,7 +31,7 @@ class urkund_setup_form extends moodleform {
         $mform->addElement('text', 'urkund_api', get_string('urkund_api', 'plagiarism_urkund'));
         $mform->addHelpButton('urkund_api', 'urkund_api', 'plagiarism_urkund');
         $mform->addRule('urkund_api', null, 'required', null, 'client');
-        $mform->setDefault('urkund_api', 'https://secure.urkund.com/ws/integration/1.0/rest/submissions/');
+        $mform->setDefault('urkund_api', 'https://secure.urkund.com/ws/integration/1.0/rest/submissions');
 
         $mform->addElement('text', 'urkund_username', get_string('urkund_username', 'plagiarism_urkund'));
         $mform->addHelpButton('urkund_username', 'urkund_username', 'plagiarism_urkund');

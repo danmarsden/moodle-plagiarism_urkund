@@ -51,6 +51,9 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     }
     foreach ($data as $field => $value) {
         if (strpos($field, 'urkund')===0) {
+            if ($field == 'urkund_api') { //strip trailing slash from api 
+                $value = rtrim($value, '/');
+            }
             if ($configfield = $DB->get_record('config_plugins', array('name'=>$field, 'plugin'=>'plagiarism'))) {
                 $configfield->value = $value;
                 if (! $DB->update_record('config_plugins', $configfield)) {
@@ -69,7 +72,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     }
     $c = new curl(array('proxy'=>true));
     $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$data->urkund_username.":".$data->urkund_password));
-    $html = $c->post($data->urkund_api.'/rest/submissions');
+    $html = $c->post($data->urkund_api);
     $response = $c->getResponse();
     //now check to see if username/password is correct. - this check could probably be improved further.
     if ($c->info['http_code'] == '401') {
