@@ -505,7 +505,7 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
     $plagiarism_file = $DB->get_record_sql(
                                 "SELECT * FROM {urkund_files}
                                  WHERE cm = ? AND userid = ? AND " .
-                                $DB->sql_compare_text('identifier') . " = ?",
+                                "identifier = ?",
                                 array($cmid, $userid, $file->get_contenthash()));
     if (!empty($plagiarism_file)) {
             return $plagiarism_file;
