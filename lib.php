@@ -114,7 +114,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $plagiarismfile = $DB->get_record_sql(
                             "SELECT * FROM {urkund_files}
                             WHERE cm = ? AND userid = ? AND " .
-                            $DB->sql_compare_text('identifier') . " = ?",
+                            "identifier = ?",
                             array($cmid, $userid,$file->get_contenthash()));
                 if (empty($plagiarismfile) || $plagiarismfile->statuscode == 'pending') {
                     //TODO: check to make sure there is a pending event entry for this file - if not add one.
