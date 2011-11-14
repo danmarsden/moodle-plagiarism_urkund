@@ -51,6 +51,9 @@ define('URKUND_FILETYPE_URL_UPDATE','168'); //how often to check for updated fil
 define('PLAGIARISM_URKUND_SHOW_NEVER', 0);
 define('PLAGIARISM_URKUND_SHOW_ALWAYS', 1);
 define('PLAGIARISM_URKUND_SHOW_CLOSED', 2);
+
+define('PLAGIARISM_URKUND_DRAFTSUBMIT_IMMEDIATE', 0);
+define('PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL', 1);
 ///// URKUND Class ////////////////////////////////////////////////////
 class plagiarism_plugin_urkund extends plagiarism_plugin {
     /**
@@ -452,28 +455,18 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if (!empty($eventdata->file) && empty($eventdata->files)) { //single assignment type passes a single file
             $eventdata->files[] = $eventdata->file;
         }
-        if (!empty($eventdata->files)) { //this is an upload event with multiple files
-            foreach ($eventdata->files as $efile) {
-                if ($efile->get_filename() ==='.') {
-                    continue;
-                }
-                //hacky way to check file still exists
-                $fs = get_file_storage();
-                $fileid = $fs->get_file_by_id($efile->get_id());
-                if (empty($fileid)) {
-                    mtrace("nofilefound!");
-                    continue;
-                }
-                //check if this is an advanced assignment and shouldn't send the file yet.
-                if (empty($plagiarismvalues['plagiarism_draft_submit'])) {
-                    $result = urkund_send_file($cmid, $eventdata->userid, $efile, $plagiarismsettings);
-                }
-            }
-        } else { //this is a finalize event
+
+        if (!empty($eventdata->files)) {
+            // Assignment-specific functionality:
+            // This is a 'finalize' event. No files from this event itself,
+            // but check if files from previous events need to be submitted for processing
             mtrace("finalise");
             if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
-                $plagiarismvalues['plagiarism_draft_submit'] == 1) { // is file to be sent on final submission?
-                require_once("$CFG->dirroot/mod/assignment/lib.php"); //HACK to include filelib so that file_storage class is available
+                $plagiarismvalues['plagiarism_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
+                // Any files attached to previous events were not submitted.
+                // These files are now finalized, and should be submitted for processing.
+
+                require_once("$CFG->dirroot/mod/assignment/lib.php"); //hack to include filelib so that file_storage class is available
                 // we need to get a list of files attached to this assignment and put them in an array, so that
                 // we can submit each of them for processing.
                 $assignmentbase = new assignment_base($cmid);
@@ -482,13 +475,41 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $fs = get_file_storage();
                 if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id, "timemodified", false)) {
                     foreach ($files as $file) {
-                        $result = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
+                        $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
+                        $result = $result && $sendresult;
                     }
                 }
             }
+            return $result;
+        }
+
+        if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
+            $plagiarismvalues['plagiarism_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
+            // Assignment-specific functionality:
+            // Files should only be sent for checking once "finalized"
+            return true;
+        }
+
+        // Normal situation: 1 or more assessable files attached to event:
+        foreach ($eventdata->files as $efile) {
+            if ($efile->get_filename() ==='.') {
+                // This 'file' is actually a directory - nothing to submit.
+                continue;
+            }
+            // Check file still exists
+            $fs = get_file_storage();
+            $fileid = $fs->get_file_by_id($efile->get_id());
+            if (empty($fileid)) {
+                mtrace("nofilefound!");
+                continue;
+            }
+
+            $sendresult = urkund_send_file($cmid, $eventdata->userid, $efile, $plagiarismsettings);
+            $result = $result && $sendresult;
         }
         return $result;
     }
+
     function urkund_send_student_email($plagiarism_file) {
         global $DB, $CFG;
         if (empty($plagiarism_file->userid)) { //sanity check.
@@ -551,7 +572,10 @@ function event_mod_deleted($eventdata) {
 function urkund_get_form_elements($mform) {
     $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
     $tiioptions = array(0 => get_string("never"), 1 => get_string("always"), 2 => get_string("showwhenclosed", "plagiarism_urkund"));
-    $tiidraftoptions = array(0 => get_string("submitondraft", "plagiarism_urkund"), 1 => get_string("submitonfinal", "plagiarism_urkund"));
+    $urkunddraftoptions = array(
+            PLAGIARISM_URKUND_DRAFTSUBMIT_IMMEDIATE => get_string("submitondraft", "plagiarism_urkund"),
+            PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL => get_string("submitonfinal", "plagiarism_urkund")
+            );
 
     $mform->addElement('header', 'plagiarismdesc');
     $mform->addElement('select', 'use_urkund', get_string("useurkund", "plagiarism_urkund"), $ynoptions);
@@ -562,7 +586,7 @@ function urkund_get_form_elements($mform) {
     $mform->addElement('select', 'urkund_show_student_report', get_string("urkund_show_student_report", "plagiarism_urkund"), $tiioptions);
     $mform->addHelpButton('urkund_show_student_report', 'urkund_show_student_report', 'plagiarism_urkund');
     if ($mform->elementExists('var4')) {
-        $mform->addElement('select', 'urkund_draft_submit', get_string("urkund_draft_submit", "plagiarism_urkund"), $tiidraftoptions);
+        $mform->addElement('select', 'urkund_draft_submit', get_string("urkund_draft_submit", "plagiarism_urkund"), $urkunddraftoptions);
     }
     $mform->addElement('select', 'urkund_studentemail', get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
     $mform->addHelpButton('urkund_studentemail', 'urkund_studentemail', 'plagiarism_urkund');
