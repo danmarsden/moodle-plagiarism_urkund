@@ -102,6 +102,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // Info about this file is not available to this user
             return '';
         }
+        $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
 
         $output = '';
         if ($results['statuscode'] == 'pending') {
@@ -113,20 +114,18 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                         '</span>';
             return $output;
         }
-        if ($results['statuscode'] =='Analyzed') {
+        if ($results['statuscode'] == 'Analyzed') {
             // Normal situation - URKUND has successfully analyzed the file
             $rank = urkund_get_css_rank($results['score']);
             $output .= '<span class="plagiarismreport">';
             if (!empty($results['reporturl'])) {
                 // User is allowed to view the report
+                // Score is contained in report, so they can see the score too.
                 $output .= '<a href="'.$results['reporturl'].'" target="_blank">';
-                if (!empty($results['score'])) {
-                    // User is allowed to view the report & the score
-                    $output .= get_string('similarity', 'plagiarism_urkund') . ':';
-                    $output .= '<span class="'.$rank.'">'.$results['score'].'%</span>';
-                }
+                $output .= get_string('similarity', 'plagiarism_urkund') . ':';
+                $output .= '<span class="'.$rank.'">'.$results['score'].'%</span>';
                 $output .= '</a>';
-            } else {
+            } elseif ($results['score'] !== '') {
                 // User is allowed to view only the score
                 $output .= get_string('similarity', 'plagiarism_urkund') . ':';
                 $output .= '<span class="' . $rank . '">' . $results['score'] . '%</span>';
@@ -243,7 +242,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         // End of rights checking.
 
-        if (!$viewscore && !$viewreport) {
+        if (!$viewscore && !$viewreport && !$selfreport) {
             // User is not permitted to see any details
             return false;
         }
@@ -251,7 +250,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     "SELECT * FROM {urkund_files}
                     WHERE cm = ? AND userid = ? AND " .
                     "identifier = ?",
-                    array($cmid, $userid, $file->hash));
+                    array($cmid, $userid, $filehash));
         if (empty($plagiarismfile)) {
             // no record of that submitted file
             return false;
@@ -283,7 +282,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             if ($viewreport) {
                 $results['reporturl'] = $plagiarismfile->reporturl;
             }
-            if (!empty($plagiarismfile->optout)) {
+            if (!empty($plagiarismfile->optout) && $selfreport) {
                 $results['optoutlink'] = $plagiarismfile->optout;
             }
             $results['renamed'] = $previouslysubmitted;
