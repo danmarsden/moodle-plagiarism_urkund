@@ -440,57 +440,57 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return $result;
         }
 
-        if ($eventdata->eventtype=="file_uploaded") {
-            // check if the module associated with this event still exists
-            if (!$DB->record_exists('course_modules', array('id' => $eventdata->cmid))) {
-                return $result;
-            }
-
-            if (!empty($eventdata->file) && empty($eventdata->files)) { //single assignment type passes a single file
-                $eventdata->files[] = $eventdata->file;
-            }
-            if (!empty($eventdata->files)) { //this is an upload event with multiple files
-                foreach ($eventdata->files as $efile) {
-                    if ($efile->get_filename() ==='.') {
-                        continue;
-                    }
-                    //hacky way to check file still exists
-                    $fs = get_file_storage();
-                    $fileid = $fs->get_file_by_id($efile->get_id());
-                    if (empty($fileid)) {
-                        mtrace("nofilefound!");
-                        continue;
-                    }
-                    //check if this is an advanced assignment and shouldn't send the file yet.
-                    if (empty($plagiarismvalues['plagiarism_draft_submit'])) {
-                        $result = urkund_send_file($cmid, $eventdata->userid, $efile, $plagiarismsettings);
-                    }
-                }
-            } else { //this is a finalize event
-                mtrace("finalise");
-                if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
-                    $plagiarismvalues['plagiarism_draft_submit'] == 1) { // is file to be sent on final submission?
-                    require_once("$CFG->dirroot/mod/assignment/lib.php"); //HACK to include filelib so that file_storage class is available
-                    // we need to get a list of files attached to this assignment and put them in an array, so that
-                    // we can submit each of them for processing.
-                    $assignmentbase = new assignment_base($cmid);
-                    $submission = $assignmentbase->get_submission($eventdata->userid);
-                    $modulecontext = get_context_instance(CONTEXT_MODULE, $eventdata->cmid);
-                    $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id, "timemodified")) {
-                        foreach ($files as $file) {
-                            if ($file->get_filename()==='.') {
-                                continue;
-                            }
-                            $result = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-                        }
-                    }
-                }
-            }
-            return $result;
-        } else {
+        if ($eventdata->eventtype != "file_uploaded") {
             return true; //Don't need to handle this event
         }
+
+        // check if the module associated with this event still exists
+        if (!$DB->record_exists('course_modules', array('id' => $eventdata->cmid))) {
+            return $result;
+        }
+
+        if (!empty($eventdata->file) && empty($eventdata->files)) { //single assignment type passes a single file
+            $eventdata->files[] = $eventdata->file;
+        }
+        if (!empty($eventdata->files)) { //this is an upload event with multiple files
+            foreach ($eventdata->files as $efile) {
+                if ($efile->get_filename() ==='.') {
+                    continue;
+                }
+                //hacky way to check file still exists
+                $fs = get_file_storage();
+                $fileid = $fs->get_file_by_id($efile->get_id());
+                if (empty($fileid)) {
+                    mtrace("nofilefound!");
+                    continue;
+                }
+                //check if this is an advanced assignment and shouldn't send the file yet.
+                if (empty($plagiarismvalues['plagiarism_draft_submit'])) {
+                    $result = urkund_send_file($cmid, $eventdata->userid, $efile, $plagiarismsettings);
+                }
+            }
+        } else { //this is a finalize event
+            mtrace("finalise");
+            if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
+                $plagiarismvalues['plagiarism_draft_submit'] == 1) { // is file to be sent on final submission?
+                require_once("$CFG->dirroot/mod/assignment/lib.php"); //HACK to include filelib so that file_storage class is available
+                // we need to get a list of files attached to this assignment and put them in an array, so that
+                // we can submit each of them for processing.
+                $assignmentbase = new assignment_base($cmid);
+                $submission = $assignmentbase->get_submission($eventdata->userid);
+                $modulecontext = get_context_instance(CONTEXT_MODULE, $eventdata->cmid);
+                $fs = get_file_storage();
+                if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id, "timemodified")) {
+                    foreach ($files as $file) {
+                        if ($file->get_filename()==='.') {
+                            continue;
+                        }
+                        $result = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
+                    }
+                }
+            }
+        }
+        return $result;
     }
     function urkund_send_student_email($plagiarism_file) {
         global $DB, $CFG;
