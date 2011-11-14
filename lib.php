@@ -480,11 +480,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $submission = $assignmentbase->get_submission($eventdata->userid);
                 $modulecontext = get_context_instance(CONTEXT_MODULE, $eventdata->cmid);
                 $fs = get_file_storage();
-                if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id, "timemodified")) {
+                if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id, "timemodified", false)) {
                     foreach ($files as $file) {
-                        if ($file->get_filename()==='.') {
-                            continue;
-                        }
                         $result = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
                     }
                 }
