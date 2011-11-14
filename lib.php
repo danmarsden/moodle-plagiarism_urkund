@@ -429,38 +429,36 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public function event_handler($eventdata) {
         global $DB, $CFG;
 
-        $result = true;
-        $supportedmodules = array('assignment');
-        if (empty($eventdata->modulename) || !in_array($eventdata->modulename, $supportedmodules)) {
-            return true;
-        }
-
-        $plagiarismsettings = $this->get_settings();
-        $cmid = (!empty($eventdata->cm->id)) ? $eventdata->cm->id : $eventdata->cmid;
-        $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$cmid), '', 'name, value');
-        if (!$plagiarismsettings || empty($plagiarismvalues['use_urkund'])) {
-            //nothing to do here... move along!
-            return $result;
-        }
-
         if ($eventdata->eventtype != "file_uploaded") {
             return true; //Don't need to handle this event
         }
 
+        $plagiarismsettings = $this->get_settings();
+        if(!$plagiarismsettings) {
+            return true;
+        }
+        $cmid = (!empty($eventdata->cm->id)) ? $eventdata->cm->id : $eventdata->cmid;
+        $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$cmid), '', 'name, value');
+        if (empty($plagiarismvalues['use_urkund'])) {
+            // Urkund not in use for this cm - return.
+            return true;
+        }
+
         // check if the module associated with this event still exists
         if (!$DB->record_exists('course_modules', array('id' => $eventdata->cmid))) {
-            return $result;
+            return true;
         }
 
         if (!empty($eventdata->file) && empty($eventdata->files)) { //single assignment type passes a single file
             $eventdata->files[] = $eventdata->file;
         }
 
-        if (!empty($eventdata->files)) {
+        if (empty($eventdata->files)) {
             // Assignment-specific functionality:
             // This is a 'finalize' event. No files from this event itself,
-            // but check if files from previous events need to be submitted for processing
+            // but need to check if files from previous events need to be submitted for processing
             mtrace("finalise");
+            $result = true;
             if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
                 $plagiarismvalues['plagiarism_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
                 // Any files attached to previous events were not submitted.
@@ -490,7 +488,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true;
         }
 
-        // Normal situation: 1 or more assessable files attached to event:
+        // Normal situation: 1 or more assessable files attached to event, ready to be checked:
+        $result = true;
         foreach ($eventdata->files as $efile) {
             if ($efile->get_filename() ==='.') {
                 // This 'file' is actually a directory - nothing to submit.
