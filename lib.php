@@ -262,7 +262,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         // Returns after this point will include a result set describing information about
         // interactions with urkund servers.
         $results = array('statuscode' => '', 'error' => '', 'reporturl' => '',
-                'score' => '', 'pid' => '', 'optoutlink' => '', 'renamed' => '');
+                'score' => '', 'pid' => '', 'optoutlink' => '', 'renamed' => '',
+                'analyzed' => 0,
+                );
         if ($plagiarismfile->statuscode == 'pending') {
             $results['statuscode'] = 'pending';
             return $results;
@@ -278,6 +280,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $results['pid'] = $plagiarismfile->id;
         $results['error'] = $plagiarismfile->errorresponse;
         if ($plagiarismfile->statuscode=='Analyzed') {
+            $results['analyzed'] = 1;
             // File has been successfully analyzed - return all appropriate details:
             if ($viewscore || $viewreport) {
                 // If user can see the report, they can see the score on the report
