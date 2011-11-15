@@ -279,7 +279,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $results['error'] = $plagiarismfile->errorresponse;
         if ($plagiarismfile->statuscode=='Analyzed') {
             // File has been successfully analyzed - return all appropriate details:
-            if ($viewscore) {
+            if ($viewscore || $viewreport) {
+                // If user can see the report, they can see the score on the report
+                // So make it directly available.
                 $results['score'] = $plagiarismfile->similarityscore;
             }
             if ($viewreport) {
