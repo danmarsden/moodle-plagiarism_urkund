@@ -811,7 +811,6 @@ function urkund_get_scores($plagiarismsettings) {
         foreach($files as $plagiarism_file) {
             //check if we need to delay this submission
             $attemptallowed = urkund_check_attempt_timeout($plagiarism_file);
-            $attemptallowed = true;
             if (!$attemptallowed) {
                 continue;
             }
