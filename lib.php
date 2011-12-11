@@ -48,6 +48,12 @@ define('URKUND_STATUSCODE_TOO_LARGE', '413');
 define('URKUND_FILETYPE_URL','https://secure.urkund.com/ws/integration/accepted-formats.xml'); //url to external xml that states URKUNDS allowed file type list.
 define('URKUND_FILETYPE_URL_UPDATE','168'); //how often to check for updated file types (defined in hours)
 
+define('PLAGIARISM_URKUND_SHOW_NEVER', 0);
+define('PLAGIARISM_URKUND_SHOW_ALWAYS', 1);
+define('PLAGIARISM_URKUND_SHOW_CLOSED', 2);
+
+define('PLAGIARISM_URKUND_DRAFTSUBMIT_IMMEDIATE', 0);
+define('PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL', 1);
 ///// URKUND Class ////////////////////////////////////////////////////
 class plagiarism_plugin_urkund extends plagiarism_plugin {
     /**
@@ -90,124 +96,207 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function get_links($linkarray) {
-        global $DB, $USER, $COURSE, $OUTPUT;
+        global $DB, $USER, $COURSE, $OUTPUT, $CFG;
+        $cmid = $linkarray['cmid'];
+        $userid = $linkarray['userid'];
+        $file = $linkarray['file'];
+        $results = $this->get_file_results($cmid, $userid, $file);
+        if (empty($results)) {
+            // Info about this file is not available to this user
+            return '';
+        }
+        $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
+
         $output = '';
-        if ($plagiarismsettings = $this->get_settings()) {
-            $cmid = $linkarray['cmid'];
-            $userid = $linkarray['userid'];
-            $file = $linkarray['file'];
-            $plagiarismvalues = urkund_cm_use($cmid);
-            if (empty($plagiarismvalues)) {
-                return '';
+        if ($results['statuscode'] == 'pending') {
+            //TODO: check to make sure there is a pending event entry for this file - if not add one.
+            $output .= '<span class="plagiarismreport">'.
+                       '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
+                        '" alt="'.get_string('pending', 'plagiarism_urkund').'" '.
+                        '" title="'.get_string('pending', 'plagiarism_urkund').'" />'.
+                        '</span>';
+            return $output;
+        }
+        if ($results['statuscode'] == 'Analyzed') {
+            // Normal situation - URKUND has successfully analyzed the file
+            $rank = urkund_get_css_rank($results['score']);
+            $output .= '<span class="plagiarismreport">';
+            if (!empty($results['reporturl'])) {
+                // User is allowed to view the report
+                // Score is contained in report, so they can see the score too.
+                $output .= '<a href="'.$results['reporturl'].'" target="_blank">';
+                $output .= get_string('similarity', 'plagiarism_urkund') . ':';
+                $output .= '<span class="'.$rank.'">'.$results['score'].'%</span>';
+                $output .= '</a>';
+            } elseif ($results['score'] !== '') {
+                // User is allowed to view only the score
+                $output .= get_string('similarity', 'plagiarism_urkund') . ':';
+                $output .= '<span class="' . $rank . '">' . $results['score'] . '%</span>';
             }
-            //TODO: the following check is hardcoded to the Assignment module - needs updating to be generic.
-            if (isset($linkarray['assignment'])) {
-                $module = $linkarray['assignment'];
-            } else {
-                $sql = "SELECT a.* FROM {assignment} a, {course_modules} cm WHERE cm.id= ? AND cm.instance = a.id";
-                $module = $DB->get_record_sql($sql, array($cmid));
+            if (!empty($results['optoutlink'])) {
+                //display opt-out link
+                $output .= '&nbsp;<span class"plagiarismoptout">' .
+                        '<a href="' . $results['optoutlink'] . '" target="_blank">' .
+                        get_string('optout','plagiarism_urkund') .
+                        '</a></span>';
             }
-            $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
-
-            //check if this is a user trying to look at their details, or a teacher with viewsimilarityscore rights.
-            if (($USER->id == $userid) || has_capability('moodle/plagiarism_urkund:viewreport', $modulecontext)) {
-                $plagiarismfile = $DB->get_record_sql(
-                            "SELECT * FROM {urkund_files}
-                            WHERE cm = ? AND userid = ? AND " .
-                            "identifier = ?",
-                            array($cmid, $userid,$file->get_contenthash()));
-                if (empty($plagiarismfile) || $plagiarismfile->statuscode == 'pending') {
-                    //TODO: check to make sure there is a pending event entry for this file - if not add one.
-                    $output .= '<span class="plagiarismreport">'.
-                               '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
-                                '" alt="'.get_string('pending', 'plagiarism_urkund').'" '.
-                                '" title="'.get_string('pending', 'plagiarism_urkund').'" />'.
-                                '</span>';
-                    return $output;
-                }
-                //now check for differing filename and display info related to it.
-                $previouslysubmitted = '';
-                if ($file->get_filename() !== $plagiarismfile->filename) {
-                    $previouslysubmitted = '('.get_string('previouslysubmitted','plagiarism_urkund').': '.$plagiarismfile->filename.')';
-                }
-                if (isset($plagiarismfile->similarityscore) && $plagiarismfile->statuscode=='Analyzed') { //if TII has returned a succesful score.
-                    //check for open mod.
-                    $assignclosed = false;
-                    $time = time();
-                    if (!empty($module->preventlate) && !empty($module->timedue)) {
-                        $assignclosed = ($module->timeavailable <= $time && $time <= $module->timedue);
-                    } elseif (!empty($module->timeavailable)) {
-                        $assignclosed = ($module->timeavailable <= $time);
-                    }
-                    $rank = urkund_get_css_rank($plagiarismfile->similarityscore);
-                    if ($USER->id <> $userid) { //this is a teacher with moodle/plagiarism_urkund:viewsimilarityscore
-                        $output .= '<br/>&nbsp;&nbsp;&nbsp;&nbsp;<span class="plagiarismreport"><a href="'.$plagiarismfile->reporturl.'" target="_blank">'.get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span></a>'.$previouslysubmitted.'</span>';
-                    } else {
-                        $output .= '<span class="plagiarismreport">';
-                        if (isset($plagiarismvalues['urkund_show_student_report']) && isset($plagiarismvalues['urkund_show_student_score']) and //if report and score fields are set.
-                            ($plagiarismvalues['urkund_show_student_report']== 1 or $plagiarismvalues['urkund_show_student_score'] ==1 or //if show always is set
-                             ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed) or //if student score to be show when assignment closed
-                             ($plagiarismvalues['urkund_show_student_report']==2 && $assignclosed))) { //if student report to be shown when assignment closed
-                            if (($plagiarismvalues['urkund_show_student_report']==2 && $assignclosed) or $plagiarismvalues['urkund_show_student_report']==1) {
-                                $output .= '<a href="'.$plagiarismfile->reporturl.'" target="_blank">';
-                                if ($plagiarismvalues['urkund_show_student_score']==1 or ($plagiarismvalues['urkund_show_student_score']==2 && $assignclosed)) {
-                                    $output .= get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
-                                }
-                                $output .= '</a>';
-                            } else {
-                                $output .= get_string('similarity', 'plagiarism_urkund').':<span class="'.$rank.'">'.$plagiarismfile->similarityscore.'%</span>';
-                            }
-                        }
-                        //display opt-out link
-                        if (!empty($plagiarismfile->optout)) {
-                            $output .= '&nbsp;<span class"plagiarismoptout">'.
-                                       '<a href="'.$plagiarismfile->optout.'" target="_blank">'.get_string('optout','plagiarism_urkund').
-                                       '</a></span>';
-                        }
-                        $output .= $previouslysubmitted.'</span>';
-                    }
-                } else if (isset($plagiarismfile->statuscode) && $plagiarismfile->statuscode==URKUND_STATUSCODE_ACCEPTED) {
-                    $output .= '<span class="plagiarismreport">'.
-                               '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
-                                '" alt="'.get_string('processing', 'plagiarism_urkund').'" '.
-                                '" title="'.get_string('processing', 'plagiarism_urkund').'" />'.
-                                '</span>';
-                } else if (isset($plagiarismfile->statuscode) && $plagiarismfile->statuscode==URKUND_STATUSCODE_UNSUPPORTED) {
-                    $output .= '<span class="plagiarismreport">'.
-                               '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
-                                '" alt="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" '.
-                                '" title="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" />'.
-                                '</span>';
-                } else if (isset($plagiarismfile->statuscode) && $plagiarismfile->statuscode==URKUND_STATUSCODE_TOO_LARGE) {
-                    $output .= '<span class="plagiarismreport">'.
-                               '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
-                                '" alt="'.get_string('toolarge', 'plagiarism_urkund').'" '.
-                                '" title="'.get_string('toolarge', 'plagiarism_urkund').'" />'.
-                                '</span>';
-                } else {
-                    $title = get_string('unknownwarning', 'plagiarism_urkund');
-                    $reset = '';
-                    if (has_capability('moodle/plagiarism_urkund:resetfile', $modulecontext) &&
-                        !empty($plagiarismfile->errorresponse)) { //this is a teacher viewing the responses.
-                        //strip out some possible known text to tidy it up
-                        $plagiarismfile->erroresponse = format_text($plagiarismfile->errorresponse, FORMAT_PLAIN);
-                        $plagiarismfile->erroresponse = str_replace('{&quot;LocalisedMessage&quot;:&quot;','', $plagiarismfile->erroresponse);
-                        $plagiarismfile->erroresponse = str_replace('&quot;,&quot;Message&quot;:null}','', $plagiarismfile->erroresponse);
-                        $title .= ': '.$plagiarismfile->erroresponse;
-                        $url = new moodle_url('/plagiarism/urkund/reset.php', array('cmid'=>$cmid, 'pf'=>$plagiarismfile->id, 'sesskey'=>sesskey()));
-                        $reset = "<a href='$url'>".get_string('reset')."</a>";
-                    }
-                    $output .= '<span class="plagiarismreport">'.
-                               '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
-                                '" alt="'.get_string('unknownwarning', 'plagiarism_urkund').'" '.
-                                '" title="'.$title.'" />'.$reset.'</span>';
-                }
+            if (!empty($results['renamed'])) {
+                $output .= $results['renamed'];
             }
-
+            $output .= '</span>';
+        } elseif ($results['statuscode'] == URKUND_STATUSCODE_ACCEPTED) {
+            $output .= '<span class="plagiarismreport">'.
+                       '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
+                        '" alt="'.get_string('processing', 'plagiarism_urkund').'" '.
+                        '" title="'.get_string('processing', 'plagiarism_urkund').'" />'.
+                        '</span>';
+        } elseif ($results['statuscode'] == URKUND_STATUSCODE_UNSUPPORTED) {
+            $output .= '<span class="plagiarismreport">'.
+                       '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                        '" alt="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" '.
+                        '" title="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" />'.
+                        '</span>';
+        } elseif ($results['statuscode'] == URKUND_STATUSCODE_TOO_LARGE) {
+            $output .= '<span class="plagiarismreport">'.
+                       '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                        '" alt="'.get_string('toolarge', 'plagiarism_urkund').'" '.
+                        '" title="'.get_string('toolarge', 'plagiarism_urkund').'" />'.
+                        '</span>';
+        } else {
+            $title = get_string('unknownwarning', 'plagiarism_urkund');
+            $reset = '';
+            if (has_capability('moodle/plagiarism_urkund:resetfile', $modulecontext) &&
+                !empty($results['error'])) { //this is a teacher viewing the responses.
+                //strip out some possible known text to tidy it up
+                $erroresponse = format_text($results['error'], FORMAT_PLAIN);
+                $erroresponse = str_replace('{&quot;LocalisedMessage&quot;:&quot;','', $erroresponse);
+                $erroresponse = str_replace('&quot;,&quot;Message&quot;:null}','', $erroresponse);
+                $title .= ': ' . $erroresponse;
+                $url = new moodle_url('/plagiarism/urkund/reset.php', array('cmid'=>$cmid, 'pf'=>$results['pid'], 'sesskey'=>sesskey()));
+                $reset = "<a href='$url'>".get_string('reset')."</a>";
+            }
+            $output .= '<span class="plagiarismreport">'.
+                       '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                        '" alt="'.get_string('unknownwarning', 'plagiarism_urkund').'" '.
+                        '" title="'.$title.'" />'.$reset.'</span>';
         }
         return $output;
     }
 
+    function get_file_results($cmid, $userid, $file) {
+        global $DB, $USER, $COURSE, $CFG;
+        $plagiarismsettings = $this->get_settings();
+        if (empty($plagiarismsettings)) {
+            // Urkund is not enabled
+            return false;
+        }
+        $plagiarismvalues = urkund_cm_use($cmid);
+        if (empty($plagiarismvalues)) {
+            // Urkund not enabled for this cm
+            return false;
+        }
+
+        // Collect detail about the specified coursemodule
+        $filehash = $file->get_contenthash();
+        $modulesql = 'SELECT m.id, m.name, cm.instance'.
+                ' FROM {course_modules} cm' .
+                ' INNER JOIN {modules} m on cm.module = m.id ' .
+                'WHERE cm.id = ?';
+        $moduledetail = $DB->get_record_sql($modulesql, array($cmid));
+        if (!empty($moduledetail)) {
+            $sql = "SELECT * FROM " . $CFG->prefix . $moduledetail->name . " WHERE id= ?";
+            $module = $DB->get_record_sql($sql, array($moduledetail->instance));
+        }
+        if (empty($module)) {
+            // No such cmid
+            return false;
+        }
+
+        $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
+        // If the user has permission to see result of all items in this course module.
+        $viewscore = $viewreport = has_capability('moodle/plagiarism_urkund:viewreport', $modulecontext);
+
+        // Determine if the activity is closed
+        // If report is closed, this can make the report available to more users
+        $assignclosed = false;
+        $time = time();
+        if (!empty($module->preventlate) && !empty($module->timedue)) {
+            $assignclosed = ($module->timeavailable <= $time && $time <= $module->timedue);
+        } elseif (!empty($module->timeavailable)) {
+            $assignclosed = ($module->timeavailable <= $time);
+        }
+
+        // Under certain circumstances, users are allowed to see plagiarism info
+        // even if they don't have view report capability
+        if ($USER->id == $userid) {
+            $selfreport = true;
+            if (isset($plagiarismvalues['urkund_show_student_report']) &&
+                    ($plagiarismvalues['urkund_show_student_report']== PLAGIARISM_URKUND_SHOW_ALWAYS ||
+                     $plagiarismvalues['urkund_show_student_report']== PLAGIARISM_URKUND_SHOW_CLOSED && $assignclosed)) {
+                $viewreport = true;
+            }
+            if (isset($plagiarismvalues['urkund_show_student_score']) &&
+                    ($plagiarismvalues['urkund_show_student_score']== PLAGIARISM_URKUND_SHOW_ALWAYS) ||
+                    ($plagiarismvalues['urkund_show_student_score']== PLAGIARISM_URKUND_SHOW_CLOSED && $assignclosed)) {
+                $viewscore = true;
+            }
+        } else {
+            $selfreport = false;
+        }
+        // End of rights checking.
+
+        if (!$viewscore && !$viewreport && !$selfreport) {
+            // User is not permitted to see any details
+            return false;
+        }
+        $plagiarismfile = $DB->get_record_sql(
+                    "SELECT * FROM {urkund_files}
+                    WHERE cm = ? AND userid = ? AND " .
+                    "identifier = ?",
+                    array($cmid, $userid, $filehash));
+        if (empty($plagiarismfile)) {
+            // no record of that submitted file
+            return false;
+        }
+
+        // Returns after this point will include a result set describing information about
+        // interactions with urkund servers.
+        $results = array('statuscode' => '', 'error' => '', 'reporturl' => '',
+                'score' => '', 'pid' => '', 'optoutlink' => '', 'renamed' => '',
+                'analyzed' => 0,
+                );
+        if ($plagiarismfile->statuscode == 'pending') {
+            $results['statuscode'] = 'pending';
+            return $results;
+        }
+
+        //now check for differing filename and display info related to it.
+        $previouslysubmitted = '';
+        if ($file->get_filename() !== $plagiarismfile->filename) {
+            $previouslysubmitted = '('.get_string('previouslysubmitted','plagiarism_urkund').': '.$plagiarismfile->filename.')';
+        }
+
+        $results['statuscode'] = $plagiarismfile->statuscode;
+        $results['pid'] = $plagiarismfile->id;
+        $results['error'] = $plagiarismfile->errorresponse;
+        if ($plagiarismfile->statuscode=='Analyzed') {
+            $results['analyzed'] = 1;
+            // File has been successfully analyzed - return all appropriate details:
+            if ($viewscore || $viewreport) {
+                // If user can see the report, they can see the score on the report
+                // So make it directly available.
+                $results['score'] = $plagiarismfile->similarityscore;
+            }
+            if ($viewreport) {
+                $results['reporturl'] = $plagiarismfile->reporturl;
+            }
+            if (!empty($plagiarismfile->optout) && $selfreport) {
+                $results['optoutlink'] = $plagiarismfile->optout;
+            }
+            $results['renamed'] = $previouslysubmitted;
+        }
+        return $results;
+    }
     /* hook to save plagiarism specific settings on a module settings page
      * @param object $data - data from an mform submission.
     */
@@ -345,72 +434,86 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public function event_handler($eventdata) {
         global $DB, $CFG;
 
-        $result = true;
-        $supportedmodules = array('assignment');
-        if (empty($eventdata->modulename) || !in_array($eventdata->modulename, $supportedmodules)) {
-            return true;
+        if ($eventdata->eventtype != "file_uploaded") {
+            return true; //Don't need to handle this event
         }
 
         $plagiarismsettings = $this->get_settings();
+        if(!$plagiarismsettings) {
+            return true;
+        }
         $cmid = (!empty($eventdata->cm->id)) ? $eventdata->cm->id : $eventdata->cmid;
         $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$cmid), '', 'name, value');
-        if (!$plagiarismsettings || empty($plagiarismvalues['use_urkund'])) {
-            //nothing to do here... move along!
-            return $result;
+        if (empty($plagiarismvalues['use_urkund'])) {
+            // Urkund not in use for this cm - return.
+            return true;
         }
 
-        if ($eventdata->eventtype=="file_uploaded") {
-            // check if the module associated with this event still exists
-            if (!$DB->record_exists('course_modules', array('id' => $eventdata->cmid))) {
-                return $result;
-            }
+        // check if the module associated with this event still exists
+        if (!$DB->record_exists('course_modules', array('id' => $eventdata->cmid))) {
+            return true;
+        }
 
-            if (!empty($eventdata->file) && empty($eventdata->files)) { //single assignment type passes a single file
-                $eventdata->files[] = $eventdata->file;
-            }
-            if (!empty($eventdata->files)) { //this is an upload event with multiple files
-                foreach ($eventdata->files as $efile) {
-                    if ($efile->get_filename() ==='.') {
-                        continue;
-                    }
-                    //hacky way to check file still exists
-                    $fs = get_file_storage();
-                    $fileid = $fs->get_file_by_id($efile->get_id());
-                    if (empty($fileid)) {
-                        mtrace("nofilefound!");
-                        continue;
-                    }
-                    //check if this is an advanced assignment and shouldn't send the file yet.
-                    if (empty($plagiarismvalues['plagiarism_draft_submit'])) {
-                        $result = urkund_send_file($cmid, $eventdata->userid, $efile, $plagiarismsettings);
-                    }
-                }
-            } else { //this is a finalize event
-                mtrace("finalise");
-                if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
-                    $plagiarismvalues['plagiarism_draft_submit'] == 1) { // is file to be sent on final submission?
-                    require_once("$CFG->dirroot/mod/assignment/lib.php"); //HACK to include filelib so that file_storage class is available
-                    // we need to get a list of files attached to this assignment and put them in an array, so that
-                    // we can submit each of them for processing.
-                    $assignmentbase = new assignment_base($cmid);
-                    $submission = $assignmentbase->get_submission($eventdata->userid);
-                    $modulecontext = get_context_instance(CONTEXT_MODULE, $eventdata->cmid);
-                    $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id, "timemodified")) {
-                        foreach ($files as $file) {
-                            if ($file->get_filename()==='.') {
-                                continue;
-                            }
-                            $result = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-                        }
+        if (!empty($eventdata->file) && empty($eventdata->files)) { //single assignment type passes a single file
+            $eventdata->files[] = $eventdata->file;
+        }
+
+        if (empty($eventdata->files)) {
+            // Assignment-specific functionality:
+            // This is a 'finalize' event. No files from this event itself,
+            // but need to check if files from previous events need to be submitted for processing
+            mtrace("finalise");
+            $result = true;
+            if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
+                $plagiarismvalues['plagiarism_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
+                // Any files attached to previous events were not submitted.
+                // These files are now finalized, and should be submitted for processing.
+
+                require_once("$CFG->dirroot/mod/assignment/lib.php"); //hack to include filelib so that file_storage class is available
+                // we need to get a list of files attached to this assignment and put them in an array, so that
+                // we can submit each of them for processing.
+                $assignmentbase = new assignment_base($cmid);
+                $submission = $assignmentbase->get_submission($eventdata->userid);
+                $modulecontext = get_context_instance(CONTEXT_MODULE, $eventdata->cmid);
+                $fs = get_file_storage();
+                if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id, "timemodified", false)) {
+                    foreach ($files as $file) {
+                        $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
+                        $result = $result && $sendresult;
                     }
                 }
             }
             return $result;
-        } else {
-            return true; //Don't need to handle this event
         }
+
+        if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
+            $plagiarismvalues['plagiarism_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
+            // Assignment-specific functionality:
+            // Files should only be sent for checking once "finalized"
+            return true;
+        }
+
+        // Normal situation: 1 or more assessable files attached to event, ready to be checked:
+        $result = true;
+        foreach ($eventdata->files as $efile) {
+            if ($efile->get_filename() ==='.') {
+                // This 'file' is actually a directory - nothing to submit.
+                continue;
+            }
+            // Check file still exists
+            $fs = get_file_storage();
+            $fileid = $fs->get_file_by_id($efile->get_id());
+            if (empty($fileid)) {
+                mtrace("nofilefound!");
+                continue;
+            }
+
+            $sendresult = urkund_send_file($cmid, $eventdata->userid, $efile, $plagiarismsettings);
+            $result = $result && $sendresult;
+        }
+        return $result;
     }
+
     function urkund_send_student_email($plagiarism_file) {
         global $DB, $CFG;
         if (empty($plagiarism_file->userid)) { //sanity check.
@@ -473,7 +576,10 @@ function event_mod_deleted($eventdata) {
 function urkund_get_form_elements($mform) {
     $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
     $tiioptions = array(0 => get_string("never"), 1 => get_string("always"), 2 => get_string("showwhenclosed", "plagiarism_urkund"));
-    $tiidraftoptions = array(0 => get_string("submitondraft", "plagiarism_urkund"), 1 => get_string("submitonfinal", "plagiarism_urkund"));
+    $urkunddraftoptions = array(
+            PLAGIARISM_URKUND_DRAFTSUBMIT_IMMEDIATE => get_string("submitondraft", "plagiarism_urkund"),
+            PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL => get_string("submitonfinal", "plagiarism_urkund")
+            );
 
     $mform->addElement('header', 'plagiarismdesc');
     $mform->addElement('select', 'use_urkund', get_string("useurkund", "plagiarism_urkund"), $ynoptions);
@@ -484,7 +590,7 @@ function urkund_get_form_elements($mform) {
     $mform->addElement('select', 'urkund_show_student_report', get_string("urkund_show_student_report", "plagiarism_urkund"), $tiioptions);
     $mform->addHelpButton('urkund_show_student_report', 'urkund_show_student_report', 'plagiarism_urkund');
     if ($mform->elementExists('var4')) {
-        $mform->addElement('select', 'urkund_draft_submit', get_string("urkund_draft_submit", "plagiarism_urkund"), $tiidraftoptions);
+        $mform->addElement('select', 'urkund_draft_submit', get_string("urkund_draft_submit", "plagiarism_urkund"), $urkunddraftoptions);
     }
     $mform->addElement('select', 'urkund_studentemail', get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
     $mform->addHelpButton('urkund_studentemail', 'urkund_studentemail', 'plagiarism_urkund');
