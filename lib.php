@@ -250,7 +250,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return false;
         }
         $plagiarismfile = $DB->get_record_sql(
-                    "SELECT * FROM {urkund_files}
+                    "SELECT * FROM {plagiarism_urkund_files}
                     WHERE cm = ? AND userid = ? AND " .
                     "identifier = ?",
                     array($cmid, $userid, $filehash));
@@ -309,7 +309,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             //array of possible plagiarism config options.
             $plagiarismelements = $this->config_options();
             //first get existing values
-            $existingelements = $DB->get_records_menu('urkund_config', array('cm'=>$data->coursemodule), '', 'name, id');
+            $existingelements = $DB->get_records_menu('plagiarism_urkund_config', array('cm'=>$data->coursemodule), '', 'name, id');
             foreach ($plagiarismelements as $element) {
                 $newelement = new object();
                 $newelement->cm = $data->coursemodule;
@@ -317,9 +317,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $newelement->value = (isset($data->$element) ? $data->$element : 0);
                 if (isset($existingelements[$element])) { //update
                     $newelement->id = $existingelements[$element];
-                    $DB->update_record('urkund_config', $newelement);
+                    $DB->update_record('plagiarism_urkund_config', $newelement);
                 } else { //insert
-                    $DB->insert_record('urkund_config', $newelement);
+                    $DB->insert_record('plagiarism_urkund_config', $newelement);
                 }
 
             }
@@ -341,9 +341,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         $cmid = optional_param('update', 0, PARAM_INT); //$this->_cm is not available here.
         if (!empty($cmid)) {
-            $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$cmid), '', 'name, value');
+            $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm'=>$cmid), '', 'name, value');
         }
-        $plagiarismdefaults = $DB->get_records_menu('urkund_config', array('cm'=>0), '', 'name, value'); //cmid(0) is the default list.
+        $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config', array('cm'=>0), '', 'name, value'); //cmid(0) is the default list.
         $plagiarismelements = $this->config_options();
         if (has_capability('moodle/plagiarism_urkund:enable', $context)) {
             urkund_get_form_elements($mform);
@@ -357,7 +357,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 }
             }
             //check if files have been submitted and we need to disable the receiver address:
-            $sql = 'SELECT * FROM {urkund_files} WHERE cm = ? AND (statuscode = ? or statuscode = ?)';
+            $sql = 'SELECT * FROM {plagiarism_urkund_files} WHERE cm = ? AND (statuscode = ? or statuscode = ?)';
             if ($DB->record_exists_sql($sql, array($cmid, 'pending', 'Analyzed'))) {
                 $mform->disabledIf('urkund_receiver','use_urkund');
             }
@@ -443,7 +443,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true;
         }
         $cmid = (!empty($eventdata->cm->id)) ? $eventdata->cm->id : $eventdata->cmid;
-        $plagiarismvalues = $DB->get_records_menu('urkund_config', array('cm'=>$cmid), '', 'name, value');
+        $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm'=>$cmid), '', 'name, value');
         if (empty($plagiarismvalues['use_urkund'])) {
             // Urkund not in use for this cm - return.
             return true;
@@ -609,7 +609,7 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
 
     //now update or insert record into urkund_files
     $plagiarism_file = $DB->get_record_sql(
-                                "SELECT * FROM {urkund_files}
+                                "SELECT * FROM {plagiarism_urkund_files}
                                  WHERE cm = ? AND userid = ? AND " .
                                 "identifier = ?",
                                 array($cmid, $userid, $file->get_contenthash()));
@@ -624,7 +624,7 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
         $plagiarism_file->statuscode = 'pending';
         $plagiarism_file->attempt = 0;
         $plagiarism_file->timesubmitted = time();
-        if (!$pid = $DB->insert_record('urkund_files', $plagiarism_file)) {
+        if (!$pid = $DB->insert_record('plagiarism_urkund_files', $plagiarism_file)) {
             debugging("insert into urkund_files failed");
         }
         $plagiarism_file->id = $pid;
@@ -642,13 +642,13 @@ function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
     if ($plagiarism_file->filename !== $file->get_filename()) {
         //this is a file that was previously submitted and not sent to urkund but the filename has changed so fix it.
         $plagiarism_file->filename = $file->get_filename();
-        $DB->update_record('urkund_files', $plagiarism_file);
+        $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
     }
     //check to see if this is a valid file
     $mimetype = urkund_check_file_type($file->get_filename());
     if (empty($mimetype)) {
         $plagiarism_file->statuscode = URKUND_STATUSCODE_UNSUPPORTED;
-        $DB->update_record('urkund_files', $plagiarism_file);
+        $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
         return true;
     }
     //check if we need to delay this submission
@@ -658,7 +658,7 @@ function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
     }
     //increment attempt number.
     $plagiarism_file->attempt = $plagiarism_file->attempt++;
-    $DB->update_record('urkund_files', $plagiarism_file);
+    $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
 
     return urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file);
 }
@@ -688,7 +688,7 @@ function urkund_check_attempt_timeout($plagiarism_file) {
     //check if we have exceeded the max attempts
     if ($plagiarism_file->attempt > $maxattempts) {
         $plagiarism_file->statuscode = 'timeout';
-        $DB->update_record('urkund_files', $plagiarism_file);
+        $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
         return true; //return true to cancel the event.
     }
     //now calculate wait time.
@@ -753,7 +753,7 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
                 $plagiarism_file->errorresponse = $response;
             }
             $plagiarism_file->statuscode = $status;
-            $DB->update_record('urkund_files', $plagiarism_file);
+            $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
             return true;
         }
     }
@@ -806,11 +806,12 @@ function urkund_get_scores($plagiarismsettings) {
     $count = 0;
     mtrace("getting URKUND similarity scores");
     //get all files set that have been submitted
-    $files = $DB->get_records('urkund_files',array('statuscode'=>URKUND_STATUSCODE_ACCEPTED));
+    $files = $DB->get_records('plagiarism_urkund_files',array('statuscode'=>URKUND_STATUSCODE_ACCEPTED));
     if (!empty($files)) {
         foreach($files as $plagiarism_file) {
             //check if we need to delay this submission
             $attemptallowed = urkund_check_attempt_timeout($plagiarism_file);
+            $attemptallowed = true;
             if (!$attemptallowed) {
                 continue;
             }
@@ -841,7 +842,7 @@ function urkund_get_scores($plagiarismsettings) {
                             $plagiarism_file->similarityscore = (int)$xml->SubmissionData[0]->Report[0]->Significance[0];
                             $plagiarism_file->optout = (string)$xml->SubmissionData[0]->Document[0]->OptOutInfo[0]->Url[0];
                             //now send e-mail to user
-                            $emailstudents = $DB->get_field('urkund_config', 'value', array('cm'=>$plagiarism_file->cm, 'name'=>'urkund_studentemail'));
+                            $emailstudents = $DB->get_field('plagiarism_urkund_config', 'value', array('cm'=>$plagiarism_file->cm, 'name'=>'urkund_studentemail'));
                             if (!empty($emailstudents)) {
                                 $urkund = new plagiarism_plugin_urkund();
                                 $urkund->urkund_send_student_email($plagiarism_file);
@@ -853,7 +854,7 @@ function urkund_get_scores($plagiarismsettings) {
                 }
             }
             $plagiarism_file->attempt = $plagiarism_file->attempt+1;
-            $DB->update_record('urkund_files', $plagiarism_file);
+            $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
         }
     }
 }
@@ -861,7 +862,7 @@ function urkund_get_scores($plagiarismsettings) {
 function urkund_get_url($baseurl, $plagiarism_file) {
     //get url of api
     global $DB;
-    $receiver = $DB->get_field('urkund_config', 'value', array('cm'=>$plagiarism_file->cm,'name'=>'urkund_receiver'));
+    $receiver = $DB->get_field('plagiarism_urkund_config', 'value', array('cm'=>$plagiarism_file->cm,'name'=>'urkund_receiver'));
     return $baseurl.'/' .$receiver.'/'.md5(get_site_identifier()).
            '_'.$plagiarism_file->cm.'_'.$plagiarism_file->id;
 }
@@ -870,7 +871,7 @@ function urkund_cm_use($cmid) {
     global $DB;
     static $useurkund = array();
     if (!isset($useurkund[$cmid])) {
-        $pvalues = $DB->get_records_menu('urkund_config', array('cm'=>$cmid),'','name,value');
+        $pvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm'=>$cmid),'','name,value');
         if (!empty($pvalues['use_urkund'])) {
             $useurkund[$cmid] = $pvalues;
         } else {

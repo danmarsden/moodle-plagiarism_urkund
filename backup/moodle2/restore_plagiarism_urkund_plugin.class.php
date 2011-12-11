@@ -54,7 +54,7 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
             $oldid = $data->id;
             $data->cm = $this->task->get_moduleid();
 
-            $DB->insert_record('urkund_config', $data);
+            $DB->insert_record('plagiarism_urkund_config', $data);
         }
     }
 
@@ -67,7 +67,7 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
             $data->cm = $this->task->get_moduleid();
             $data->userid = $this->get_mappingid('user', $data->userid);
 
-            $DB->insert_record('urkund_files', $data);
+            $DB->insert_record('plagiarism_urkund_files', $data);
         }
     }
 }

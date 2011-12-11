@@ -39,7 +39,7 @@ $resetuser = optional_param('reset', 0, PARAM_INT);
 $page = optional_param('page', 0, PARAM_INT);
 
 $mform = new urkund_defaults_form(null);
-$plagiarismdefaults = $DB->get_records_menu('urkund_config', array('cm'=>0), '', 'name, value'); //cmid(0) is the default list.
+$plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config', array('cm'=>0), '', 'name, value'); //cmid(0) is the default list.
 if (!empty($plagiarismdefaults)) {
     $mform->set_data($plagiarismdefaults);
 }
@@ -57,10 +57,10 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             $newelement->name = $element;
             $newelement->value = $data->$element;
             if (isset($plagiarismdefaults[$element])) { //update
-                $newelement->id = $DB->get_field('urkund_config', 'id', (array('cm'=>0, 'name'=>$element)));
-                $DB->update_record('urkund_config', $newelement);
+                $newelement->id = $DB->get_field('plagiarism_urkund_config', 'id', (array('cm'=>0, 'name'=>$element)));
+                $DB->update_record('plagiarism_urkund_config', $newelement);
             } else { //insert
-                $DB->insert_record('urkund_config', $newelement);
+                $DB->insert_record('plagiarism_urkund_config', $newelement);
             }
         }
     }

@@ -4,7 +4,7 @@
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
-      <TABLE NAME="urkund_files" COMMENT="info about submitted files" NEXT="urkund_config">
+      <TABLE NAME="plagiarism_urkund_files" COMMENT="info about submitted files" NEXT="plagiarism_urkund_config">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="cm"/>
         <FIELD NAME="cm" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="userid"/>
@@ -25,7 +25,7 @@
         <KEY NAME="userid" TYPE="foreign" FIELDS="userid" REFTABLE="user" REFFIELDS="id" PREVIOUS="cm"/>
       </KEYS>
     </TABLE>
-    <TABLE NAME="urkund_config" COMMENT="config for modules" PREVIOUS="urkund_files">
+    <TABLE NAME="plagiarism_urkund_config" COMMENT="config for modules" PREVIOUS="plagiarism_urkund_files">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" SEQUENCE="true" NEXT="cm"/>
         <FIELD NAME="cm" TYPE="int" LENGTH="10" NOTNULL="true" UNSIGNED="true" DEFAULT="0" SEQUENCE="false" PREVIOUS="id" NEXT="name"/>

@@ -39,13 +39,13 @@ require_login($cm->course, true, $cm);
 $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
 require_capability('moodle/plagiarism_urkund:resetfile', $modulecontext);
 
-$plagiarism_file = $DB->get_record('urkund_files', array('id'=>$pf), '*', MUST_EXIST);
+$plagiarism_file = $DB->get_record('plagiarism_urkund_files', array('id'=>$pf), '*', MUST_EXIST);
 
 //reset db entry.
 $plagiarism_file->statuscode = 'pending';
 $plagiarism_file->attempt = 0;
 $plagiarism_file->timesubmitted = time();
-$DB->update_record('urkund_files', $plagiarism_file);
+$DB->update_record('plagiarism_urkund_files', $plagiarism_file);
 //now trigger event to process the file.
 
 //TODO: this is hardcoded to assignment mod :-(

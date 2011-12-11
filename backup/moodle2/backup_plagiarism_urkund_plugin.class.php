@@ -21,7 +21,7 @@ class backup_plagiarism_urkund_plugin extends backup_plagiarism_plugin {
         $urkundconfig = new backup_nested_element('urkund_config', array('id'), array('name', 'value'));
         $pluginwrapper->add_child($urkundconfigs);
         $urkundconfigs->add_child($urkundconfig);
-        $urkundconfig->set_source_table('urkund_config', array('cm' => backup::VAR_PARENTID));
+        $urkundconfig->set_source_table('plagiarism_urkund_config', array('cm' => backup::VAR_PARENTID));
 
         //now information about files to module
         $urkundfiles = new backup_nested_element('urkund_files');
@@ -31,7 +31,7 @@ class backup_plagiarism_urkund_plugin extends backup_plagiarism_plugin {
         $pluginwrapper->add_child($urkundfiles);
         $urkundfiles->add_child($urkundfile);
         if ($userinfo) {
-            $urkundfile->set_source_table('urkund_files', array('cm' => backup::VAR_PARENTID));
+            $urkundfile->set_source_table('plagiarism_urkund_files', array('cm' => backup::VAR_PARENTID));
         }
         return $plugin;
     }
