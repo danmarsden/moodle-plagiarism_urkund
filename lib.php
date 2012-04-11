@@ -357,8 +357,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 }
             }
             //check if files have been submitted and we need to disable the receiver address:
-            $sql = 'SELECT * FROM {plagiarism_urkund_files} WHERE cm = ? AND (statuscode = ? or statuscode = ?)';
-            if ($DB->record_exists_sql($sql, array($cmid, 'pending', 'Analyzed'))) {
+            if ($DB->record_exists('plagiarism_urkund_files', array('cm' => $cmid, 'statuscode' => 'pending'))) {
                 $mform->disabledIf('urkund_receiver','use_urkund');
             }
         } else { //add plagiarism settings as hidden vars.
@@ -906,7 +905,7 @@ function urkund_get_css_rank ($score) {
 *
 */
 function urkund_update_allowed_filetypes() {
-    global $CFG;
+    global $CFG, $DB;
     $configvars = get_config('plagiarism_urkund');
     $now = time();
     $wait = (int)URKUND_FILETYPE_URL_UPDATE*60*60;
