@@ -183,7 +183,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         return $output;
     }
 
-    function get_file_results($cmid, $userid, $file) {
+    function get_file_results($cmid, $userid, stored_file $file) {
         global $DB, $USER, $COURSE, $CFG;
         $plagiarismsettings = $this->get_settings();
         if (empty($plagiarismsettings)) {
@@ -453,11 +453,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true;
         }
 
-        if (!empty($eventdata->file) && empty($eventdata->files)) { //single assignment type passes a single file
-            $eventdata->files[] = $eventdata->file;
-        }
-
-        if (empty($eventdata->files)) {
+        if (empty($eventdata->pathnamehashes)) {
             // Assignment-specific functionality:
             // This is a 'finalize' event. No files from this event itself,
             // but need to check if files from previous events need to be submitted for processing
@@ -494,16 +490,15 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         // Normal situation: 1 or more assessable files attached to event, ready to be checked:
         $result = true;
-        foreach ($eventdata->files as $efile) {
-            if ($efile->get_filename() ==='.') {
-                // This 'file' is actually a directory - nothing to submit.
-                continue;
-            }
-            // Check file still exists
+        foreach ($eventdata->pathnamehashes as $hash) {
             $fs = get_file_storage();
-            $fileid = $fs->get_file_by_id($efile->get_id());
-            if (empty($fileid)) {
+            $efile = $fs->get_file_by_id($hash);
+
+            if (empty($efile)) {
                 mtrace("nofilefound!");
+                continue;
+            } else if ($efile->get_filename() ==='.') {
+                // This 'file' is actually a directory - nothing to submit.
                 continue;
             }
 
