@@ -389,17 +389,21 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      * @return string
      */
     public function print_disclosure($cmid) {
-        global $OUTPUT,$DB;
+        global $OUTPUT;
+
+        $outputhtml = '';
+
         $urkunduse = urkund_cm_use($cmid);
         $plagiarismsettings = $this->get_settings();
         if (!empty($plagiarismsettings['urkund_student_disclosure']) &&
             !empty($urkunduse)) {
-                echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
+                $outputhtml .= $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
                 $formatoptions = new stdClass;
                 $formatoptions->noclean = true;
-                echo format_text($plagiarismsettings['urkund_student_disclosure'], FORMAT_MOODLE, $formatoptions);
-                echo $OUTPUT->box_end();
-            }
+                $outputhtml .= format_text($plagiarismsettings['urkund_student_disclosure'], FORMAT_MOODLE, $formatoptions);
+                $outputhtml .= $OUTPUT->box_end();
+        }
+        return $outputhtml;
     }
 
     /**
@@ -407,9 +411,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      * @param object $course - full Course object
      * @param object $cm - full cm object
+     * @return string
      */
     public function update_status($course, $cm) {
         //called at top of submissions/grading pages - allows printing of admin style links or updating status
+        return '';
     }
 
     /**
