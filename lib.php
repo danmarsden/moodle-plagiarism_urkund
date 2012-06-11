@@ -498,7 +498,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $result = true;
         foreach ($eventdata->pathnamehashes as $hash) {
             $fs = get_file_storage();
-            $efile = $fs->get_file_by_id($hash);
+            $efile = $fs->get_file_by_hash($hash);
 
             if (empty($efile)) {
                 mtrace("nofilefound!");
