@@ -62,6 +62,14 @@ if ($cm->modname =='assignment') {
          $eventdata->files        = $files;
 
          events_trigger('assessable_file_uploaded', $eventdata);
+     } else if(!empty($submission->data1)) {
+         $eventdata = new stdClass();
+         $eventdata->modulename   = $cm->modname;
+         $eventdata->cmid         = $cm->id;
+         $eventdata->courseid     = $cm->course;
+         $eventdata->userid       = $plagiarism_file->userid;
+         $eventdata->content      = trim(strip_tags(format_text($submission->data1,$submission->data2)));
+         events_trigger('assessable_content_uploaded', $eventdata);
      }
 }
 
