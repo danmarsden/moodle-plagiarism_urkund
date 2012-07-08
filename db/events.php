@@ -29,6 +29,11 @@ $handlers = array (
         'handlerfunction'  => 'event_files_done',
         'schedule'         => 'cron'
     ),
+    'assessable_content_uploaded' => array (
+        'handlerfile'      => '/plagiarism/urkund/lib.php',
+        'handlerfunction'  => 'event_content_uploaded',
+        'schedule'         => 'cron'
+    ),
     'mod_created' => array (
         'handlerfile'      => '/plagiarism/urkund/lib.php',
         'handlerfunction'  => 'event_mod_created',
