@@ -51,6 +51,14 @@ class urkund_setup_form extends moodleform {
         $mform->addHelpButton('urkund_student_disclosure', 'studentdisclosure', 'plagiarism_urkund');
         $mform->setDefault('urkund_student_disclosure', get_string('studentdisclosuredefault', 'plagiarism_urkund'));
 
+        $mods = get_plugin_list('mod');
+        foreach ($mods as $mod => $modname) {
+            if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
+                $modstring = 'urkund_enable' . $mod;
+                $mform->addElement('checkbox', $modstring, get_string('urkund_enableplugin', 'plagiarism_urkund', $mod));
+            }
+        }
+
         $this->add_action_buttons(true);
     }
 }

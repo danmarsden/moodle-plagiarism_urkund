@@ -49,6 +49,18 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->urkund_use)) {
         $data->urkund_use = 0;
     }
+    if (!isset($data->urkund_enableassign)) {
+        $data->urkund_enableassign = 0;
+    }
+    if (!isset($data->urkund_enableassignment)) {
+        $data->urkund_enableassignment = 0;
+    }
+    if (!isset($data->urkund_enableforum)) {
+        $data->urkund_enableforum = 0;
+    }
+    if (!isset($data->urkund_enableworkshop)) {
+        $data->urkund_enableworkshop = 0;
+    }
     foreach ($data as $field => $value) {
         if (strpos($field, 'urkund')===0) {
             if ($field == 'urkund_api') { //strip trailing slash from api 

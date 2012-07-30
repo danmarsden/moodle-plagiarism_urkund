@@ -37,6 +37,7 @@ $string['urkund_lang_help'] = 'Language code provided by URKUND';
 $string['urkund_password'] = 'Password';
 $string['urkund_password_help'] = 'Password provided by URKUND to access the API';
 $string['useurkund'] ='Enable URKUND';
+$string['urkund_enableplugin'] = 'Enable URKUND for {$a}';
 $string['savedconfigsuccess'] = 'Plagiarism Settings Saved';
 $string['savedconfigfailed'] = 'An incorrect username/password combination has been entered, URKUND has been disabled, please try again.';
 $string['urkund_show_student_score'] = 'Show similarity score to student';
