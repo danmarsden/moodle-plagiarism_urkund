@@ -465,8 +465,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // but need to check if files from previous events need to be submitted for processing
             mtrace("finalise");
             $result = true;
-            if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
-                $plagiarismvalues['plagiarism_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
+            if (isset($plagiarismvalues['urkund_draft_submit']) &&
+                $plagiarismvalues['urkund_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
                 // Any files attached to previous events were not submitted.
                 // These files are now finalized, and should be submitted for processing.
 
@@ -487,8 +487,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return $result;
         }
 
-        if (isset($plagiarismvalues['plagiarism_draft_submit']) &&
-            $plagiarismvalues['plagiarism_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
+        if (isset($plagiarismvalues['urkund_draft_submit']) &&
+            $plagiarismvalues['urkund_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
             // Assignment-specific functionality:
             // Files should only be sent for checking once "finalized"
             return true;
