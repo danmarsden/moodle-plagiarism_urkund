@@ -349,23 +349,17 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      * @param object $mform  - Moodle form
      * @param object $context - current context
      */
-    public function get_form_elements_module($mform, $context) {
+    public function get_form_elements_module($mform, $context, $modulename = "") {
         global $CFG, $DB, $COURSE;
         $plagiarismsettings = $this->get_settings();
         if (!$plagiarismsettings) {
             return;
         }
-        /* weird way to get modulename, please let me know a better way */
-        $add = optional_param('add', '', PARAM_ALPHA);
-        if (!empty($add)) {
-            $modname = 'urkund_enable' . $add;
-        }
         $cmid = optional_param('update', 0, PARAM_INT); //$this->_cm is not available here.
-        if (!empty($cmid)) {
-            $modulecontext = context_module::instance($cmid);
-            $moduleid = $DB->get_record('course_modules', array('id' => $modulecontext->instanceid, 'course' => $COURSE->id ));
-            $module = $DB->get_record('modules', array('id' => $moduleid->module ));
-            $modname = 'urkund_enable' . $module->name;
+        $modname = "";
+        if (!empty($modulename)) {
+            $modulename = explode('_', $modulename);
+            $modname = 'urkund_enable' . $modulename[1];
         }
         if (empty($plagiarismsettings[$modname])) {
             return;             // return if urkund is not enabled for the module
