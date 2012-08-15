@@ -18,5 +18,5 @@ $plugin->version =  2012050900;
 $plugin->requires = 2012051800.00;
 $plugin->cron     = 300; //only run every 5 minutes
 $plugin->component = 'plagiarism_urkund';
-$plugin->maturity  = MATURITY_ALPHA;
+$plugin->maturity  = MATURITY_STABLE;
 $plugin->release   = '1.3';
