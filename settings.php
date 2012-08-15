@@ -49,16 +49,16 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->urkund_use)) {
         $data->urkund_use = 0;
     }
-    if (!isset($data->urkund_enableassign)) {
+    if (!isset($data->urkund_enable_mod_assign)) {
         $data->urkund_enableassign = 0;
     }
-    if (!isset($data->urkund_enableassignment)) {
+    if (!isset($data->urkund_enable_mod_assignment)) {
         $data->urkund_enableassignment = 0;
     }
-    if (!isset($data->urkund_enableforum)) {
+    if (!isset($data->urkund_enable_mod_forum)) {
         $data->urkund_enableforum = 0;
     }
-    if (!isset($data->urkund_enableworkshop)) {
+    if (!isset($data->urkund_enable_mod_workshop)) {
         $data->urkund_enableworkshop = 0;
     }
     foreach ($data as $field => $value) {

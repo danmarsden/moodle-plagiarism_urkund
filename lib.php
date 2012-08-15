@@ -356,13 +356,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return;
         }
         $cmid = optional_param('update', 0, PARAM_INT); //$this->_cm is not available here.
-        $modname = "";
         if (!empty($modulename)) {
-            $modulename = explode('_', $modulename);
-            $modname = 'urkund_enable' . $modulename[1];
-        }
-        if (empty($plagiarismsettings[$modname])) {
-            return;             // return if urkund is not enabled for the module
+            $modname = 'urkund_enable_' . $modulename;
+            if (empty($plagiarismsettings[$modname])) {
+                return;             // return if urkund is not enabled for the module
+            }
         }
         if (!empty($cmid)) {
             $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm'=>$cmid), '', 'name, value');
