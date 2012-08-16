@@ -594,6 +594,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
 function urkund_create_temp_file($cmid, $eventdata) {
     global $CFG;
+    if (!check_dir_exists($CFG->dataroot."/temp/urkund", true, true)) {
+       mkdir($CFG->dataroot."/temp/urkund", 0700);
+    }
     $filename = "content-" . $eventdata->courseid . "-" . $cmid . "-" . $eventdata->userid . ".htm";
     $filepath = $CFG->dataroot."/temp/urkund/" . $filename;
     $fd = fopen($filepath, 'wb');   //create if not exist, write binary
