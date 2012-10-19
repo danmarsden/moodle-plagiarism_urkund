@@ -72,3 +72,4 @@ If you wish to prevent your document from being used as a source for analysis ou
 {$a->optoutlink}';
 
 $string['filereset'] = 'A file has been reset for re-submission to URKUND';
+$string['noreceiver'] = 'No receiver address was specified';
