@@ -45,6 +45,8 @@ define('URKUND_STATUSCODE_BAD_REQUEST', '400');
 define('URKUND_STATUSCODE_NOT_FOUND', '404');
 define('URKUND_STATUSCODE_UNSUPPORTED', '415');
 define('URKUND_STATUSCODE_TOO_LARGE', '413');
+define('URKUND_STATUSCODE_NORECEIVER', '444');
+
 define('URKUND_FILETYPE_URL','https://secure.urkund.com/ws/integration/accepted-formats.xml'); //url to external xml that states URKUNDS allowed file type list.
 define('URKUND_FILETYPE_URL_UPDATE','168'); //how often to check for updated file types (defined in hours)
 
@@ -728,6 +730,13 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
     $useremail = $DB->get_field('user', 'email', array('id'=>$plagiarism_file->userid));
     //get url of api
     $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarism_file);
+    if (empty($url)) {
+        mtrace('ERROR: no receiver address found for this cm: '.$plagiarism_file->cm. ' Skipping file');
+        $plagiarism_file->statuscode = URKUND_STATUSCODE_NORECEIVER;
+        $plagiarism_file->errorresponse = get_string('noreceiver', 'plagiarism_urkund');
+        $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
+        return true;
+    }
 
     $headers = array('x-urkund-submitter: '.$useremail,
                     'Accept-Language: '.$plagiarismsettings['urkund_lang'],
@@ -814,6 +823,13 @@ function urkund_get_scores($plagiarismsettings) {
                 continue;
             }
             $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarism_file);
+            if (empty($url)) {
+                mtrace('ERROR: no receiver address found for this cm: '.$plagiarism_file->cm);
+                $plagiarism_file->statuscode = URKUND_STATUSCODE_NORECEIVER;
+                $plagiarism_file->errorresponse = get_string('noreceiver', 'plagiarism_urkund');
+                $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
+                continue;
+            }
             $headers = array('Accept-Language: '.$plagiarismsettings['urkund_lang']);
 
             //use Moodle curl wrapper to send file.
@@ -861,6 +877,9 @@ function urkund_get_url($baseurl, $plagiarism_file) {
     //get url of api
     global $DB;
     $receiver = $DB->get_field('plagiarism_urkund_config', 'value', array('cm'=>$plagiarism_file->cm,'name'=>'urkund_receiver'));
+    if (empty($receiver)) {
+        return;
+    }
     return $baseurl.'/' .$receiver.'/'.md5(get_site_identifier()).
            '_'.$plagiarism_file->cm.'_'.$plagiarism_file->id;
 }
