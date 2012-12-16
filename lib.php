@@ -490,7 +490,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
 
         if ($eventdata->eventtype == 'files_done' ||
-            $eventdata->eventtype == 'content_done') {
+            $eventdata->eventtype == 'content_done' ||
+            ($eventdata->eventtype == 'assessable_submitted' && $eventdata->params['submission_editable'] == false)) {
             // Assignment-specific functionality:
             // This is a 'finalize' event. No files from this event itself,
             // but need to check if files from previous events need to be submitted for processing
@@ -632,6 +633,12 @@ function event_content_uploaded($eventdata) {
 
 function event_content_done($eventdata) {
     $eventdata->eventtype = 'content_done';
+    $urkund = new plagiarism_plugin_urkund();
+    return $urkund->event_handler($eventdata);
+}
+
+function event_assessable_submitted($eventdata) {
+    $eventdata->eventtype = 'assessable_submitted';
     $urkund = new plagiarism_plugin_urkund();
     return $urkund->event_handler($eventdata);
 }

@@ -54,5 +54,10 @@ $handlers = array (
         'handlerfunction'  => 'event_mod_deleted',
         'schedule'         => 'cron'
     ),
+    'assessable_submitted' => array (
+        'handlerfile'      => '/plagiarism/urkund/lib.php',
+        'handlerfunction'  => 'event_assessable_submitted',
+        'schedule'         => 'cron'
+    ),
 
 );
