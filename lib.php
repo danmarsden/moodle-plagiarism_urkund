@@ -46,6 +46,7 @@ define('URKUND_STATUSCODE_NOT_FOUND', '404');
 define('URKUND_STATUSCODE_UNSUPPORTED', '415');
 define('URKUND_STATUSCODE_TOO_LARGE', '413');
 define('URKUND_STATUSCODE_NORECEIVER', '444');
+define('URKUND_STATUSCODE_INVALID_RESPONSE', '613'); // Invalid response received from URKUND
 
 define('URKUND_FILETYPE_URL','https://secure.urkund.com/ws/integration/accepted-formats.xml'); //url to external xml that states URKUNDS allowed file type list.
 define('URKUND_FILETYPE_URL_UPDATE','168'); //how often to check for updated file types (defined in hours)
@@ -452,7 +453,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function cron() {
-        global $CFG;
+        global $CFG, $DB;
         //do any scheduled task stuff
         urkund_update_allowed_filetypes();
         //weird hack to include filelib correctly before allowing use in event_handler.
@@ -758,11 +759,6 @@ function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
         $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
         return true;
     }
-    //check if we need to delay this submission
-    $attemptallowed = urkund_check_attempt_timeout($plagiarism_file);
-    if (!$attemptallowed) {
-        return false;
-    }
     //increment attempt number.
     $plagiarism_file->attempt = $plagiarism_file->attempt++;
     $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
@@ -830,8 +826,9 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
     $filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
     $mimetype = urkund_check_file_type($filename);
     if (empty($mimetype)) {//sanity check on filetype - this should already have been checked.
-        debugging("no mime type for this file found.");
-        return false;
+        $plagiarism_file->statuscode = URKUND_STATUSCODE_UNSUPPORTED;
+        $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
+        return true;
     }
     mtrace("sendfile".$plagiarism_file->id);
     $useremail = $DB->get_field('user', 'email', array('id'=>$plagiarism_file->userid));
@@ -874,7 +871,10 @@ function urkund_send_file_to_urkund($plagiarism_file, $plagiarismsettings, $file
         }
     }
     //invalid response returned - increment attempt value and return false to allow this to be called again.
-    return false;
+    $plagiarism_file->statuscode = URKUND_STATUSCODE_INVALID_RESPONSE;
+    $plagiarism_file->errorresponse = $response;
+    $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
+    return true;
 }
 
 //function to check for the allowed file types, returns the mimetype that URKUND expects.
