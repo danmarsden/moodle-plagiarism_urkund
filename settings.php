@@ -82,6 +82,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             }
         }
     }
+    cache_helper::invalidate_by_definition('core', 'config', array(), 'plagiarism');
     $c = new curl(array('proxy'=>true));
     $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$data->urkund_username.":".$data->urkund_password));
     $html = $c->post($data->urkund_api);
