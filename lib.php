@@ -183,7 +183,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         } else {
             $title = get_string('unknownwarning', 'plagiarism_urkund');
             $reset = '';
-            if (has_capability('moodle/plagiarism_urkund:resetfile', $modulecontext) &&
+            if (has_capability('plagiarism/urkund:resetfile', $modulecontext) &&
                 !empty($results['error'])) { //this is a teacher viewing the responses.
                 //strip out some possible known text to tidy it up
                 $erroresponse = format_text($results['error'], FORMAT_PLAIN);
@@ -232,7 +232,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
         // If the user has permission to see result of all items in this course module.
-        $viewscore = $viewreport = has_capability('moodle/plagiarism_urkund:viewreport', $modulecontext);
+        $viewscore = $viewreport = has_capability('plagiarism/urkund:viewreport', $modulecontext);
 
         // Determine if the activity is closed
         // If report is closed, this can make the report available to more users
@@ -370,7 +370,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config', array('cm'=>0), '', 'name, value'); //cmid(0) is the default list.
         $plagiarismelements = $this->config_options();
-        if (has_capability('moodle/plagiarism_urkund:enable', $context)) {
+        if (has_capability('plagiarism/urkund:enable', $context)) {
             urkund_get_form_elements($mform);
             if ($mform->elementExists('urkund_draft_submit')) {
                 if ($mform->elementExists('var4')) {

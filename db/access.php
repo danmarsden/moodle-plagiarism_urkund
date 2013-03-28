@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 $capabilities = array(
-    'moodle/plagiarism_urkund:enable' => array(
+    'plagiarism/urkund:enable' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
          'legacy' => array(
@@ -23,7 +23,7 @@ $capabilities = array(
          'manager' => CAP_ALLOW
         )
     ),
-    'moodle/plagiarism_urkund:viewreport' => array(
+    'plagiarism/urkund:viewreport' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
          'legacy' => array(
@@ -32,7 +32,7 @@ $capabilities = array(
          'manager' => CAP_ALLOW
         )
     ),
-    'moodle/plagiarism_urkund:resetfile' => array(
+    'plagiarism/urkund:resetfile' => array(
         'captype' => 'write',
         'contextlevel' => CONTEXT_COURSE,
          'legacy' => array(

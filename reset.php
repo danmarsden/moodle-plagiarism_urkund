@@ -37,7 +37,7 @@ $PAGE->set_url($url);
 require_login($cm->course, true, $cm);
 
 $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
-require_capability('moodle/plagiarism_urkund:resetfile', $modulecontext);
+require_capability('plagiarism/urkund:resetfile', $modulecontext);
 
 $plagiarism_file = $DB->get_record('plagiarism_urkund_files', array('id'=>$pf), '*', MUST_EXIST);
 

@@ -73,3 +73,6 @@ If you wish to prevent your document from being used as a source for analysis ou
 
 $string['filereset'] = 'A file has been reset for re-submission to URKUND';
 $string['noreceiver'] = 'No receiver address was specified';
+$string['urkund:enable'] = 'Allow the teacher to enable/disable URKUND inside an activity';
+$string['urkund:resetfile'] = 'Allow the teacher to resubmit the file to URKUND after an error';
+$string['urkund:viewreport'] = 'Allow the teacher to view the full report from URKUND';
