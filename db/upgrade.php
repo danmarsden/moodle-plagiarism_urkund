@@ -43,5 +43,16 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
 
         upgrade_plugin_savepoint(true, 2011121200, 'plagiarism', 'urkund');
     }
+    if ($oldversion < 2012050904) {
+        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+        // We have changed the way files are identified to urkund - we need to check for files that have been
+        // submitted using the old indentifier format but haven't had a report returned.
+        $sql = "UPDATE {plagiarism_urkund_files}
+                   SET statuscode = '".URKUND_STATUSCODE_ACCEPTED_OLD."'".
+               " WHERE statuscode = '".URKUND_STATUSCODE_ACCEPTED."'";
+        $DB->execute($sql);
+        upgrade_plugin_savepoint(true, 2012050904, 'plagiarism', 'urkund');
+    }
+
     return true;
 }
