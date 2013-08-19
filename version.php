@@ -19,4 +19,4 @@ $plugin->requires = 2013051400.00;
 $plugin->cron     = 300; //only run every 5 minutes
 $plugin->component = 'plagiarism_urkund';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.5.3';
+$plugin->release   = '1.5.4';
