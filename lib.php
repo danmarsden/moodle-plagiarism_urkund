@@ -124,7 +124,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // Info about this file is not available to this user
             return '';
         }
-        $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
+        $modulecontext = context_module::instance($cmid);
 
         $output = '';
         if ($results['statuscode'] == 'pending') {
@@ -231,7 +231,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return false;
         }
 
-        $modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
+        $modulecontext = context_module::instance($cmid);
         // If the user has permission to see result of all items in this course module.
         $viewscore = $viewreport = has_capability('plagiarism/urkund:viewreport', $modulecontext);
 
@@ -509,7 +509,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     // we can submit each of them for processing
                     $assignmentbase = new assignment_base($cmid);
                     $submission = $assignmentbase->get_submission($eventdata->userid);
-                    $modulecontext = get_context_instance(CONTEXT_MODULE, $eventdata->cmid);
+                    $modulecontext = context_module::instance($eventdata->cmid);
                     $fs = get_file_storage();
                     if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id, "timemodified", false)) {
                         foreach ($files as $file) {
