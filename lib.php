@@ -343,7 +343,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
             }
             if (!empty($data->urkund_receiver)) {
-                set_user_preference('urkund_receiver', $data->urkund_receiver);
+                set_user_preference('urkund_receiver', trim($data->urkund_receiver));
             }
         }
     }
@@ -1017,7 +1017,7 @@ function urkund_get_url($baseurl, $plagiarism_file) {
     $siteid = substr(md5(get_site_identifier()), 0, 8);
     $urkundid = $siteid.'_'.$plagiarism_file->cm.'_'.$plagiarism_file->id.'_'.$plagiarism_file->identifier;
 
-    return $baseurl.'/' .$receiver.'/'.$urkundid;
+    return $baseurl.'/' .trim($receiver).'/'.$urkundid;
 }
 //helper function to save multiple db calls.
 function urkund_cm_use($cmid) {
