@@ -72,3 +72,27 @@ If you wish to prevent your document from being used as a source for analysis ou
 
 $string['filereset'] = 'A file has been reset for re-submission to URKUND';
 $string['noreceiver'] = 'No receiver address was specified';
+$string['urkund:enable'] = 'Allow the teacher to enable/disable URKUND inside an activity';
+$string['urkund:resetfile'] = 'Allow the teacher to resubmit the file to URKUND after an error';
+$string['urkund:viewreport'] = 'Allow the teacher to view the full report from URKUND';
+$string['urkunddebug'] = 'Debugging';
+$string['explainerrors'] = 'This page lists any files that are currently in an error state. <br/>When files are deleted on this page they will not be able to be resubmitted and errors will no longer display to teachers or students';
+$string['id'] = 'ID';
+$string['name'] = 'Name';
+$string['file'] = 'File';
+$string['status'] = 'Status';
+$string['module'] = 'Module';
+$string['resubmit'] = 'Resubmit';
+$string['identifier'] = 'Identifier';
+$string['fileresubmitted'] = 'File Queued for resubmission';
+$string['filedeleted'] = 'File deleted from queue';
+$string['cronwarning'] = 'The <a href="../../admin/cron.php">cron.php</a> maintenance script has not been run for at least 30 min - Cron must be configured to allow URKUND to function correctly.';
+$string['waitingevents'] = 'There are {$a->countallevents} events waiting for cron and {$a->countheld} events are being held for resubmission';
+$string['deletedwarning'] = 'This file could not be found - it may have been deleted by the user';
+$string['heldevents'] = 'Held events';
+$string['heldeventsdescription'] = 'These are events that did not complete on the first attempt and were queued for resubmission - these prevent subsequent events from completing and may need further investigation. Some of these events may not be relevant to URKUND.';
+$string['urkundfiles'] = 'Urkund Files';
+$string['getscore'] = 'Get score';
+$string['scorenotavailableyet'] = 'This file has not been processed by URKUND yet.';
+$string['scoreavailable'] = 'This file has been processed by URKUND and a report is now available.';
+
