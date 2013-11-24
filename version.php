@@ -14,9 +14,18 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
-$plugin->version =  2013081901;
+/**
+ * version.php
+ *
+ * @package   plagiarism_urkund
+ * @author    Dan Marsden <dan@danmarsden.com>
+ * @copyright 2011 onwards Dan Marsden
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
+$plugin->version = 2013081901;
 $plugin->requires = 2013051400.00;
-$plugin->cron     = 300; //only run every 5 minutes
+$plugin->cron     = 300; // Only run every 5 minutes.
 $plugin->component = 'plagiarism_urkund';
 $plugin->maturity  = MATURITY_STABLE;
 $plugin->release   = '1.6.1';

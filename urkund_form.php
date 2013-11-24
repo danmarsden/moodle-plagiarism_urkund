@@ -14,13 +14,13 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.');    ///  It must be included from a Moodle page
+    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
 }
 require_once($CFG->dirroot.'/lib/formslib.php');
 
 class urkund_setup_form extends moodleform {
 
-    /// Define the form
+    // Define the form.
     function definition () {
         global $CFG;
 
@@ -32,24 +32,29 @@ class urkund_setup_form extends moodleform {
         $mform->addHelpButton('urkund_api', 'urkund_api', 'plagiarism_urkund');
         $mform->addRule('urkund_api', null, 'required', null, 'client');
         $mform->setDefault('urkund_api', 'https://secure.urkund.com/ws/integration/1.0/rest/submissions');
+        $mform->setType('urkund_api', PARAM_URL);
 
         $mform->addElement('text', 'urkund_username', get_string('urkund_username', 'plagiarism_urkund'));
         $mform->addHelpButton('urkund_username', 'urkund_username', 'plagiarism_urkund');
         $mform->addRule('urkund_username', null, 'required', null, 'client');
+        $mform->setType('urkund_username', PARAM_TEXT);
 
         $mform->addElement('passwordunmask', 'urkund_password', get_string('urkund_password', 'plagiarism_urkund'));
         $mform->addHelpButton('urkund_password', 'urkund_password', 'plagiarism_urkund');
         $mform->addRule('urkund_password', null, 'required', null, 'client');
+        $mform->setType('urkund_password', PARAM_TEXT);
 
         $mform->addElement('text', 'urkund_lang', get_string('urkund_lang', 'plagiarism_urkund'));
         $mform->addHelpButton('urkund_lang', 'urkund_lang', 'plagiarism_urkund');
         $mform->addRule('urkund_lang', null, 'required', null, 'client');
         $mform->setDefault('urkund_lang', 'en-US');
+        $mform->setType('urkund_lang', PARAM_TEXT);
 
         $mform->addElement('textarea', 'urkund_student_disclosure', get_string('studentdisclosure', 'plagiarism_urkund'),
                            'wrap="virtual" rows="6" cols="50"');
         $mform->addHelpButton('urkund_student_disclosure', 'studentdisclosure', 'plagiarism_urkund');
         $mform->setDefault('urkund_student_disclosure', get_string('studentdisclosuredefault', 'plagiarism_urkund'));
+        $mform->setType('urkund_student_disclosure', PARAM_TEXT);
 
         $mods = get_plugin_list('mod');
         foreach ($mods as $mod => $modname) {
@@ -65,7 +70,7 @@ class urkund_setup_form extends moodleform {
 
 class urkund_defaults_form extends moodleform {
 
-    /// Define the form
+    // Define the form.
     function definition () {
         $mform =& $this->_form;
         urkund_get_form_elements($mform);

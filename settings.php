@@ -17,9 +17,9 @@
 /**
  * plagiarism.php - allows the admin to configure plagiarism stuff
  *
- * @package   plagiarism_turnitin
+ * @package   plagiarism_urkund
  * @author    Dan Marsden <dan@danmarsden.com>
- * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @copyright 2011 onwards Dan Marsden
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -32,7 +32,7 @@ require_once($CFG->dirroot.'/plagiarism/urkund/urkund_form.php');
 require_login();
 admin_externalpage_setup('plagiarismurkund');
 
-$context = get_context_instance(CONTEXT_SYSTEM);
+$context = context_system::instance();
 require_capability('moodle/site:config', $context, $USER->id, true, "nopermissions");
 
 $mform = new urkund_setup_form();
@@ -43,7 +43,7 @@ if ($mform->is_cancelled()) {
 }
 
 echo $OUTPUT->header();
-$currenttab='urkundsettings';
+$currenttab = 'urkundsettings';
 require_once('urkund_tabs.php');
 if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->urkund_use)) {
@@ -62,11 +62,11 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
         $data->urkund_enable_mod_workshop = 0;
     }
     foreach ($data as $field => $value) {
-        if (strpos($field, 'urkund')===0) {
-            if ($field == 'urkund_api') { //strip trailing slash from api 
+        if (strpos($field, 'urkund') === 0) {
+            if ($field == 'urkund_api') { // Strip trailing slash from api.
                 $value = rtrim($value, '/');
             }
-            if ($configfield = $DB->get_record('config_plugins', array('name'=>$field, 'plugin'=>'plagiarism'))) {
+            if ($configfield = $DB->get_record('config_plugins', array('name' => $field, 'plugin' => 'plagiarism'))) {
                 $configfield->value = $value;
                 if (! $DB->update_record('config_plugins', $configfield)) {
                     error("errorupdating");
@@ -83,14 +83,14 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
         }
     }
     cache_helper::invalidate_by_definition('core', 'config', array(), 'plagiarism');
-    $c = new curl(array('proxy'=>true));
-    $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD'=>$data->urkund_username.":".$data->urkund_password));
+    $c = new curl(array('proxy' => true));
+    $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD' => $data->urkund_username.":".$data->urkund_password));
     $html = $c->post($data->urkund_api);
     $response = $c->getResponse();
-    //now check to see if username/password is correct. - this check could probably be improved further.
+    // Now check to see if username/password is correct. - this check could probably be improved further.
     if ($c->info['http_code'] == '401') {
-        //disable turnitin as this config isn't correct.
-        $rec = $DB->get_record('config_plugins', array('name'=>'urkund_use', 'plugin'=>'plagiarism'));
+        // Disable urkund as this config isn't correct.
+        $rec = $DB->get_record('config_plugins', array('name' => 'urkund_use', 'plugin' => 'plagiarism'));
         $rec->value = 0;
         $DB->update_record('config_plugins', $rec);
         echo $OUTPUT->notification(get_string('savedconfigfailed', 'plagiarism_urkund'));
@@ -105,7 +105,7 @@ if (!empty($invalidhandlers)) {
 The existence of these events may cause this plugin to function incorrectly.");
     $table = new html_table();
     $table->head = array('eventname', 'plugin', 'handlerfile');
-    foreach($invalidhandlers as $handler) {
+    foreach ($invalidhandlers as $handler) {
         $table->data[] = array($handler->eventname, $handler->component, $handler->handlerfile);
     }
     echo html_writer::table($table);
