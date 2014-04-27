@@ -603,7 +603,17 @@ function urkund_create_temp_file($cmid, $eventdata) {
     $filename = "content-" . $eventdata->courseid . "-" . $cmid . "-" . $eventdata->userid . ".htm";
     $filepath = $CFG->tempdir."/urkund/" . $filename;
     $fd = fopen($filepath, 'wb');   // Create if not exist, write binary.
-    fwrite($fd, $eventdata->content);
+
+    // write html and body tags as it seems that Urkund doesn't works well without them
+    $content = '<html>' .
+               '<head>' .
+               '<meta charset="UTF-8">' .
+               '</head>' .
+               '<body>' . 
+               $eventdata->content . 
+               '</body></html>';
+
+    fwrite($fd, $content);
     fclose($fd);
     $file = new stdclass();
     $file->type = "tempurkund";
