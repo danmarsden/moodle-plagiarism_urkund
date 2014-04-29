@@ -40,39 +40,7 @@ require_login();
 require_capability('plagiarism/urkund:enable', $coursecontext);
 
 require_sesskey();
-// Now make call to check reciever address is valid.
+// Now make call to check receiver address is valid.
 
 $urkund = new plagiarism_plugin_urkund();
-$plagiarismsettings = $urkund->get_settings();
-$url = URKUND_INTEGRATION_SERVICE .'/receivers'.'/'. trim($receiver);;
-
-$headers = array('Accept-Language: '.$plagiarismsettings['urkund_lang']);
-
-$allowedstatus = array(URKUND_STATUSCODE_PROCESSED,
-    URKUND_STATUSCODE_NOT_FOUND,
-    URKUND_STATUSCODE_BAD_REQUEST,
-    URKUND_STATUSCODE_GONE);
-
-// Use Moodle curl wrapper to send file.
-$c = new curl(array('proxy' => true));
-$c->setopt(array());
-$c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
-    'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
-    'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
-
-$c->setHeader($headers);
-$response = $c->get($url);
-$httpstatus = $c->info['http_code'];
-if (!empty($httpstatus)) {
-    if (in_array($httpstatus, $allowedstatus)) {
-        if ($httpstatus == URKUND_STATUSCODE_PROCESSED) {
-            // Valid address found, return true.
-            echo json_encode(true);
-            exit;
-        } else {
-            echo json_encode($httpstatus);
-            exit;
-        }
-    }
-}
-echo json_encode(false);
+echo json_encode($urkund->validate_receiver($receiver));
