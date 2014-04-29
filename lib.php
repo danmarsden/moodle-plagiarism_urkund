@@ -359,7 +359,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      * @param object $context - current context
      */
     public function get_form_elements_module($mform, $context, $modulename = "") {
-        global $DB;
+        global $DB, $PAGE;
         $plagiarismsettings = $this->get_settings();
         if (!$plagiarismsettings) {
             return;
@@ -415,7 +415,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $mform->setDefault($element, $plagiarismdefaults[$element]);
             }
         }
-
+        // Now add JS to validate receiver.
+        $jsmodule = array(
+            'name' => 'plagiarism_urkund',
+            'fullpath' => '/plagiarism/urkund/checkreceiver.js',
+            'requires' => array('json'),
+        );
+        $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
     }
 
     /**
