@@ -33,6 +33,10 @@ if (!defined('MOODLE_INTERNAL')) {
 global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
 
+// There is a new URKUND API - The Integration Service - we only currently use this to verify the receiver address.
+// If we convert the existing calls to send file/get score we should move this to a config setting.
+define('URKUND_INTEGRATION_SERVICE', 'https://secure.urkund.com/api');
+
 define('URKUND_MAX_SUBMISSION_ATTEMPTS', 6); // Maximum number of times to try and send a submission to URKUND.
 define('URKUND_MAX_SUBMISSION_DELAY', 60); // Maximum time to wait between submissions (defined in minutes).
 define('URKUND_SUBMISSION_DELAY', 15); // Initial wait time - this is doubled each time a check is made until the max_submission_delay is met.
@@ -44,6 +48,7 @@ define('URKUND_STATUSCODE_ACCEPTED', '202');
 define('URKUND_STATUSCODE_ACCEPTED_OLD', '202-old'); // This is a file submitted before we changed the way the identifiers were stored.
 define('URKUND_STATUSCODE_BAD_REQUEST', '400');
 define('URKUND_STATUSCODE_NOT_FOUND', '404');
+define('URKUND_STATUSCODE_GONE', '410'); // Receiver is inactive or deleted.
 define('URKUND_STATUSCODE_UNSUPPORTED', '415');
 define('URKUND_STATUSCODE_TOO_LARGE', '413');
 define('URKUND_STATUSCODE_NORECEIVER', '444');
@@ -1029,6 +1034,7 @@ function urkund_get_url($baseurl, $plagiarismfile) {
 
     return $baseurl.'/' .trim($receiver).'/'.$urkundid;
 }
+
 // Helper function to save multiple db calls.
 function urkund_cm_use($cmid) {
     global $DB;
