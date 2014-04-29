@@ -27,6 +27,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
 
     var check_urkund_receiver = function(Y, receiver, contextid) {
         var rval = receiver.get('value');
+        var parentdiv = receiver.ancestor('div');
         var url = M.cfg.wwwroot + '/plagiarism/urkund/checkreceiver.php';
         var valid = '<span id="receivervalid" class="pathok">&#x2714;</span>';
         var invalid = '<span id="receivervalid" class="patherror">&#x2718;</span>';
@@ -41,7 +42,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
             },
             on: {
                 success: function(tid, response) {
-                    jsondata = Y.JSON.parse(response.responseText);
+                    var jsondata = Y.JSON.parse(response.responseText);
                     var existing = Y.one('#receivervalid');
 
                     if (String(jsondata) === 'true') {
@@ -49,7 +50,12 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                             existing.replace(valid);
                         } else {
                             receiver.insert(valid, 'after');
+
                         }
+                        // Remove error from form
+                        parentdiv.removeClass('error');
+                        // Remove error span
+                        parentdiv.one('.error').remove();
                     } else {
                         if (existing) {
                             existing.replace(invalid);

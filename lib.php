@@ -359,7 +359,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      * @param object $context - current context
      */
     public function get_form_elements_module($mform, $context, $modulename = "") {
-        global $DB, $PAGE;
+        global $DB, $PAGE, $CFG;
         $plagiarismsettings = $this->get_settings();
         if (!$plagiarismsettings) {
             return;
@@ -415,7 +415,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $mform->setDefault($element, $plagiarismdefaults[$element]);
             }
         }
-        // Now add JS to validate receiver.
+        $mform->registerRule('urkundvalidatereceiver', null, 'urkundvalidatereceiver', $CFG->dirroot.'/plagiarism/urkund/form_customrule.php');
+        $mform->addRule('urkund_receiver', get_string('receivernotvalid', 'plagiarism_urkund'), 'urkundvalidatereceiver');
+
+        // Now add JS to validate receiver indicator using Ajax.
         $jsmodule = array(
             'name' => 'plagiarism_urkund',
             'fullpath' => '/plagiarism/urkund/checkreceiver.js',
@@ -603,6 +606,41 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $emailsubject = get_string('studentemailsubject', 'plagiarism_urkund');
         $emailcontent = get_string('studentemailcontent', 'plagiarism_urkund', $a);
         email_to_user($user, $site->shortname, $emailsubject, $emailcontent);
+    }
+
+    // Function to validate the receiver address.
+    public function validate_receiver($receiver) {
+        $plagiarismsettings = $this->get_settings();
+        $url = URKUND_INTEGRATION_SERVICE .'/receivers'.'/'. trim($receiver);;
+
+        $headers = array('Accept-Language: '.$plagiarismsettings['urkund_lang']);
+
+        $allowedstatus = array(URKUND_STATUSCODE_PROCESSED,
+                               URKUND_STATUSCODE_NOT_FOUND,
+                               URKUND_STATUSCODE_BAD_REQUEST,
+                               URKUND_STATUSCODE_GONE);
+
+        // Use Moodle curl wrapper.
+        $c = new curl(array('proxy' => true));
+        $c->setopt(array());
+        $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
+                         'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
+                         'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
+
+        $c->setHeader($headers);
+        $response = $c->get($url);
+        $httpstatus = $c->info['http_code'];
+        if (!empty($httpstatus)) {
+            if (in_array($httpstatus, $allowedstatus)) {
+                if ($httpstatus == URKUND_STATUSCODE_PROCESSED) {
+                    // Valid address found, return true.
+                    return true;
+                } else {
+                    return $httpstatus;
+                }
+            }
+        }
+        return false;
     }
 }
 

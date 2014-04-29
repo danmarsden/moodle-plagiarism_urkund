@@ -96,3 +96,4 @@ $string['urkundfiles'] = 'Urkund Files';
 $string['getscore'] = 'Get score';
 $string['scorenotavailableyet'] = 'This file has not been processed by URKUND yet.';
 $string['scoreavailable'] = 'This file has been processed by URKUND and a report is now available.';
+$string['receivernotvalid'] = 'This is not a valid receiver address.';
