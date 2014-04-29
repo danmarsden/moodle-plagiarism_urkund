@@ -33,9 +33,8 @@ require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 require_once($CFG->libdir.'/filelib.php');
 
 $receiver = required_param('ur', PARAM_TEXT);
-$contextid = required_param('c', PARAM_INT);
-
-$coursecontext = context_course::instance_by_id($contextid);
+$contextinstance = required_param('c', PARAM_INT);
+$coursecontext = context_course::instance($contextinstance);
 
 require_login();
 require_capability('plagiarism/urkund:enable', $coursecontext);
