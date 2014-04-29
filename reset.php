@@ -36,43 +36,18 @@ $cm = get_coursemodule_from_id('',$cmid, 0, false, MUST_EXIST);
 $PAGE->set_url($url);
 require_login($cm->course, true, $cm);
 
-$modulecontext = get_context_instance(CONTEXT_MODULE, $cmid);
+$modulecontext = context_module::instance($cmid);
 require_capability('plagiarism/urkund:resetfile', $modulecontext);
 
-$plagiarism_file = $DB->get_record('plagiarism_urkund_files', array('id'=>$pf), '*', MUST_EXIST);
+urkund_reset_file($pf);
 
-//reset db entry.
-$plagiarism_file->statuscode = 'pending';
-$plagiarism_file->attempt = 0;
-$plagiarism_file->timesubmitted = time();
-$DB->update_record('plagiarism_urkund_files', $plagiarism_file);
-//now trigger event to process the file.
-
-//TODO: this is hardcoded to assignment mod :-(
-if ($cm->modname =='assignment') {
-     $submission = $DB->get_record('assignment_submissions', array('assignment'=>$cm->instance, 'userid'=>$plagiarism_file->userid));
-     $fs = get_file_storage();
-     $files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id);
-     if (!empty($files)) {
-         $eventdata = new stdClass();
-         $eventdata->modulename   = $cm->modname;
-         $eventdata->cmid         = $cm->id;
-         $eventdata->courseid     = $cm->course;
-         $eventdata->userid       = $plagiarism_file->userid;
-         $eventdata->files        = $files;
-
-         events_trigger('assessable_file_uploaded', $eventdata);
-     } else if (!empty($submission->data1)) {
-         $eventdata = new stdClass();
-         $eventdata->modulename   = $cm->modname;
-         $eventdata->cmid         = $cm->id;
-         $eventdata->courseid     = $cm->course;
-         $eventdata->userid       = $plagiarism_file->userid;
-         $eventdata->content      = trim(strip_tags(format_text($submission->data1,$submission->data2)));
-         events_trigger('assessable_content_uploaded', $eventdata);
-     }
+if ($cm->modname == 'assignment') {
+    $redirect = new moodle_url('/mod/assignment/submissions.php', array('id' => $cmid));
+} else if ($cm->modname == 'assign') {
+    $redirect = new moodle_url('/mod/assign/view.php',array('id' => $cmid, 'action' => 'grading'));
+} else {
+    // TODO: add correct locations for workshop and forum.
+    $redirect = $CFG->wwwroot;
 }
 
-
-$redirect = new moodle_url('/mod/'.$cm->modname.'/submissions.php',array('id'=>$cmid));
 redirect($redirect, get_string('filereset', 'plagiarism_urkund'));
