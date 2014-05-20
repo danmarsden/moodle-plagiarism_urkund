@@ -38,7 +38,7 @@ require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 class urkundvalidatereceiver extends HTML_QuickForm_Rule {
 
     // $receiver will be the receiver address passed.
-    function validate($receiver) {
+    function validate($receiver, $options = null) {
         $urkund = new plagiarism_plugin_urkund();
         $valid = $urkund->validate_receiver($receiver);
         if ($valid === true) {
