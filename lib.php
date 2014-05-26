@@ -917,7 +917,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
 
     $headers = array('x-urkund-submitter: '.$useremail,
                     'Accept-Language: '.$plagiarismsettings['urkund_lang'],
-                    'x-urkund-filename: '.base64_encode(utf8_encode($filename)),
+                    'x-urkund-filename: '.base64_encode($filename),
                     'Content-Type: '.$mimetype);
 
     // Use Moodle curl wrapper to send file.
