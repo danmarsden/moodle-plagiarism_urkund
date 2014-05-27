@@ -80,5 +80,3 @@ M.plagiarism_urkund.init = function(Y, contextid) {
         check_urkund_receiver(Y, receiver, contextid);
     })
 }
-
-

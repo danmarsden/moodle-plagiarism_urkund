@@ -35,7 +35,8 @@ admin_externalpage_setup('plagiarismurkund');
 $context = context_system::instance();
 
 $mform = new urkund_defaults_form(null);
-$plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
+$plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config',
+    array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
 if (!empty($plagiarismdefaults)) {
     $mform->set_data($plagiarismdefaults);
 }
