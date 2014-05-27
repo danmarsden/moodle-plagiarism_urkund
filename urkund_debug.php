@@ -178,9 +178,11 @@ foreach ($urkundfiles as $tf) {
     if ($tf->statuscode == 'Analyzed') { // Sanity check - don't show a resubmit link.
         $reset = '';
     } else if ($tf->statuscode == URKUND_STATUSCODE_ACCEPTED) { // Sanity Check.
-        $reset = '<a href="urkund_debug.php?reset=2&id='.$tf->id.'&sesskey='.sesskey().'">'.get_string('getscore', 'plagiarism_urkund').'</a> | ';
+        $reset = '<a href="urkund_debug.php?reset=2&id='.$tf->id.'&sesskey='.sesskey().'">'.
+                 get_string('getscore', 'plagiarism_urkund').'</a> | ';
     } else {
-        $reset = '<a href="urkund_debug.php?reset=1&id='.$tf->id.'&sesskey='.sesskey().'">'.get_string('resubmit', 'plagiarism_urkund').'</a> | ';
+        $reset = '<a href="urkund_debug.php?reset=1&id='.$tf->id.'&sesskey='.sesskey().'">'.
+                 get_string('resubmit', 'plagiarism_urkund').'</a> | ';
     }
     $reset .= '<a href="urkund_debug.php?delete=1&id='.$tf->id.'&sesskey='.sesskey().'">'.get_string('delete').'</a>';
     $cmurl = new moodle_url($CFG->wwwroot.'/mod/'.$tf->moduletype.'/view.php', array('id' => $tf->cm));

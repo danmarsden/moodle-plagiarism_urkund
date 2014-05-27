@@ -31,7 +31,7 @@ $cmid = required_param('cmid', PARAM_INT);  // Course Module ID
 $pf  = required_param('pf', PARAM_INT);   // plagiarism file id.
 require_sesskey();
 $url = new moodle_url('/plagiarism/urkund/reset.php');
-$cm = get_coursemodule_from_id('',$cmid, 0, false, MUST_EXIST);
+$cm = get_coursemodule_from_id('', $cmid, 0, false, MUST_EXIST);
 
 $PAGE->set_url($url);
 require_login($cm->course, true, $cm);
@@ -44,7 +44,7 @@ urkund_reset_file($pf);
 if ($cm->modname == 'assignment') {
     $redirect = new moodle_url('/mod/assignment/submissions.php', array('id' => $cmid));
 } else if ($cm->modname == 'assign') {
-    $redirect = new moodle_url('/mod/assign/view.php',array('id' => $cmid, 'action' => 'grading'));
+    $redirect = new moodle_url('/mod/assign/view.php', array('id' => $cmid, 'action' => 'grading'));
 } else {
     // TODO: add correct locations for workshop and forum.
     $redirect = $CFG->wwwroot;

@@ -37,7 +37,7 @@ require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 // Returns false if email already exists, true if it doesn't.
 class urkundvalidatereceiver extends HTML_QuickForm_Rule {
 
-    // $receiver will be the receiver address passed.
+    // Var $receiver will be the receiver address passed.
     function validate($receiver, $options = null) {
         $urkund = new plagiarism_plugin_urkund();
         $valid = $urkund->validate_receiver($receiver);

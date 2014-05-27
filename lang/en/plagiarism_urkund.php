@@ -17,12 +17,13 @@
 /**
  *
  * @package   plagiarism_urkund
- * @copyright 1999 onwards Martin Dougiamas  {@link http://moodle.com}
+ * @author     Dan Marsden <dan@danmarsden.com>
+ * @copyright  2011 Dan Marsden http://danmarsden.com
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $string['pluginname'] = 'URKUND plagiarism plugin';
-$string['studentdisclosuredefault']  ='All files uploaded will be submitted to the plagiarism detection service URKUND,
+$string['studentdisclosuredefault']  = 'All files uploaded will be submitted to the plagiarism detection service URKUND,
 If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use the opt-out link provided after the report has been generated.';
 $string['studentdisclosure'] = 'Student Disclosure';
 $string['studentdisclosure_help'] = 'This text will be displayed to all students on the file upload page.';
@@ -36,7 +37,7 @@ $string['urkund_lang'] = 'Language';
 $string['urkund_lang_help'] = 'Language code provided by URKUND';
 $string['urkund_password'] = 'Password';
 $string['urkund_password_help'] = 'Password provided by URKUND to access the API';
-$string['useurkund'] ='Enable URKUND';
+$string['useurkund'] = 'Enable URKUND';
 $string['urkund_enableplugin'] = 'Enable URKUND for {$a}';
 $string['savedconfigsuccess'] = 'Plagiarism Settings Saved';
 $string['savedconfigfailed'] = 'An incorrect username/password combination has been entered, URKUND has been disabled, please try again.';
