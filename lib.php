@@ -678,7 +678,7 @@ function urkund_create_temp_file($cmid, $eventdata) {
     $file->type = "tempurkund";
     $file->filename = $filename;
     $file->timestamp = time();
-    $file->identifier = sha1_file($filepath);
+    $file->identifier = sha1($eventdata->content);
     $file->filepath = $filepath;
     return $file;
 }
