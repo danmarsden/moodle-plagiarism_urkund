@@ -683,36 +683,36 @@ function urkund_create_temp_file($cmid, $eventdata) {
     return $file;
 }
 
-function event_file_uploaded($eventdata) {
+function urkund_event_file_uploaded($eventdata) {
     $eventdata->eventtype = 'file_uploaded';
     $urkund = new plagiarism_plugin_urkund();
     return $urkund->event_handler($eventdata);
 }
-function event_files_done($eventdata) {
+function urkund_event_files_done($eventdata) {
     $eventdata->eventtype = 'files_done';
     $urkund = new plagiarism_plugin_urkund();
     return $urkund->event_handler($eventdata);
 }
 
-function event_content_uploaded($eventdata) {
+function urkund_event_content_uploaded($eventdata) {
     $eventdata->eventtype = 'content_uploaded';
     $urkund = new plagiarism_plugin_urkund();
     return $urkund->event_handler($eventdata);
 }
 
-function event_content_done($eventdata) {
+function urkund_event_content_done($eventdata) {
     $eventdata->eventtype = 'content_done';
     $urkund = new plagiarism_plugin_urkund();
     return $urkund->event_handler($eventdata);
 }
 
-function event_assessable_submitted($eventdata) {
+function urkund_event_assessable_submitted($eventdata) {
     $eventdata->eventtype = 'assessable_submitted';
     $urkund = new plagiarism_plugin_urkund();
     return $urkund->event_handler($eventdata);
 }
 
-function event_mod_created($eventdata) {
+function urkund_event_mod_created($eventdata) {
     $result = true;
         // A new module has been created - this is a generic event that is called for all module types
         // make sure you check the type of module before handling if needed.
@@ -720,7 +720,7 @@ function event_mod_created($eventdata) {
     return $result;
 }
 
-function event_mod_updated($eventdata) {
+function urkund_event_mod_updated($eventdata) {
     $result = true;
         // A module has been updated - this is a generic event that is called for all module types
         // make sure you check the type of module before handling if needed.
@@ -728,7 +728,7 @@ function event_mod_updated($eventdata) {
     return $result;
 }
 
-function event_mod_deleted($eventdata) {
+function urkund_event_mod_deleted($eventdata) {
     $result = true;
         // A module has been deleted - this is a generic event that is called for all module types
         // make sure you check the type of module before handling if needed.
