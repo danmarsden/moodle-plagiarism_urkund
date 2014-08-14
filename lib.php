@@ -737,7 +737,7 @@ function urkund_event_mod_deleted($eventdata) {
 }
 
 function urkund_supported_events() {
-    $supportedevents = array('file_uploaded', 'files_done', 'content_uploaded', 'content_done');
+    $supportedevents = array('file_uploaded', 'files_done', 'content_uploaded', 'content_done', 'assessable_submitted');
     return $supportedevents;
 }
 
