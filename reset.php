@@ -26,6 +26,7 @@
  */
 
 require_once(dirname(dirname(__FILE__)) . '/../config.php');
+require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 
 $cmid = required_param('cmid', PARAM_INT);  // Course Module ID
 $pf  = required_param('pf', PARAM_INT);   // plagiarism file id.
