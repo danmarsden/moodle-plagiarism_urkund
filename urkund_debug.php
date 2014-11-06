@@ -122,7 +122,8 @@ if (!empty($a->countheld)) {
     }
 }
 // Now show files in an error state.
-$sqlallfiles = "SELECT t.*, u.firstname, u.lastname, m.name as moduletype, ".
+$userfields = get_all_user_name_fields(true, 'u');
+$sqlallfiles = "SELECT t.*, ".$userfields.", m.name as moduletype, ".
         "cm.course as courseid, cm.instance as cminstance FROM ".
         "{plagiarism_urkund_files} t, {user} u, {modules} m, {course_modules} cm ".
         "WHERE m.id=cm.module AND cm.id=t.cm AND t.userid=u.id ".
