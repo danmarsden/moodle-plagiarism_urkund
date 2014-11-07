@@ -32,6 +32,7 @@ if (!defined('MOODLE_INTERNAL')) {
 // Get global class.
 global $CFG;
 require_once($CFG->dirroot.'/plagiarism/lib.php');
+require_once($CFG->dirroot . '/lib/filelib.php');
 
 // There is a new URKUND API - The Integration Service - we only currently use this to verify the receiver address.
 // If we convert the existing calls to send file/get score we should move this to a config setting.
