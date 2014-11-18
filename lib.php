@@ -869,11 +869,13 @@ function urkund_check_attempt_timeout($plagiarismfile) {
     }
     // Now calculate wait time.
     $i = 0;
+    $delay = 0;
     while ($i < $plagiarismfile->attempt) {
-        if ($wait > $maxsubmissiondelay) {
-            $wait = $maxsubmissiondelay;
+        $delay = $submissiondelay * pow(2,$i);
+        if ($delay > $maxsubmissiondelay) {
+            $delay = $maxsubmissiondelay;
         }
-        $wait = $wait * $plagiarismfile->attempt;
+        $wait += $delay;
         $i++;
     }
     $wait = (int)$wait * 60;
