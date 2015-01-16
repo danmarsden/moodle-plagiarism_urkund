@@ -426,12 +426,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $mform->addRule('urkund_receiver', get_string('receivernotvalid', 'plagiarism_urkund'), 'urkundvalidatereceiver');
 
         // Now add JS to validate receiver indicator using Ajax.
-        $jsmodule = array(
-            'name' => 'plagiarism_urkund',
-            'fullpath' => '/plagiarism/urkund/checkreceiver.js',
-            'requires' => array('json'),
-        );
-        $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
+        if (has_capability('plagiarism/urkund:enable', $context)) {
+            $jsmodule = array(
+                'name' => 'plagiarism_urkund',
+                'fullpath' => '/plagiarism/urkund/checkreceiver.js',
+                'requires' => array('json'),
+            );
+            $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
+        }
     }
 
     /**
