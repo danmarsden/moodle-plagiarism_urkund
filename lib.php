@@ -1155,6 +1155,12 @@ function urkund_update_allowed_filetypes() {
     $configvars = get_config('plagiarism_urkund');
     $now = time();
     $wait = (int)URKUND_FILETYPE_URL_UPDATE * 60 * 60;
+
+    if (!isset($configvars->lastupdatedfiletypes)) {
+        // First time this has run.
+        $configvars->lastupdatedfiletypes = 0;
+    }
+
     $timetocheck = (int)($configvars->lastupdatedfiletypes + $wait);
 
     if (empty($configvars->lastupdatedfiletypes) ||
