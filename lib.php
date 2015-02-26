@@ -475,11 +475,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function cron() {
-        global $CFG, $DB;
+        global $CFG;
         // Do any scheduled task stuff.
         urkund_update_allowed_filetypes();
         // Weird hack to include filelib correctly before allowing use in event_handler.
-        require_once("$CFG->dirroot/mod/assignment/lib.php");
+        require_once($CFG->libdir.'/filelib.php');
         if ($plagiarismsettings = $this->get_settings()) {
             urkund_get_scores($plagiarismsettings);
         }
