@@ -542,6 +542,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     }
                 } else if ($eventdata->modulename == 'assign') {
                     require_once("$CFG->dirroot/mod/assign/locallib.php");
+                    require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
+
                     $modulecontext = context_module::instance($eventdata->cmid);
                     $fs = get_file_storage();
                     if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
