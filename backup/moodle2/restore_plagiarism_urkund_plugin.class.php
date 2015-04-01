@@ -35,10 +35,7 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
     public function process_urkundconfig($data) {
         $data = (object)$data;
 
-        if ($this->task->is_samesite()) { // Files can only be restored if this is the same site as was backed up.
-            // Only restore if a link to this course doesn't already exist in this install.
-            set_config($this->task->get_courseid(), $data->value, $data->plugin);
-        }
+        set_config($this->task->get_courseid(), $data->value, $data->plugin);
     }
 
     /**
@@ -63,25 +60,21 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
     public function process_urkundconfigmod($data) {
         global $DB;
 
-        if ($this->task->is_samesite()) { // Files can only be restored if this is the same site as was backed up.
-            $data = (object)$data;
-            $oldid = $data->id;
-            $data->cm = $this->task->get_moduleid();
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->cm = $this->task->get_moduleid();
 
-            $DB->insert_record('plagiarism_urkund_config', $data);
-        }
+        $DB->insert_record('plagiarism_urkund_config', $data);
     }
 
     public function process_urkundfiles($data) {
         global $DB;
 
-        if ($this->task->is_samesite()) { // Files can only be restored if this is the same site as was backed up.
-            $data = (object)$data;
-            $oldid = $data->id;
-            $data->cm = $this->task->get_moduleid();
-            $data->userid = $this->get_mappingid('user', $data->userid);
+        $data = (object)$data;
+        $oldid = $data->id;
+        $data->cm = $this->task->get_moduleid();
+        $data->userid = $this->get_mappingid('user', $data->userid);
 
-            $DB->insert_record('plagiarism_urkund_files', $data);
-        }
+        $DB->insert_record('plagiarism_urkund_files', $data);
     }
 }
