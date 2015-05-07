@@ -23,9 +23,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version =  2012050906;
+$plugin->version =  2012050907;
 $plugin->requires = 2012110900.00;
 $plugin->cron     = 300; //only run every 5 minutes
 $plugin->component = 'plagiarism_urkund';
 $plugin->maturity  = MATURITY_STABLE;
-$plugin->release   = '1.5.5';
+$plugin->release   = '1.5.6';
