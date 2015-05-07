@@ -56,7 +56,7 @@ class urkund_setup_form extends moodleform {
         $mform->setDefault('urkund_student_disclosure', get_string('studentdisclosuredefault', 'plagiarism_urkund'));
         $mform->setType('urkund_student_disclosure', PARAM_TEXT);
 
-        $mods = get_plugin_list('mod');
+        $mods = core_component::get_plugin_list('mod');
         foreach ($mods as $mod => $modname) {
             if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
                 $modstring = 'urkund_enable_mod_' . $mod;
