@@ -54,15 +54,17 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2012050904, 'plagiarism', 'urkund');
     }
 
-    if ($oldversion < 2012050907) {
+    if ($oldversion < 2012050908) {
         // Check for old API address and update if required.
         $apiaddress = get_config('plagiarism', 'urkund_api');
         if ($apiaddress == 'https://secure.urkund.com/ws/integration/1.0/rest/submissions' ||
-            $apiaddress == 'https://secure.urkund.com/api/rest/submissions' ) {
-            set_config('urkund_api', 'https://secure.urkund.com/api', 'plagiarism');
+            $apiaddress == 'https://secure.urkund.com/api/rest/submissions' ||
+            $apiaddress == 'https://secure.urkund.com/api') {
+
+            set_config('urkund_api', 'https://secure.urkund.com/api/submissions', 'plagiarism');
         }
 
-        upgrade_plugin_savepoint(true, 2012050907, 'plagiarism', 'urkund');
+        upgrade_plugin_savepoint(true, 2012050908, 'plagiarism', 'urkund');
     }
 
     return true;
