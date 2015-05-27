@@ -63,6 +63,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     }
     foreach ($data as $field => $value) {
         if (strpos($field, 'urkund') === 0) {
+            $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with uasername/password
             if ($field == 'urkund_api') { // Strip trailing slash from api.
                 $value = rtrim($value, '/');
             }
