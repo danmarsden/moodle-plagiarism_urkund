@@ -619,27 +619,29 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             foreach ($users as $u) {
                                 $userids[] = $u->id;
                             }
-                            // Find the earliest plagiarism record for this cm with any of these users.
-                            $sql ='cm = ? AND userid IN ('.implode(',', $userids).')';
-                            $previousfiles = $DB->get_records_select('plagiarism_urkund_files', $sql, array($eventdata->cmid), 'id');
-                            $sanitycheckusers = 10; // Search through this number of users to find a valid previous submission.
-                            $i = 0;
-                            foreach ($previousfiles as $pf) {
-                                if ($pf->userid == $eventdata->userid) {
-                                    break; // The submission comes from this user so break.
+                            if (!empty($userids)) {
+                                // Find the earliest plagiarism record for this cm with any of these users.
+                                $sql ='cm = ? AND userid IN ('.implode(',', $userids).')';
+                                $previousfiles = $DB->get_records_select('plagiarism_urkund_files', $sql, array($eventdata->cmid), 'id');
+                                $sanitycheckusers = 10; // Search through this number of users to find a valid previous submission.
+                                $i = 0;
+                                foreach ($previousfiles as $pf) {
+                                    if ($pf->userid == $eventdata->userid) {
+                                        break; // The submission comes from this user so break.
+                                    }
+                                    // Sanity Check to make sure the user isn't in multiple groups.
+                                    $pfgroups = groups_get_user_groups($assign->get_course()->id, $pf->userid);
+                                    if (count($pfgroups) == 1) {
+                                        // This user made the first valid submission so use their id when sending the file.
+                                        $eventdata->userid = $pf->userid;
+                                        break;
+                                    }
+                                    if ($i >= $sanitycheckusers) {
+                                        // don't cause a massive loop here and break at a sensible limit.
+                                        break;
+                                    }
+                                    $i++;
                                 }
-                                // Sanity Check to make sure the user isn't in multiple groups.
-                                $pfgroups = groups_get_user_groups($assign->get_course()->id, $pf->userid);
-                                if (count($pfgroups) == 1) {
-                                    // This user made the first valid submission so use their id when sending the file.
-                                    $eventdata->userid = $pf->userid;
-                                    break;
-                                }
-                                if ($i >= $sanitycheckusers) {
-                                    // don't cause a massive loop here and break at a sensible limit.
-                                    break;
-                                }
-                                $i++;
                             }
                         }
                     }
