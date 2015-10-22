@@ -30,11 +30,6 @@ require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 require_once('urkund_form.php');
 
-require_login();
-admin_externalpage_setup('plagiarismurkund');
-
-$context = context_system::instance();
-
 $id = optional_param('id', 0, PARAM_INT);
 $resetuser = optional_param('reset', 0, PARAM_INT);
 $delete = optional_param('delete', 0, PARAM_INT);
@@ -42,10 +37,21 @@ $page = optional_param('page', 0, PARAM_INT);
 $sort = optional_param('tsort', '', PARAM_ALPHA);
 $dir = optional_param('dir', '', PARAM_ALPHA);
 $download = optional_param('download', '', PARAM_ALPHA);
+$showall = optional_param('showall', 0, PARAM_INT);
+
+require_login();
+
+$url = new moodle_url('/plagiarism/urkund/urkund_debug.php', array('showall' => $showall));
+admin_externalpage_setup('plagiarismurkund', '', array(), $url);
+
+$context = context_system::instance();
+
+
 
 $exportfilename = 'UrkundDebugOutput.csv';
 
-$limit = 20;
+$limit = 30;
+
 $baseurl = new moodle_url('urkund_debug.php', array('page' => $page, 'sort' => $sort));
 
 $table = new flexible_table('urkundfiles');
@@ -149,8 +155,13 @@ if (!empty($sort)) {
 }
 
 $count = $DB->count_records_sql($sqlcount);
+if ($showall or $table->is_downloading()) {
+    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null);
+} else {
+    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
+    $table->pagesize($limit, $count);
+}
 
-$urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
 
 $table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'action'));
 
@@ -234,5 +245,10 @@ if (!$table->is_downloading()) {
 }
 $table->finish_output();
 if (!$table->is_downloading()) {
+    if (!$showall && $count >= $limit) {
+        $url = $PAGE->url;
+        $url->param('showall', 1);
+        echo $OUTPUT->single_button($url, get_string('showall', 'plagiarism_urkund'), 'get');
+    }
     echo $OUTPUT->footer();
 }
