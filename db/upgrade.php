@@ -60,5 +60,12 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015052100, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2015102800) {
+        // set new opt-out setting as true by default.
+        set_config('urkund_optout', 1, 'plagiarism');
+
+        upgrade_plugin_savepoint(true, 2015102800, 'plagiarism', 'urkund');
+    }
+
     return true;
 }

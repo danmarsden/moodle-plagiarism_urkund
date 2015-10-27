@@ -56,6 +56,9 @@ class urkund_setup_form extends moodleform {
         $mform->setDefault('urkund_student_disclosure', get_string('studentdisclosuredefault', 'plagiarism_urkund'));
         $mform->setType('urkund_student_disclosure', PARAM_TEXT);
 
+        $mform->addElement('checkbox', 'urkund_optout', get_string('urkund_enableoptout', 'plagiarism_urkund'), '<br/>'.get_string('urkund_enableoptoutdesc', 'plagiarism_urkund'));
+        $mform->setDefault('urkund_optout', true);
+
         $mods = core_component::get_plugin_list('mod');
         foreach ($mods as $mod => $modname) {
             if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {

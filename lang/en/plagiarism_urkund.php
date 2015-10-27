@@ -100,3 +100,7 @@ $string['scoreavailable'] = 'This file has been processed by URKUND and a report
 $string['receivernotvalid'] = 'This is not a valid receiver address.';
 $string['attempts'] = 'Attempts made';
 $string['showall'] = 'Show all errors';
+$string['resubmitall'] = 'Resubmit all {$a} errors';
+
+$string['urkund_enableoptout'] = 'Show opt-out link';
+$string['urkund_enableoptoutdesc'] = 'Disabling this will remove the option for students to unhide or hide (depending on the default setting) the content of their texts should they be found as a match in other clients’ students’ papers (“opt-in” and “opt-out”). By deactivating this feature, you certify that you will take responsibility for managing the copyright of your students’ submissions and that this does not contravene laws applicable in your country.';
