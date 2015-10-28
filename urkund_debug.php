@@ -38,6 +38,8 @@ $sort = optional_param('tsort', '', PARAM_ALPHA);
 $dir = optional_param('dir', '', PARAM_ALPHA);
 $download = optional_param('download', '', PARAM_ALPHA);
 $showall = optional_param('showall', 0, PARAM_INT);
+$resetall = optional_param('resetall', '', PARAM_ALPHANUMEXT);
+$confirm = optional_param('confirm', 0, PARAM_INT);
 
 require_login();
 
@@ -46,13 +48,12 @@ admin_externalpage_setup('plagiarismurkund', '', array(), $url);
 
 $context = context_system::instance();
 
-
-
 $exportfilename = 'UrkundDebugOutput.csv';
 
 $limit = 30;
 
 $baseurl = new moodle_url('urkund_debug.php', array('page' => $page, 'sort' => $sort));
+
 
 $table = new flexible_table('urkundfiles');
 
@@ -66,6 +67,52 @@ if (!$table->is_downloading($download, $exportfilename)) {
     $currenttab = 'urkunddebug';
 
     require_once('urkund_tabs.php');
+
+    if (!empty($resetall) && confirm_sesskey()) {
+        // Check to see if there are any files in this state.
+        if (!$confirm) {
+            // show confirmation message
+            $confirmurl = $baseurl;
+            $confirmurl->params(array('resetall' => $resetall, 'confirm' => 1));
+            echo $OUTPUT->confirm(get_string('confirmresetall', 'plagiarism_urkund', $resetall), $baseurl, $confirmurl);
+            echo $OUTPUT->footer();
+            exit;
+
+        } else {
+            $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
+            $i = 0;
+            $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+            foreach ($files as $plagiarismfile) {
+                if ($resetall == '202') {
+                    $file = urkund_get_score($plagiarismsettings, $plagiarismfile, true);
+                    // Reset attempts as this was a manual check.
+                    $file->attempt = $file->attempt - 1;
+                    $DB->update_record('plagiarism_urkund_files', $file);
+                    if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
+                        $response = get_string('scorenotavailableyet', 'plagiarism_urkund');
+                    } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED) {
+                        $response = get_string('scoreavailable', 'plagiarism_urkund');
+                    } else {
+                        $response = get_string('unknownwarning', 'plagiarism_urkund');
+                        if (debugging()) {
+                            print_object($file);
+                        }
+                    }
+                    echo "<p>";
+                    echo "id:".$file->id.' '. $response;
+                    echo "</p>";
+                } else {
+                    urkund_reset_file($plagiarismfile);
+                }
+
+                $i++;
+            }
+            if (!empty($i)) {
+                echo $OUTPUT->notification(get_string('filesresubmitted', 'plagiarism_urkund', $i), 'notifysuccess');
+            }
+        }
+    }
+
 
     $lastcron = $DB->get_field_sql('SELECT MAX(lastcron) FROM {modules}');
     if ($lastcron < time() - 3600 * 0.5) { // Check if run in last 30min.
@@ -250,5 +297,21 @@ if (!$table->is_downloading()) {
         $url->param('showall', 1);
         echo $OUTPUT->single_button($url, get_string('showall', 'plagiarism_urkund'), 'get');
     }
+    $sql = "SELECT DISTINCT statuscode FROM {plagiarism_urkund_files} WHERE statuscode <> 'Analyzed' ORDER BY statuscode";
+    $errortypes = $DB->get_records_sql($sql);
+    // Display reset buttons.
+    echo '<div class="urkundresetbuttons">';
+    foreach ($errortypes as $type) {
+        $url->param('resetall', $type->statuscode);
+        $url->param('sesskey', sesskey());
+        if ($type->statuscode == '202') {
+            $buttonstr = get_string('getallscores', 'plagiarism_urkund');
+        } else {
+            $buttonstr = get_string('resubmitall', 'plagiarism_urkund', $type->statuscode);
+        }
+        echo $OUTPUT->single_button($url, $buttonstr, 'get');
+    }
+
+    echo "</div>";
     echo $OUTPUT->footer();
 }

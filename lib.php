@@ -959,7 +959,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true;
     }
-    mtrace("sendfile".$plagiarismfile->id);
+    mtrace("fileid:".$plagiarismfile->id. ' sent for processing');
     $useremail = $DB->get_field('user', 'email', array('id' => $plagiarismfile->userid));
     // Get url of api.
     $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarismfile);
@@ -995,10 +995,12 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
                 $plagiarismfile->errorresponse = $response;
             }
             $plagiarismfile->statuscode = $status;
+            mtrace("fileid:".$plagiarismfile->id. ' returned status: '.$status);
             $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
             return true;
         }
     }
+    mtrace("fileid:".$plagiarismfile->id. ' returned error: '.$response);
     // Invalid response returned - increment attempt value and return false to allow this to be called again.
     $plagiarismfile->statuscode = URKUND_STATUSCODE_INVALID_RESPONSE;
     $plagiarismfile->errorresponse = $response;
@@ -1285,9 +1287,15 @@ function old_urkund_get_url($baseurl, $plagiarismfile) {
     '_'.$plagiarismfile->cm.'_'.$plagiarismfile->id;
 }
 
-function urkund_reset_file($id) {
+// $file can be id or full record.
+function urkund_reset_file($file) {
     global $DB, $CFG;
-    $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $id), '*', MUST_EXIST);
+    if (is_int($file)) {
+        $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $file), '*', MUST_EXIST);
+    } else {
+        $plagiarismfile = $file;
+    }
+
     if ($plagiarismfile->statuscode == 'Analyzed' ||
         $plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED) { // Sanity Check.
         return true;
@@ -1375,4 +1383,5 @@ function urkund_reset_file($id) {
         }
 
     }
+    mtrace("id:".$plagiarismfile->id. " no files found with this record");
 }
