@@ -55,7 +55,10 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                         // Remove error from form
                         parentdiv.removeClass('error');
                         // Remove error span
-                        parentdiv.one('.error').remove();
+                        var existingerror = parentdiv.one('.error');
+                        if (existingerror) {
+                            existingerror.remove();
+                        }
                     } else {
                         if (existing) {
                             existing.replace(invalid);
