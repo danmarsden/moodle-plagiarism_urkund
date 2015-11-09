@@ -107,3 +107,5 @@ $string['urkund_enableoptoutdesc'] = 'Disabling this will remove the option for 
 $string['getallscores'] = 'Get all scores';
 $string['confirmresetall'] = 'This will reset all files in the state: {$a}';
 $string['filesresubmitted'] = '{$a} files resubmitted';
+$string['allowallsupportedfiles'] = 'Allow all supported filetypes';
+$string['restrictfiles'] = 'File types to submit';

@@ -99,7 +99,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      */
     public function config_options() {
         return array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
-                     'urkund_draft_submit', 'urkund_receiver', 'urkund_studentemail');
+                     'urkund_draft_submit', 'urkund_receiver', 'urkund_studentemail', 'urkund_allowallfile',
+                     'urkund_selectfiletypes');
     }
     /**
      * Hook to allow plagiarism specific information to be displayed beside a submission.
@@ -343,7 +344,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $newelement = new stdClass();
                 $newelement->cm = $data->coursemodule;
                 $newelement->name = $element;
-                $newelement->value = (isset($data->$element) ? $data->$element : 0);
+                if (isset($data->$element) && is_array($data->$element)) {
+                    $newelement->value = implode(',', $data->$element);
+                } else {
+                    $newelement->value = (isset($data->$element) ? $data->$element : 0);
+                }
                 if (isset($existingelements[$element])) {
                     $newelement->id = $existingelements[$element];
                     $DB->update_record('plagiarism_urkund_config', $newelement);
@@ -401,6 +406,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             if ($DB->record_exists('plagiarism_urkund_files', array('cm' => $cmid, 'statuscode' => 'pending'))) {
                 $mform->disabledIf('urkund_receiver', 'use_urkund');
             }
+            $mform->disabledIf('urkund_selectfiletypes', 'urkund_allowallfile', 'eq', 1);
         } else { // Add plagiarism settings as hidden vars.
             foreach ($plagiarismelements as $element) {
                 $mform->addElement('hidden', $element);
@@ -440,6 +446,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             );
             $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
         }
+
+        // Now set some fields as advanced options.
+        $mform->setAdvanced('urkund_allowallfile');
+        $mform->setAdvanced('urkund_selectfiletypes');
     }
 
     /**
@@ -827,6 +837,16 @@ function urkund_get_form_elements($mform) {
     }
     $mform->addElement('select', 'urkund_studentemail', get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
     $mform->addHelpButton('urkund_studentemail', 'urkund_studentemail', 'plagiarism_urkund');
+
+    $filetypes = urkund_default_allowed_file_types(true);
+
+    $supportedfiles = array();
+    foreach ($filetypes as $ext => $mime){
+        $supportedfiles[$ext] = $ext;
+    }
+    $mform->addElement('select', 'urkund_allowallfile', get_string('allowallsupportedfiles', 'plagiarism_urkund'), $ynoptions);
+    $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'), $supportedfiles, array('multiple' => true));
+
 }
 
 /**
@@ -868,6 +888,7 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
 function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
     global $DB;
     $plagiarismfile = urkund_get_plagiarism_file($cmid, $userid, $file);
+    $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
 
     // Check if $plagiarismfile actually needs to be submitted.
     if ($plagiarismfile->statuscode <> 'pending') {
@@ -886,6 +907,30 @@ function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true;
     }
+
+    // Check to see if configured to only send certain file-types and if this file matches.
+    if (empty($plagiarismvalues['urkund_allowallfile'])) {
+        $allowedtypes = explode(',', $plagiarismvalues['urkund_selectfiletypes']);
+
+        $pathinfo = pathinfo($filename);
+        if (!empty($pathinfo['extension'])) {
+            $ext = strtolower($pathinfo['extension']);
+            if (!in_array($ext, $allowedtypes)) {
+                // This file is not allowed, delete it from the table.
+                $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
+                mtrace("File submitted to cm:".$cmid. " with an extension ". $ext. " This assignment is configured to ignore this filetype, ".
+                       "only files of type:".$plagiarismvalues['urkund_selectfiletypes']. " are accepted");
+                return true;
+            }
+        } else {
+            // no path found - this shouldn't happen but ignore this file.
+            mtrace("Could not obtain the extension for a file submitted to cm:".$cmid. " with the filename ". $filename.
+                   "only files of type:".$plagiarismvalues['urkund_selectfiletypes']. " are accepted");
+            $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
+            return true;
+        }
+    }
+
     // Increment attempt number.
     $plagiarismfile->attempt = $plagiarismfile->attempt++;
     $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
@@ -959,7 +1004,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true;
     }
-    mtrace("fileid:".$plagiarismfile->id. ' sent for processing');
+    mtrace("URKUND fileid:".$plagiarismfile->id. ' sent for processing');
     $useremail = $DB->get_field('user', 'email', array('id' => $plagiarismfile->userid));
     // Get url of api.
     $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarismfile);
@@ -995,7 +1040,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
                 $plagiarismfile->errorresponse = $response;
             }
             $plagiarismfile->statuscode = $status;
-            mtrace("fileid:".$plagiarismfile->id. ' returned status: '.$status);
+            mtrace("URKUND fileid:".$plagiarismfile->id. ' returned status: '.$status);
             $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
             return true;
         }
@@ -1016,16 +1061,7 @@ function urkund_check_file_type($filename, $checkdb = true) {
         return '';
     }
     $ext = strtolower($pathinfo['extension']);
-    $filetypes = array('doc'  => 'application/msword',
-                       'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-                       'sxw'  => 'application/vnd.sun.xml.writer',
-                       'pdf'  => 'application/pdf',
-                       'txt'  => 'text/plain',
-                       'rtf'  => 'application/rtf',
-                       'html' => 'text/html',
-                       'htm'  => 'text/html',
-                       'wps'  => 'application/vnd.ms-works',
-                       'odt'  => 'application/vnd.oasis.opendocument.text');
+    $filetypes = urkund_default_allowed_file_types();
 
     if (!empty($filetypes[$ext])) {
         return $filetypes[$ext];
@@ -1036,6 +1072,40 @@ function urkund_check_file_type($filename, $checkdb = true) {
     } else {
         return false;
     }
+}
+
+/**
+ * Used to obtain allowed file types
+ *
+ * @param object $plagiarismsettings - from a call to plagiarism_get_settings.
+ *
+ */
+
+function urkund_default_allowed_file_types($checkdb = false) {
+    global $DB;
+    $filetypes = array('doc'  => 'application/msword',
+        'docx' => 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        'sxw'  => 'application/vnd.sun.xml.writer',
+        'pdf'  => 'application/pdf',
+        'txt'  => 'text/plain',
+        'rtf'  => 'application/rtf',
+        'html' => 'text/html',
+        'htm'  => 'text/html',
+        'wps'  => 'application/vnd.ms-works',
+        'odt'  => 'application/vnd.oasis.opendocument.text');
+
+    if ($checkdb) {
+        // get all filetypes from db as well.
+        $sql = 'SELECT name, value FROM {config_plugins} WHERE plugin = :plugin AND ' . $DB->sql_like('name', ':name');
+        $types = $DB->get_records_sql($sql, array('name' => 'ext_%', 'plugin' => 'plagiarism_urkund'));
+        foreach ($types as $type) {
+            $ext = strtolower(str_replace('ext_', '', $type->name));
+            $filetypes[$ext] = $type->value;
+        }
+    }
+
+    return $filetypes;
+
 }
 
 /**

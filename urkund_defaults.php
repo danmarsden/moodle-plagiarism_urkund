@@ -52,7 +52,12 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             $newelement = new Stdclass();
             $newelement->cm = 0;
             $newelement->name = $element;
-            $newelement->value = $data->$element;
+            if (is_array($data->$element)) {
+                $newelement->value = implode(',', $data->$element);
+            } else {
+                $newelement->value = $data->$element;
+            }
+
             if (isset($plagiarismdefaults[$element])) {
                 $newelement->id = $DB->get_field('plagiarism_urkund_config', 'id', (array('cm' => 0, 'name' => $element)));
                 $DB->update_record('plagiarism_urkund_config', $newelement);
