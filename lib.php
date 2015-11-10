@@ -38,7 +38,7 @@ require_once($CFG->dirroot . '/lib/filelib.php');
 // If we convert the existing calls to send file/get score we should move this to a config setting.
 define('URKUND_INTEGRATION_SERVICE', 'https://secure.urkund.com/api');
 
-define('URKUND_MAX_STATUS_ATTEMPTS', 20); // Maximum number of times to try and obtain the status of a submission.
+define('URKUND_MAX_STATUS_ATTEMPTS', 17); // Maximum number of times to try and obtain the status of a submission.
 define('URKUND_MAX_STATUS_DELAY', 2880); // Maximum time to wait between checks (defined in minutes).
 define('URKUND_STATUS_DELAY', 5); // Initial delay, doubled each time a check is made until the max_status_delay is met.
 define('URKUND_STATUSCODE_PROCESSED', '200');
