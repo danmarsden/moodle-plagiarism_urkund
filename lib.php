@@ -120,6 +120,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if (empty($plagiarismvalues[$cmid])) {
             $plagiarismvalues[$cmid] = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name,value');
         }
+        $plagiarismsettings = $this->get_settings();
+        if (!empty($plagiarismsettings['urkund_wordcount'])) {
+            $wordcount = $plagiarismsettings['urkund_wordcount'];
+        } else {
+            // Set a sensible default if we can't find one.
+            $wordcount = 50;
+        }
 
         $showcontent = true;
         $showfiles = true;
@@ -130,7 +137,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $showfiles = false;
             }
         }
-        if (!empty($linkarray['content']) && $showcontent) {
+
+        if (!empty($linkarray['content']) && $showcontent && str_word_count($linkarray['content']) > $wordcount) {
+        echo "count:".str_word_count($linkarray['content']);
             $filename = "content-" . $COURSE->id . "-" . $cmid . "-". $userid . ".htm";
             $filepath = $CFG->tempdir."/urkund/" . $filename;
             $file = new stdclass();
@@ -574,6 +583,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $showfiles = false;
             }
         }
+
+        if (!empty($plagiarismsettings['urkund_wordcount'])) {
+            $wordcount = $plagiarismsettings['urkund_wordcount'];
+        } else {
+            // Set a sensible default if we can't find one.
+            $wordcount = 50;
+        }
+
         if ($eventdata->eventtype == 'files_done' ||
             $eventdata->eventtype == 'content_done' ||
             ($eventdata->eventtype == 'assessable_submitted' && $eventdata->params['submission_editable'] == false)) {
@@ -606,7 +623,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
                     if ($showcontent) { // If we should be handling in-line text.
                         $submission = $DB->get_record('assignsubmission_onlinetext', array('submission' => $eventdata->itemid));
-                        if (!empty($submission)) {
+                        if (!empty($submission) && str_word_count($submission->onlinetext) > $wordcount) {
                             $eventdata->content = trim(format_text($submission->onlinetext, $submission->onlineformat,
                                 array('context' => $modulecontext)));
                             $file = urkund_create_temp_file($cmid, $eventdata);
@@ -629,7 +646,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         // Text is attached.
         $result = true;
-        if (!empty($eventdata->content) && $showcontent) {
+        if (!empty($eventdata->content) && $showcontent && str_word_count($eventdata->content) > $wordcount) {
             $file = urkund_create_temp_file($cmid, $eventdata);
             $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
             $result = $result && $sendresult;

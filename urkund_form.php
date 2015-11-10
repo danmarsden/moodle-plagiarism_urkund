@@ -59,6 +59,13 @@ class urkund_setup_form extends moodleform {
         $mform->addElement('checkbox', 'urkund_optout', get_string('urkund_enableoptout', 'plagiarism_urkund'), '<br/>'.get_string('urkund_enableoptoutdesc', 'plagiarism_urkund'));
         $mform->setDefault('urkund_optout', true);
 
+        $mform->addElement('text', 'urkund_wordcount', get_string('wordcount', 'plagiarism_urkund'));
+        $mform->addHelpButton('urkund_wordcount', 'wordcount', 'plagiarism_urkund');
+        $mform->setType('urkund_wordcount', PARAM_INT);
+        $mform->addRule('urkund_wordcount', null, 'required', null, 'client');
+        $mform->setDefault('urkund_wordcount', '50');
+
+
         $mods = core_component::get_plugin_list('mod');
         foreach ($mods as $mod => $modname) {
             if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
