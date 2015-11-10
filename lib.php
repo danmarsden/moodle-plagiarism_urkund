@@ -586,23 +586,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $plagiarismvalues['urkund_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
                 // Any files attached to previous events were not submitted.
                 // These files are now finalized, and should be submitted for processing.
-                if ($eventdata->modulename == 'assignment') {
-                    // Hack to include filelib so that file_storage class is available.
-                    require_once("$CFG->dirroot/mod/assignment/lib.php");
-                    // We need to get a list of files attached to this assignment and put them in an array, so that
-                    // we can submit each of them for processing.
-                    $assignmentbase = new assignment_base($cmid);
-                    $submission = $assignmentbase->get_submission($eventdata->userid);
-                    $modulecontext = context_module::instance($eventdata->cmid);
-                    $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id,
-                                                     "timemodified", false)) {
-                        foreach ($files as $file) {
-                            $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-                            $result = $result && $sendresult;
-                        }
-                    }
-                } else if ($eventdata->modulename == 'assign') {
+                if ($eventdata->modulename == 'assign') {
                     require_once("$CFG->dirroot/mod/assign/locallib.php");
                     require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
 
@@ -1435,18 +1419,7 @@ function urkund_reset_file($file) {
     $cm = get_coursemodule_from_id('', $plagiarismfile->cm);
     $modulecontext = context_module::instance($plagiarismfile->cm);
     $fs = get_file_storage();
-    if ($cm->modname == 'assignment') {
-        $submission = $DB->get_record('assignment_submissions', array('assignment' => $cm->instance,
-                                                                      'userid' => $plagiarismfile->userid));
-        $files = $fs->get_area_files($modulecontext->id, 'mod_assignment', 'submission', $submission->id);
-        foreach ($files as $file) {
-            if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                $DB->update_record('plagiarism_urkund_files', $plagiarismfile); // Update before trying to send again.
-                return urkund_send_file($plagiarismfile->cm, $plagiarismfile->userid, $file,
-                                        plagiarism_plugin_urkund::get_settings());
-            }
-        }
-    } else if ($cm->modname == 'assign') {
+    if ($cm->modname == 'assign') {
         require_once($CFG->dirroot.'/mod/assign/locallib.php');
         $assign = new assign($modulecontext, null, null);
         $submissionplugins = $assign->get_submission_plugins();

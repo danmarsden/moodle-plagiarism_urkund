@@ -52,9 +52,6 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->urkund_enable_mod_assign)) {
         $data->urkund_enable_mod_assign = 0;
     }
-    if (!isset($data->urkund_enable_mod_assignment)) {
-        $data->urkund_enable_mod_assignment = 0;
-    }
     if (!isset($data->urkund_enable_mod_forum)) {
         $data->urkund_enable_mod_forum = 0;
     }
