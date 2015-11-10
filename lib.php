@@ -38,12 +38,9 @@ require_once($CFG->dirroot . '/lib/filelib.php');
 // If we convert the existing calls to send file/get score we should move this to a config setting.
 define('URKUND_INTEGRATION_SERVICE', 'https://secure.urkund.com/api');
 
-define('URKUND_MAX_SUBMISSION_ATTEMPTS', 6); // Maximum number of times to try and send a submission to URKUND.
-define('URKUND_MAX_SUBMISSION_DELAY', 60); // Maximum time to wait between submissions (defined in minutes).
-define('URKUND_SUBMISSION_DELAY', 15); // Initial delay, doubled each time a check is made until the max_submission_delay is met.
-define('URKUND_MAX_STATUS_ATTEMPTS', 10); // Maximum number of times to try and obtain the status of a submission.
-define('URKUND_MAX_STATUS_DELAY', 1440); // Maximum time to wait between checks (defined in minutes).
-define('URKUND_STATUS_DELAY', 30); // Initial delay, doubled each time a check is made until the max_status_delay is met.
+define('URKUND_MAX_STATUS_ATTEMPTS', 20); // Maximum number of times to try and obtain the status of a submission.
+define('URKUND_MAX_STATUS_DELAY', 2880); // Maximum time to wait between checks (defined in minutes).
+define('URKUND_STATUS_DELAY', 5); // Initial delay, doubled each time a check is made until the max_status_delay is met.
 define('URKUND_STATUSCODE_PROCESSED', '200');
 define('URKUND_STATUSCODE_ACCEPTED', '202');
 define('URKUND_STATUSCODE_ACCEPTED_OLD', '202-old'); // File submitted before we changed the way the identifiers were stored.
@@ -945,32 +942,29 @@ function urkund_check_attempt_timeout($plagiarismfile) {
     if (empty($plagiarismfile->attempt) && $plagiarismfile->statuscode == 'pending') {
         return true;
     }
-    $now = time();
-    // Set some initial defaults.
-    $submissiondelay = 15;
-    $maxsubmissiondelay = 60;
-    $maxattempts = 4;
-    if ($plagiarismfile->statuscode == 'pending') {
-        $submissiondelay = URKUND_SUBMISSION_DELAY; // Initial delay,doubled each time a check is made until the max delay is met.
-        $maxsubmissiondelay = URKUND_MAX_SUBMISSION_DELAY; // Maximum time to wait between submissions
-        $maxattempts = URKUND_MAX_SUBMISSION_ATTEMPTS; // Maximum number of times to try and send a submission.
-    } else if ($plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED) {
-        $submissiondelay = URKUND_STATUS_DELAY; // Initial delay, doubled each time a check is made until the max delay is met.
-        $maxsubmissiondelay = URKUND_MAX_STATUS_DELAY; // Maximum time to wait between checks
-        $maxattempts = URKUND_MAX_STATUS_ATTEMPTS; // Maximum number of times to try and send a submission.
-    }
-    $wait = $submissiondelay;
+
     // Check if we have exceeded the max attempts.
-    if ($plagiarismfile->attempt > $maxattempts) {
+    if ($plagiarismfile->attempt > URKUND_MAX_STATUS_ATTEMPTS) {
         $plagiarismfile->statuscode = 'timeout';
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true; // Return true to cancel the event.
     }
+
+    $now = time();
+    $submissiondelay = URKUND_STATUS_DELAY; // Initial delay, doubled each time a check is made until the max delay is met.
+    $maxsubmissiondelay = URKUND_MAX_STATUS_DELAY; // Maximum time to wait between checks
+
     // Now calculate wait time.
     $i = 0;
     $delay = 0;
+    $wait = 0;
     while ($i < $plagiarismfile->attempt) {
-        $delay = $submissiondelay * pow(2,$i);
+        if ($plagiarismfile->attempt > 12) {
+            // If we haven't got the score by now something is not working, increase delay time a bit.
+            $delay = $submissiondelay * pow(1.4,$i);
+        } else {
+            $delay = $submissiondelay * pow(1.2,$i);
+        }
         if ($delay > $maxsubmissiondelay) {
             $delay = $maxsubmissiondelay;
         }
