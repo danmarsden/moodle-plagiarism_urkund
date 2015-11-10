@@ -64,6 +64,11 @@ define('PLAGIARISM_URKUND_SHOW_CLOSED', 2);
 define('PLAGIARISM_URKUND_DRAFTSUBMIT_IMMEDIATE', 0);
 define('PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL', 1);
 
+// Used by content type restriction form - inline-text vs file attachments.
+define('PLAGIARISM_URKUND_RESTRICTCONTENTNO', 0);
+define('PLAGIARISM_URKUND_RESTRICTCONTENTFILES', 1);
+define('PLAGIARISM_URKUND_RESTRICTCONTENTTEXT', 2);
+
 
 class plagiarism_plugin_urkund extends plagiarism_plugin {
     /**
@@ -97,7 +102,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public function config_options() {
         return array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
                      'urkund_draft_submit', 'urkund_receiver', 'urkund_studentemail', 'urkund_allowallfile',
-                     'urkund_selectfiletypes');
+                     'urkund_selectfiletypes', 'urkund_restrictcontent');
     }
     /**
      * Hook to allow plagiarism specific information to be displayed beside a submission.
@@ -106,10 +111,26 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function get_links($linkarray) {
-        global $COURSE, $OUTPUT, $CFG;
+        global $COURSE, $OUTPUT, $CFG, $DB;
+        static $plagiarismvalues = array();
+
         $cmid = $linkarray['cmid'];
         $userid = $linkarray['userid'];
-        if (!empty($linkarray['content'])) {
+
+        if (empty($plagiarismvalues[$cmid])) {
+            $plagiarismvalues[$cmid] = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name,value');
+        }
+
+        $showcontent = true;
+        $showfiles = true;
+        if (!empty($plagiarismvalues[$cmid]['urkund_restrictcontent'])) {
+            if ($plagiarismvalues[$cmid]['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTFILES) {
+                $showcontent = false;
+            } else if ($plagiarismvalues[$cmid]['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTTEXT) {
+                $showfiles = false;
+            }
+        }
+        if (!empty($linkarray['content']) && $showcontent) {
             $filename = "content-" . $COURSE->id . "-" . $cmid . "-". $userid . ".htm";
             $filepath = $CFG->tempdir."/urkund/" . $filename;
             $file = new stdclass();
@@ -118,12 +139,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $file->timestamp = time();
             $file->identifier = sha1($linkarray['content']);
             $file->filepath = $filepath;
-        } else if (!empty($linkarray['file'])) {
+        } else if (!empty($linkarray['file']) && $showfiles) {
             $file = new stdclass();
             $file->filename = $linkarray['file']->get_filename();
             $file->timestamp = time();
             $file->identifier = $linkarray['file']->get_contenthash();
             $file->filepath = $linkarray['file']->get_filepath();
+        } else {
+            return '';
         }
         $results = $this->get_file_results($cmid, $userid, $file);
         if (empty($results)) {
@@ -447,6 +470,21 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         // Now set some fields as advanced options.
         $mform->setAdvanced('urkund_allowallfile');
         $mform->setAdvanced('urkund_selectfiletypes');
+
+        // Now handle content restriction settings.
+
+        if ($modulename == 'mod_assign' && $mform->elementExists("submissionplugins")) { // This should be mod_assign
+            // I can't see a way to check if a particular checkbox exists
+            // elementExists on the checkbox name doesn't work :-(
+            $mform->disabledIf('urkund_restrictcontent', 'assignsubmission_onlinetext_enabled');
+            $mform->setAdvanced('urkund_restrictcontent');
+        } else if ($modulename == 'mod_forum') { // This shold be mod_forum
+            // Leave element as default - no locking required.
+        } else {
+            $mform->setDefault('urkund_restrictcontent',0);
+            $mform->hardFreeze('urkund_restrictcontent');
+            $mform->setAdvanced('urkund_restrictcontent');
+        }
     }
 
     /**
@@ -526,6 +564,16 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true;
         }
 
+        // Check to see if restrictcontent is in use.
+        $showcontent = true;
+        $showfiles = true;
+        if (!empty($plagiarismvalues[$cmid]['urkund_restrictcontent'])) {
+            if ($plagiarismvalues['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTFILES) {
+                $showcontent = false;
+            } else if ($plagiarismvalues['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTTEXT) {
+                $showfiles = false;
+            }
+        }
         if ($eventdata->eventtype == 'files_done' ||
             $eventdata->eventtype == 'content_done' ||
             ($eventdata->eventtype == 'assessable_submitted' && $eventdata->params['submission_editable'] == false)) {
@@ -559,22 +607,29 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
 
                     $modulecontext = context_module::instance($eventdata->cmid);
-                    $fs = get_file_storage();
-                    if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
-                                                     ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata->itemid, "id", false)) {
-                        foreach ($files as $file) {
+
+                    if ($showfiles) { // If we should be handling files.
+                        $fs = get_file_storage();
+                        if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
+                            ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata->itemid, "id", false)) {
+                            foreach ($files as $file) {
+                                $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
+                                $result = $result && $sendresult;
+                            }
+                        }
+
+                    }
+
+                    if ($showcontent) { // If we should be handling in-line text.
+                        $submission = $DB->get_record('assignsubmission_onlinetext', array('submission' => $eventdata->itemid));
+                        if (!empty($submission)) {
+                            $eventdata->content = trim(format_text($submission->onlinetext, $submission->onlineformat,
+                                array('context' => $modulecontext)));
+                            $file = urkund_create_temp_file($cmid, $eventdata);
                             $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
                             $result = $result && $sendresult;
+                            unlink($file->filepath); // Delete temp file.
                         }
-                    }
-                    $submission = $DB->get_record('assignsubmission_onlinetext', array('submission' => $eventdata->itemid));
-                    if (!empty($submission)) {
-                        $eventdata->content = trim(format_text($submission->onlinetext, $submission->onlineformat,
-                                                               array('context' => $modulecontext)));
-                        $file = urkund_create_temp_file($cmid, $eventdata);
-                        $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-                        $result = $result && $sendresult;
-                        unlink($file->filepath); // Delete temp file.
                     }
                 }
             }
@@ -590,7 +645,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         // Text is attached.
         $result = true;
-        if (!empty($eventdata->content)) {
+        if (!empty($eventdata->content) && $showcontent) {
             $file = urkund_create_temp_file($cmid, $eventdata);
             $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
             $result = $result && $sendresult;
@@ -598,7 +653,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
 
         // Normal situation: 1 or more assessable files attached to event, ready to be checked.
-        if (!empty($eventdata->pathnamehashes)) {
+        if (!empty($eventdata->pathnamehashes) && $showfiles) {
             foreach ($eventdata->pathnamehashes as $hash) {
                 $fs = get_file_storage();
                 $efile = $fs->get_file_by_hash($hash);
@@ -842,7 +897,15 @@ function urkund_get_form_elements($mform) {
         $supportedfiles[$ext] = $ext;
     }
     $mform->addElement('select', 'urkund_allowallfile', get_string('allowallsupportedfiles', 'plagiarism_urkund'), $ynoptions);
+    $mform->addHelpButton('urkund_allowallfile', 'allowallsupportedfiles', 'plagiarism_urkund');
     $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'), $supportedfiles, array('multiple' => true));
+
+    $contentoptions = array(PLAGIARISM_URKUND_RESTRICTCONTENTNO => get_string('restrictcontentno', 'plagiarism_urkund'),
+                            PLAGIARISM_URKUND_RESTRICTCONTENTFILES => get_string('restrictcontentfiles', 'plagiarism_urkund'),
+                            PLAGIARISM_URKUND_RESTRICTCONTENTTEXT => get_string('restrictcontenttext', 'plagiarism_urkund'));
+
+    $mform->addElement('select', 'urkund_restrictcontent', get_string('restrictcontent', 'plagiarism_urkund'), $contentoptions);
+    $mform->addHelpButton('urkund_restrictcontent', 'restrictcontent', 'plagiarism_urkund');
 
 }
 
