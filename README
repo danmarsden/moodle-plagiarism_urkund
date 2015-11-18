@@ -1,9 +1,11 @@
 URKUND Plagiarism plugin for Moodle 2.0
+[![Build Status](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund.svg?branch=master)](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund)
 
 Author: Dan Marsden <dan@danmarsden.com>
 Copyright: Prioinfo AB, http://www.urkund.com, http://www.prioinfo.se
 
 URKUND is a commercial Plagiarism Prevention product owned by PrioInfo AB - you must have a paid subscription to be able to use this plugin.
+
 
 QUICK INSTALL
 ================
