@@ -95,7 +95,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
                     } else {
                         $response = get_string('unknownwarning', 'plagiarism_urkund');
                         if (debugging()) {
-                            print_object($file);
+                            urkund_pretty_print($file);
                         }
                     }
                     echo "<p>";
@@ -142,7 +142,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
             echo $OUTPUT->notification(get_string('scoreavailable', 'plagiarism_urkund'));
         } else {
             echo $OUTPUT->notification(get_string('unknownwarning', 'plagiarism_urkund'));
-            print_object($file);
+            urkund_pretty_print($file);
         }
 
     }
@@ -169,8 +169,7 @@ if (!empty($a->countheld)) {
     if (!$table->is_downloading()) {
         foreach ($heldevents as $e) {
             $e->eventdata = unserialize(base64_decode($e->eventdata));
-            // Using print_object here as the data won't display nicely in a table and it's more useful in copy/paste, screenshot.
-            print_object($e);
+            urkund_pretty_print($e);
         }
     }
 }
@@ -281,7 +280,6 @@ if ($table->is_downloading()) {
         $table->add_data(array());
         foreach ($heldevents as $e) {
             $e->eventdata = unserialize(base64_decode($e->eventdata));
-            // Using print_object here as the data won't display nicely in a table and it's more useful in copy/paste, screenshots.
             $table->add_data(array('heldevent', $e->status, $e->component, $e->eventname, var_export($e, true)));
         }
     }
@@ -315,4 +313,26 @@ if (!$table->is_downloading()) {
 
     echo "</div>";
     echo $OUTPUT->footer();
+}
+
+function urkund_pretty_print($arr) {
+    if (is_object($arr)) {
+        $arr = (array) $arr;
+    }
+    $retstr = '<table class="generaltable">';
+    $retstr .= '<tr><th width=20%>Key</th><th width=80%>Value</th></tr>';
+    if (is_array($arr)) {
+        foreach ($arr as $key => $val) {
+            if (is_object($val)) {
+                $val = (array) $val;
+            }
+            if (is_array($val)) {
+                $retstr .= '<tr><td>' . $key . '</td><td>' . pretty_print($val) . '</td></tr>';
+            } else {
+                $retstr .= '<tt><td>' . $key . '</td><td>' . ($val == '' ? '""' : $val) . '</td></tr>';
+            }
+        }
+    }
+    $retstr .= '</table>';
+    return $retstr;
 }
