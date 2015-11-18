@@ -22,7 +22,6 @@ class urkund_setup_form extends moodleform {
 
     // Define the form.
     public function definition () {
-        global $CFG;
 
         $mform =& $this->_form;
         $mform->addElement('html', get_string('urkundexplain', 'plagiarism_urkund'));
