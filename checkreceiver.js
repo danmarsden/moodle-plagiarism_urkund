@@ -72,8 +72,8 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                 }
             }
         };
-        Y.io(url, config)
-    }
+        Y.io(url, config);
+    };
 
     var receiver = Y.one('#id_urkund_receiver');
     // Validate existing content.
@@ -81,5 +81,5 @@ M.plagiarism_urkund.init = function(Y, contextid) {
     // Validate on change.
     receiver.on('change', function(e) {
         check_urkund_receiver(Y, receiver, contextid);
-    })
-}
+    });
+};
