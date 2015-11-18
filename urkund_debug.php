@@ -71,7 +71,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
     if (!empty($resetall) && confirm_sesskey()) {
         // Check to see if there are any files in this state.
         if (!$confirm) {
-            // show confirmation message
+            // Show confirmation message.
             $confirmurl = $baseurl;
             $confirmurl->params(array('resetall' => $resetall, 'confirm' => 1));
             echo $OUTPUT->confirm(get_string('confirmresetall', 'plagiarism_urkund', $resetall), $baseurl, $confirmurl);
@@ -217,7 +217,7 @@ $table->define_headers(array(get_string('id', 'plagiarism_urkund'),
                        get_string('module', 'plagiarism_urkund'),
                        get_string('identifier', 'plagiarism_urkund'),
                        get_string('status', 'plagiarism_urkund'),
-                       get_string('attempts', 'plagiarism_urkund'),''));
+                       get_string('attempts', 'plagiarism_urkund'), ''));
 $table->define_baseurl('urkund_debug.php');
 $table->sortable(true);
 $table->no_sorting('file', 'action');
@@ -248,7 +248,8 @@ foreach ($urkundfiles as $tf) {
     $cmurl = new moodle_url($CFG->wwwroot.'/mod/'.$tf->moduletype.'/view.php', array('id' => $tf->cm));
     $cmlink = html_writer::link($cmurl, shorten_text($coursemodule->name, 40, true), array('title' => $coursemodule->name));
     if ($table->is_downloading()) {
-        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode, $tf->attempt, $tf->errorresponse);
+        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode,
+                     $tf->attempt, $tf->errorresponse);
     } else {
         $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, $reset);
     }

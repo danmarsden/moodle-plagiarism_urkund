@@ -484,13 +484,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         if ($modulename == 'mod_assign' && $mform->elementExists("submissionplugins")) { // This should be mod_assign
             // I can't see a way to check if a particular checkbox exists
-            // elementExists on the checkbox name doesn't work :-(
+            // elementExists on the checkbox name doesn't work.
             $mform->disabledIf('urkund_restrictcontent', 'assignsubmission_onlinetext_enabled');
             $mform->setAdvanced('urkund_restrictcontent');
-        } else if ($modulename == 'mod_forum') { // This shold be mod_forum
-            // Leave element as default - no locking required.
-        } else {
-            $mform->setDefault('urkund_restrictcontent',0);
+        } else if ($modulename != 'mod_forum') {
+            // Forum doesn't need any changes but all other modules should disable this.
+            $mform->setDefault('urkund_restrictcontent', 0);
             $mform->hardFreeze('urkund_restrictcontent');
             $mform->setAdvanced('urkund_restrictcontent');
         }
@@ -684,8 +683,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             }
                             if (!empty($userids)) {
                                 // Find the earliest plagiarism record for this cm with any of these users.
-                                $sql ='cm = ? AND userid IN ('.implode(',', $userids).')';
-                                $previousfiles = $DB->get_records_select('plagiarism_urkund_files', $sql, array($eventdata->cmid), 'id');
+                                $sql = 'cm = ? AND userid IN ('.implode(',', $userids).')';
+                                $previousfiles = $DB->get_records_select('plagiarism_urkund_files', $sql,
+                                                                         array($eventdata->cmid), 'id');
                                 $sanitycheckusers = 10; // Search through this number of users to find a valid previous submission.
                                 $i = 0;
                                 foreach ($previousfiles as $pf) {
@@ -700,7 +700,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                                         break;
                                     }
                                     if ($i >= $sanitycheckusers) {
-                                        // don't cause a massive loop here and break at a sensible limit.
+                                        // Don't cause a massive loop here and break at a sensible limit.
                                         break;
                                     }
                                     $i++;
@@ -894,12 +894,13 @@ function urkund_get_form_elements($mform) {
     $filetypes = urkund_default_allowed_file_types(true);
 
     $supportedfiles = array();
-    foreach ($filetypes as $ext => $mime){
+    foreach ($filetypes as $ext => $mime) {
         $supportedfiles[$ext] = $ext;
     }
     $mform->addElement('select', 'urkund_allowallfile', get_string('allowallsupportedfiles', 'plagiarism_urkund'), $ynoptions);
     $mform->addHelpButton('urkund_allowallfile', 'allowallsupportedfiles', 'plagiarism_urkund');
-    $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'), $supportedfiles, array('multiple' => true));
+    $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'),
+                       $supportedfiles, array('multiple' => true));
 
     $contentoptions = array(PLAGIARISM_URKUND_RESTRICTCONTENTNO => get_string('restrictcontentno', 'plagiarism_urkund'),
                             PLAGIARISM_URKUND_RESTRICTCONTENTFILES => get_string('restrictcontentfiles', 'plagiarism_urkund'),
@@ -979,12 +980,13 @@ function urkund_send_file($cmid, $userid, $file, $plagiarismsettings) {
             if (!in_array($ext, $allowedtypes)) {
                 // This file is not allowed, delete it from the table.
                 $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
-                mtrace("File submitted to cm:".$cmid. " with an extension ". $ext. " This assignment is configured to ignore this filetype, ".
+                mtrace("File submitted to cm:".$cmid. " with an extension ". $ext.
+                       " This assignment is configured to ignore this filetype, ".
                        "only files of type:".$plagiarismvalues['urkund_selectfiletypes']. " are accepted");
                 return true;
             }
         } else {
-            // no path found - this shouldn't happen but ignore this file.
+            // No path found - this shouldn't happen but ignore this file.
             mtrace("Could not obtain the extension for a file submitted to cm:".$cmid. " with the filename ". $filename.
                    "only files of type:".$plagiarismvalues['urkund_selectfiletypes']. " are accepted");
             $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
@@ -1016,7 +1018,7 @@ function urkund_check_attempt_timeout($plagiarismfile) {
 
     $now = time();
     $submissiondelay = URKUND_STATUS_DELAY; // Initial delay, doubled each time a check is made until the max delay is met.
-    $maxsubmissiondelay = URKUND_MAX_STATUS_DELAY; // Maximum time to wait between checks
+    $maxsubmissiondelay = URKUND_MAX_STATUS_DELAY; // Maximum time to wait between checks.
 
     // Now calculate wait time.
     $i = 0;
@@ -1025,9 +1027,9 @@ function urkund_check_attempt_timeout($plagiarismfile) {
     while ($i < $plagiarismfile->attempt) {
         if ($plagiarismfile->attempt > 12) {
             // If we haven't got the score by now something is not working, increase delay time a bit.
-            $delay = $submissiondelay * pow(1.4,$i);
+            $delay = $submissiondelay * pow(1.4, $i);
         } else {
-            $delay = $submissiondelay * pow(1.2,$i);
+            $delay = $submissiondelay * pow(1.2, $i);
         }
         if ($delay > $maxsubmissiondelay) {
             $delay = $maxsubmissiondelay;
@@ -1153,7 +1155,7 @@ function urkund_default_allowed_file_types($checkdb = false) {
         'odt'  => 'application/vnd.oasis.opendocument.text');
 
     if ($checkdb) {
-        // get all filetypes from db as well.
+        // Get all filetypes from db as well.
         $sql = 'SELECT name, value FROM {config_plugins} WHERE plugin = :plugin AND ' . $DB->sql_like('name', ':name');
         $types = $DB->get_records_sql($sql, array('name' => 'ext_%', 'plugin' => 'plagiarism_urkund'));
         foreach ($types as $type) {
@@ -1415,7 +1417,7 @@ function old_urkund_get_url($baseurl, $plagiarismfile) {
     '_'.$plagiarismfile->cm.'_'.$plagiarismfile->id;
 }
 
-// $file can be id or full record.
+// The $file can be id or full record.
 function urkund_reset_file($file) {
     global $DB, $CFG;
     if (is_int($file)) {

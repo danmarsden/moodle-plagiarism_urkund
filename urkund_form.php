@@ -21,7 +21,7 @@ require_once($CFG->dirroot.'/lib/formslib.php');
 class urkund_setup_form extends moodleform {
 
     // Define the form.
-    function definition () {
+    public function definition () {
         global $CFG;
 
         $mform =& $this->_form;
@@ -56,7 +56,8 @@ class urkund_setup_form extends moodleform {
         $mform->setDefault('urkund_student_disclosure', get_string('studentdisclosuredefault', 'plagiarism_urkund'));
         $mform->setType('urkund_student_disclosure', PARAM_TEXT);
 
-        $mform->addElement('checkbox', 'urkund_optout', get_string('urkund_enableoptout', 'plagiarism_urkund'), '<br/>'.get_string('urkund_enableoptoutdesc', 'plagiarism_urkund'));
+        $mform->addElement('checkbox', 'urkund_optout', get_string('urkund_enableoptout', 'plagiarism_urkund'),
+            '<br/>'.get_string('urkund_enableoptoutdesc', 'plagiarism_urkund'));
         $mform->setDefault('urkund_optout', true);
 
         $mform->addElement('text', 'urkund_wordcount', get_string('wordcount', 'plagiarism_urkund'));
@@ -64,7 +65,6 @@ class urkund_setup_form extends moodleform {
         $mform->setType('urkund_wordcount', PARAM_INT);
         $mform->addRule('urkund_wordcount', null, 'required', null, 'client');
         $mform->setDefault('urkund_wordcount', '50');
-
 
         $mods = core_component::get_plugin_list('mod');
         foreach ($mods as $mod => $modname) {
@@ -81,7 +81,7 @@ class urkund_setup_form extends moodleform {
 class urkund_defaults_form extends moodleform {
 
     // Define the form.
-    function definition () {
+    public function definition () {
         $mform =& $this->_form;
         urkund_get_form_elements($mform);
         $this->add_action_buttons(true);
