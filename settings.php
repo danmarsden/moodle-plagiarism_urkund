@@ -100,20 +100,6 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     }
 }
 
-$invalidhandlers = urkund_check_event_handlers();
-if (!empty($invalidhandlers)) {
-    echo $OUTPUT->notification("There are invalid event handlers - these MUST be fixed. Please use the correct procedure ".
-         "to uninstall any components listed in the table below.<br>
-         The existence of these events may cause this plugin to function incorrectly.");
-    $table = new html_table();
-    $table->head = array('eventname', 'plugin', 'handlerfile');
-    foreach ($invalidhandlers as $handler) {
-        $table->data[] = array($handler->eventname, $handler->component, $handler->handlerfile);
-    }
-    echo html_writer::table($table);
-
-}
-
 $plagiarismsettings = (array)get_config('plagiarism');
 $mform->set_data($plagiarismsettings);
 

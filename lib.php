@@ -1305,27 +1305,6 @@ function urkund_update_allowed_filetypes() {
     }
 }
 
-// Function to check for invalid event_handlers.
-function urkund_check_event_handlers() {
-    global $DB, $CFG;
-    $invalidhandlers = array();
-    $eventhandlers = $DB->get_records('events_handlers');
-    foreach ($eventhandlers as $handler) {
-        $function = unserialize($handler->handlerfunction);
-
-        if (is_callable($function)) { // This function is fine.
-            continue;
-        } else if (file_exists($CFG->dirroot.$handler->handlerfile)) {
-            include_once($CFG->dirroot.$handler->handlerfile);
-            if (is_callable($function)) { // This function is fine.
-                continue;
-            }
-        }
-        $invalidhandlers[] = $handler; // This function can't be found.
-    }
-    return $invalidhandlers;
-}
-
 // Old function to get url using old method of generating an indentifier.
 // This function should only be used if the file is known to have been
 // generated using old code.
