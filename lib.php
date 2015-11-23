@@ -598,38 +598,36 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // but need to check if files from previous events need to be submitted for processing.
             mtrace("finalise");
             $result = true;
-            if (isset($plagiarismvalues['urkund_draft_submit']) &&
+            if ($eventdata->modulename == 'assign' &&
+                isset($plagiarismvalues['urkund_draft_submit']) &&
                 $plagiarismvalues['urkund_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
                 // Any files attached to previous events were not submitted.
                 // These files are now finalized, and should be submitted for processing.
-                if ($eventdata->modulename == 'assign') {
-                    require_once("$CFG->dirroot/mod/assign/locallib.php");
-                    require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
+                require_once("$CFG->dirroot/mod/assign/locallib.php");
+                require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
 
-                    $modulecontext = context_module::instance($eventdata->cmid);
+                $modulecontext = context_module::instance($eventdata->cmid);
 
-                    if ($showfiles) { // If we should be handling files.
-                        $fs = get_file_storage();
-                        if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
-                            ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata->itemid, "id", false)) {
-                            foreach ($files as $file) {
-                                $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
-                                $result = $result && $sendresult;
-                            }
-                        }
-
-                    }
-
-                    if ($showcontent) { // If we should be handling in-line text.
-                        $submission = $DB->get_record('assignsubmission_onlinetext', array('submission' => $eventdata->itemid));
-                        if (!empty($submission) && str_word_count($submission->onlinetext) > $wordcount) {
-                            $eventdata->content = trim(format_text($submission->onlinetext, $submission->onlineformat,
-                                array('context' => $modulecontext)));
-                            $file = urkund_create_temp_file($cmid, $eventdata);
+                if ($showfiles) { // If we should be handling files.
+                    $fs = get_file_storage();
+                    if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
+                        ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata->itemid, "id", false)) {
+                        foreach ($files as $file) {
                             $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
                             $result = $result && $sendresult;
-                            unlink($file->filepath); // Delete temp file.
                         }
+                    }
+                }
+
+                if ($showcontent) { // If we should be handling in-line text.
+                    $submission = $DB->get_record('assignsubmission_onlinetext', array('submission' => $eventdata->itemid));
+                    if (!empty($submission) && str_word_count($submission->onlinetext) > $wordcount) {
+                        $eventdata->content = trim(format_text($submission->onlinetext, $submission->onlineformat,
+                            array('context' => $modulecontext)));
+                        $file = urkund_create_temp_file($cmid, $eventdata);
+                        $sendresult = urkund_send_file($cmid, $eventdata->userid, $file, $plagiarismsettings);
+                        $result = $result && $sendresult;
+                        unlink($file->filepath); // Delete temp file.
                     }
                 }
             }
