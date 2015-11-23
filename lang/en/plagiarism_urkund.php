@@ -95,6 +95,7 @@ $string['heldevents'] = 'Held events';
 $string['heldeventsdescription'] = 'These are events that did not complete on the first attempt and were queued for resubmission - these prevent subsequent events from completing and may need further investigation. Some of these events may not be relevant to URKUND.';
 $string['urkundfiles'] = 'Urkund Files';
 $string['getscore'] = 'Get score';
+$string['getscores'] = 'Get scores';
 $string['scorenotavailableyet'] = 'This file has not been processed by URKUND yet.';
 $string['scoreavailable'] = 'This file has been processed by URKUND and a report is now available.';
 $string['receivernotvalid'] = 'This is not a valid receiver address.';
@@ -118,3 +119,5 @@ $string['restrictcontenttext'] = 'Only submit in-line text';
 
 $string['wordcount'] = 'Minimum word count';
 $string['wordcount_help'] = 'This sets a minimum limit on the number of words that are required for in-line text (forum posts and online assignment type) before the content will be sent to URKUND.';
+
+$string['sendfiles'] = 'Send queued files to URKUND';

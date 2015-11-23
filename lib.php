@@ -520,20 +520,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     }
 
     /**
-     * Called by admin/cron.php.
-     *
-     */
-    public function cron() {
-        // Do any scheduled task stuff.
-        urkund_update_allowed_filetypes();
-
-        // TODO: Find all Pending files and submit to URKUND.
-
-        if ($plagiarismsettings = $this->get_settings()) {
-            urkund_get_scores($plagiarismsettings);
-        }
-    }
-    /**
      * Generic handler function for all events - queues files for sending.
      * @return boolean
      */
