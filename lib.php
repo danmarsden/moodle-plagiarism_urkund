@@ -536,17 +536,18 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      */
     public function cron() {
-        global $CFG;
         // Do any scheduled task stuff.
         urkund_update_allowed_filetypes();
-        // Weird hack to include filelib correctly before allowing use in event_handler.
-        require_once($CFG->libdir.'/filelib.php');
+
+        // TODO: Find all Pending files and submit to URKUND;
+
+
         if ($plagiarismsettings = $this->get_settings()) {
             urkund_get_scores($plagiarismsettings);
         }
     }
     /**
-     * Generic handler function for all events - triggers sending of files.
+     * Generic handler function for all events - queues files for sending.
      * @return boolean
      */
     public function event_handler($eventdata) {
@@ -849,7 +850,14 @@ function urkund_get_form_elements($mform) {
 function urkund_get_plagiarism_file($cmid, $userid, $file) {
     global $DB;
 
-    $filehash = (!empty($file->identifier)) ? $file->identifier : $file->get_contenthash();
+    if (is_string($file)) { // This is a local file path.
+        $filehash = $file;
+        $filename = basename($file);
+    } else {        $filehash = (!empty($file->identifier)) ? $file->identifier : $file->get_contenthash();
+        $filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
+    }
+
+
     // Now update or insert record into urkund_files.
     $plagiarismfile = $DB->get_record_sql(
                                 "SELECT * FROM {plagiarism_urkund_files}
@@ -863,7 +871,7 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
         $plagiarismfile->cm = $cmid;
         $plagiarismfile->userid = $userid;
         $plagiarismfile->identifier = $filehash;
-        $plagiarismfile->filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
+        $plagiarismfile->filename = $filename;
         $plagiarismfile->statuscode = 'pending';
         $plagiarismfile->attempt = 0;
         $plagiarismfile->timesubmitted = time();
@@ -875,6 +883,14 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
     }
 }
 
+/**
+ * Queue file for sending to URKUND
+ *
+ * @param int $cmid - course module id
+ * @param int $userid - user id
+ * @param varied $file string if path to temp file or full Moodle file object.
+ * @return boolean
+ */
 function urkund_queue_file($cmid, $userid, $file) {
     global $DB;
     $plagiarismfile = urkund_get_plagiarism_file($cmid, $userid, $file);
@@ -884,7 +900,12 @@ function urkund_queue_file($cmid, $userid, $file) {
     if ($plagiarismfile->statuscode <> 'pending') {
         return true;
     }
-    $filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
+    if (is_string($file)) {
+        $filename = basename($file);
+    } else {
+        $filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
+    }
+
     if ($plagiarismfile->filename !== $filename) {
         // This is a file that was previously submitted and not sent to urkund but the filename has changed so fix it.
         $plagiarismfile->filename = $filename;
