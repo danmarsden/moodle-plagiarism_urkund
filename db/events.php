@@ -24,34 +24,9 @@ $handlers = array (
         'handlerfunction'  => 'urkund_event_file_uploaded',
         'schedule'         => 'cron'
     ),
-    'assessable_files_done' => array (
-        'handlerfile'      => '/plagiarism/urkund/lib.php',
-        'handlerfunction'  => 'urkund_event_files_done',
-        'schedule'         => 'cron'
-    ),
     'assessable_content_uploaded' => array (
         'handlerfile'      => '/plagiarism/urkund/lib.php',
         'handlerfunction'  => 'urkund_event_content_uploaded',
-        'schedule'         => 'cron'
-    ),
-    'assessable_content_done' => array (
-        'handlerfile'      => '/plagiarism/urkund/lib.php',
-        'handlerfunction'  => 'urkund_event_content_done',
-        'schedule'         => 'cron'
-    ),
-    'mod_created' => array (
-        'handlerfile'      => '/plagiarism/urkund/lib.php',
-        'handlerfunction'  => 'urkund_event_mod_created',
-        'schedule'         => 'cron'
-    ),
-    'mod_updated' => array (
-        'handlerfile'      => '/plagiarism/urkund/lib.php',
-        'handlerfunction'  => 'urkund_event_mod_updated',
-        'schedule'         => 'cron'
-    ),
-    'mod_deleted' => array (
-        'handlerfile'      => '/plagiarism/urkund/lib.php',
-        'handlerfunction'  => 'urkund_event_mod_deleted',
         'schedule'         => 'cron'
     ),
     'assessable_submitted' => array (

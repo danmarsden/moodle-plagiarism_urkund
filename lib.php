@@ -827,30 +827,6 @@ function urkund_event_assessable_submitted($eventdata) {
     return $urkund->event_handler($eventdata);
 }
 
-function urkund_event_mod_created($eventdata) {
-    $result = true;
-        // A new module has been created - this is a generic event that is called for all module types
-        // make sure you check the type of module before handling if needed.
-
-    return $result;
-}
-
-function urkund_event_mod_updated($eventdata) {
-    $result = true;
-        // A module has been updated - this is a generic event that is called for all module types
-        // make sure you check the type of module before handling if needed.
-
-    return $result;
-}
-
-function urkund_event_mod_deleted($eventdata) {
-    $result = true;
-        // A module has been deleted - this is a generic event that is called for all module types
-        // make sure you check the type of module before handling if needed.
-
-    return $result;
-}
-
 function urkund_supported_events() {
     $supportedevents = array('file_uploaded', 'files_done', 'content_uploaded', 'content_done', 'assessable_submitted');
     return $supportedevents;
