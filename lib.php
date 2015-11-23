@@ -520,18 +520,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     }
 
     /**
-     * Hook to allow status of submitted files to be updated - called on grading/report pages.
-     *
-     * @param object $course - full Course object
-     * @param object $cm - full cm object
-     * @return string
-     */
-    public function update_status($course, $cm) {
-        // Called at top of submissions/grading pages - allows printing of admin style links or updating status.
-        return '';
-    }
-
-    /**
      * Called by admin/cron.php.
      *
      */
