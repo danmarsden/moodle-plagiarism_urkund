@@ -57,11 +57,6 @@ $baseurl = new moodle_url('urkund_debug.php', array('page' => $page, 'sort' => $
 
 $table = new flexible_table('urkundfiles');
 
-// Get list of Events in queue.
-$a = new stdClass();
-$a->countallevents = $DB->count_records('events_queue_handlers');
-$a->countheld = $DB->count_records_select('events_queue_handlers', 'status > 0');
-
 if (!$table->is_downloading($download, $exportfilename)) {
     echo $OUTPUT->header();
     $currenttab = 'urkunddebug';
@@ -119,13 +114,6 @@ if (!$table->is_downloading($download, $exportfilename)) {
         echo $OUTPUT->box(get_string('cronwarning', 'plagiarism_urkund'), 'generalbox admin warning');
     }
 
-    $warning = '';
-    if (!empty($a->countallevents)) {
-        $warning = ' warning';
-    }
-
-    echo $OUTPUT->box(get_string('waitingevents', 'plagiarism_urkund', $a), 'generalbox admin'.$warning)."<br/>";
-
     if ($resetuser == 1 && $id && confirm_sesskey()) {
         if (urkund_reset_file($id)) {
             echo $OUTPUT->notification(get_string('fileresubmitted', 'plagiarism_urkund'));
@@ -151,26 +139,6 @@ if (!$table->is_downloading($download, $exportfilename)) {
         $DB->delete_records('plagiarism_urkund_files', array('id' => $id));
         echo $OUTPUT->notification(get_string('filedeleted', 'plagiarism_urkund'));
 
-    }
-}
-$heldevents = array();
-if (!empty($a->countheld)) {
-    if (!$table->is_downloading()) {
-        echo $OUTPUT->heading(get_string('heldevents', 'plagiarism_urkund'));
-        echo $OUTPUT->box(get_string('heldeventsdescription', 'plagiarism_urkund'));
-    }
-    $sql = "SELECT qh.id, qh.status, qh.timemodified, eq.eventdata, eq.stackdump, eq.userid, eh.eventname,
-                       eh.component, eh.handlerfile, eh.handlerfunction
-                  FROM {events_queue_handlers} qh
-                  JOIN {events_queue} eq ON eq.id = qh.queuedeventid
-                  JOIN {events_handlers} eh ON eh.id = qh.handlerid
-                 WHERE qh.status > 0";
-    $heldevents = $DB->get_records_sql($sql);
-    if (!$table->is_downloading()) {
-        foreach ($heldevents as $e) {
-            $e->eventdata = unserialize(base64_decode($e->eventdata));
-            urkund_pretty_print($e);
-        }
     }
 }
 // Now show files in an error state.
