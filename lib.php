@@ -527,8 +527,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         // Do any scheduled task stuff.
         urkund_update_allowed_filetypes();
 
-        // TODO: Find all Pending files and submit to URKUND;
-
+        // TODO: Find all Pending files and submit to URKUND.
 
         if ($plagiarismsettings = $this->get_settings()) {
             urkund_get_scores($plagiarismsettings);
@@ -841,10 +840,10 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
     if (is_string($file)) { // This is a local file path.
         $filehash = $file;
         $filename = basename($file);
-    } else {        $filehash = (!empty($file->identifier)) ? $file->identifier : $file->get_contenthash();
+    } else {
+        $filehash = (!empty($file->identifier)) ? $file->identifier : $file->get_contenthash();
         $filename = (!empty($file->filename)) ? $file->filename : $file->get_filename();
     }
-
 
     // Now update or insert record into urkund_files.
     $plagiarismfile = $DB->get_record_sql(
