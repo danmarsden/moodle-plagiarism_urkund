@@ -120,4 +120,5 @@ $string['restrictcontenttext'] = 'Only submit in-line text';
 $string['wordcount'] = 'Minimum word count';
 $string['wordcount_help'] = 'This sets a minimum limit on the number of words that are required for in-line text (forum posts and online assignment type) before the content will be sent to URKUND.';
 
-$string['sendfiles'] = 'Send queued files to URKUND';
+$string['sendfiles'] = 'Send queued files';
+$string['updateallowedfiletypes'] = 'Update allowed file types';

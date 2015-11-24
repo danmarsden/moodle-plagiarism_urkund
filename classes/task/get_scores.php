@@ -42,7 +42,7 @@ class get_scores extends \core\task\scheduled_task {
     public function execute() {
         global $CFG;
         require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-        $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+        $plagiarismsettings = \plagiarism_plugin_urkund::get_settings();
         if (!empty($plagiarismsettings)) {
             urkund_get_scores($plagiarismsettings);
         }

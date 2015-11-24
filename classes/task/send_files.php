@@ -42,7 +42,6 @@ class send_files extends \core\task\scheduled_task {
     public function execute() {
         global $CFG;
         require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-        $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
-
+        plagiarism_urkund_send_files();
     }
 }

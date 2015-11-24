@@ -16,7 +16,7 @@
 
 $tasks = array(
     array(
-        'classname' => 'plagiarism_urkund\task\get_scores_task',
+        'classname' => 'plagiarism_urkund\task\get_scores',
         'blocking' => 0,
         'minute' => '*/5',
         'hour' => '*',
@@ -25,7 +25,7 @@ $tasks = array(
         'month' => '*'
     ),
     array(
-        'classname' => 'plagiarism_urkund\task\send_files_task',
+        'classname' => 'plagiarism_urkund\task\send_files',
         'blocking' => 0,
         'minute' => '*/5',
         'hour' => '*',
@@ -34,7 +34,7 @@ $tasks = array(
         'month' => '*'
     ),
     array(
-        'classname' => 'plagiarism_urkund\task\update_allowed_filetypes_task',
+        'classname' => 'plagiarism_urkund\task\update_allowed_filetypes',
         'blocking' => 0,
         'minute' => '5',
         'hour' => '3',

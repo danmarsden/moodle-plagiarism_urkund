@@ -97,7 +97,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
                     echo "id:".$file->id.' '. $response;
                     echo "</p>";
                 } else {
-                    urkund_reset_file($plagiarismfile);
+                    urkund_reset_file($plagiarismfile, $plagiarismsettings);
                 }
 
                 $i++;
@@ -115,7 +115,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
     }
 
     if ($resetuser == 1 && $id && confirm_sesskey()) {
-        if (urkund_reset_file($id)) {
+        if (urkund_reset_file($id, $plagiarismsettings)) {
             echo $OUTPUT->notification(get_string('fileresubmitted', 'plagiarism_urkund'));
         }
     } else if ($resetuser == 2 && $id && confirm_sesskey()) {

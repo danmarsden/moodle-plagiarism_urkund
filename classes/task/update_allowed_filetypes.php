@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * URKUND task - Send queued files to urkund.
+ * URKUND task - used to get list of allowed filetypes from URKUND.
  *
  * @package    plagiarism_urkund
  * @author     Dan Marsden http://danmarsden.com
@@ -27,22 +27,24 @@ namespace plagiarism_urkund\task;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * send_files class, used to send queued files to Urkund.
+ * update_allowed_filetypes class, used to get list of allowed filetypes from URKUND.
  *
  * @package    plagiarism_urkund
  * @author     Dan Marsden http://danmarsden.com
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class send_files extends \core\task\scheduled_task {
+class update_allowed_filetypes extends \core\task\scheduled_task {
     public function get_name() {
         // Shown in admin screens.
-        return get_string('sendfiles', 'plagiarism_urkund');
+        return get_string('updateallowedfiletypes', 'plagiarism_urkund');
     }
 
     public function execute() {
         global $CFG;
         require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-        urkund_update_allowed_filetypes();
-
+        $plagiarismsettings = \plagiarism_plugin_urkund::get_settings();
+        if (!empty($plagiarismsettings)) {
+            urkund_update_allowed_filetypes();
+        }
     }
 }
