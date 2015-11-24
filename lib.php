@@ -146,7 +146,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $file->type = "tempurkund";
             $file->filename = $filename;
             $file->timestamp = time();
-            $file->identifier = sha1($linkarray['content']);
+            $file->identifier = sha1(plagiarism_urkund_format_temp_content($linkarray['content']));
+            $file->oldidentifier = sha1($linkarray['content']);
             $file->filepath = $filepath;
         } else if (!empty($linkarray['file']) && $showfiles) {
             $file = new stdclass();
@@ -307,11 +308,16 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // User is not permitted to see any details.
             return false;
         }
+        $params = array($cmid, $userid, $filehash);
+        $extrasql = '';
+        if (!empty($file->oldidentifier)) {
+            $extrasql = ' OR identifier = ?';
+            $params[] = $file->oldidentifier;
+        }
         $plagiarismfile = $DB->get_record_sql(
                     "SELECT * FROM {plagiarism_urkund_files}
                     WHERE cm = ? AND userid = ? AND " .
-                    "identifier = ?",
-                    array($cmid, $userid, $filehash));
+                    "(identifier = ? ".$extrasql.")", $params);
         if (empty($plagiarismfile)) {
             // No record of that submitted file.
             return false;
@@ -744,18 +750,24 @@ function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
     $fd = fopen($filepath, 'wb');   // Create if not exist, write binary.
 
     // Write html and body tags as it seems that Urkund doesn't works well without them.
-    $content = '<html>' .
-               '<head>' .
-               '<meta charset="UTF-8">' .
-               '</head>' .
-               '<body>' .
-               $filecontent .
-               '</body></html>';
+    $content = plagiarism_urkund_format_temp_content($filecontent);
 
     fwrite($fd, $content);
     fclose($fd);
 
     return $filepath;
+}
+
+// Helper function used to add extra html around file contents.
+function plagiarism_urkund_format_temp_content($content) {
+    return '<html>' .
+           '<head>' .
+           '<meta charset="UTF-8">' .
+           '</head>' .
+           '<body>' .
+           $content .
+           '</body></html>';
+
 }
 
 /**
