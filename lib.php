@@ -1442,6 +1442,16 @@ function plagiarism_urkund_send_files() {
                     $file->timestamp = time();
                     $file->identifier = sha1(file_get_contents($pf->identifier));
                     $file->filepath = $pf->identifier;
+
+                    // Sanity check to see if the Sha1 for this file has already been sent to urkund using a different record.
+                    if ($DB->record_exists('plagiarism_urkund_files', array('identifier' => $file->identifier,
+                                                                            'cm' => $pf->cm,
+                                                                            'userid' => $pf->userid))) {
+                        // This file has already been sent and multiple records for this file were created
+                        // Delete plagiarism record and file.
+                        $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
+                        unlink($pf->identifier); // Delete temp file as we don't need it anymore.
+                    }
                 }
             }
             if (!empty($file)) {
