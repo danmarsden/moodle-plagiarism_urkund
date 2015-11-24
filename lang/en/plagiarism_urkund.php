@@ -118,3 +118,7 @@ $string['useurkund'] = 'Enable URKUND';
 $string['waitingevents'] = 'There are {$a->countallevents} events waiting for cron and {$a->countheld} events are being held for resubmission';
 $string['wordcount'] = 'Minimum word count';
 $string['wordcount_help'] = 'This sets a minimum limit on the number of words that are required for in-line text (forum posts and online assignment type) before the content will be sent to URKUND.';
+$string['cannotupgradeunprocesseddata'] = '';
+$string['cannotupgradeunprocesseddata'] = '<h1>Cannot upgrade to this version of the plugin due to existing unprocessed data, please revert to an earlier version of this plugin and clear old events.</h1><p>This version of the plugin relies on the new events API in Moodle but your installation contains un-processed events related to the old API.</p>
+ You should revert to an older version of the URKUND plugin, put the site into maintenance mode, run the Moodle Cron process and make sure all old events are cleared. Then try upgrading to this version of the URKUND plugin again.</p>
+ <p>For more information see: <a href="https://docs.moodle.org/en/Plagiarism_Prevention_URKUND_Settings#Installation_failed_due_to_unprocessed_data">URKUND Installation failed due to unprocessed data</a></p>';
