@@ -140,7 +140,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
 
         if (!empty($linkarray['content']) && $showcontent && str_word_count($linkarray['content']) > $wordcount) {
-        echo "count:".str_word_count($linkarray['content']);
             $filename = "content-" . $COURSE->id . "-" . $cmid . "-". $userid . ".htm";
             $filepath = $CFG->tempdir."/urkund/" . $filename;
             $file = new stdclass();
