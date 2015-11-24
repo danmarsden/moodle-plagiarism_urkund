@@ -1208,7 +1208,7 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     if (strpos($plagiarismfile->identifier, $CFG->tempdir) === false) {
         $identifier = $plagiarismfile->identifier;
     } else {
-        // in-line text files temporarily use the identifier field as the filepath.
+        // In-line text files temporarily use the identifier field as the filepath.
         $identifier = sha1(file_get_contents($plagiarismfile->identifier));
     }
 
