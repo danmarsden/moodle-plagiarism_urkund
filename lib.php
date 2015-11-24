@@ -901,14 +901,14 @@ function urkund_queue_file($cmid, $userid, $file) {
             if (!in_array($ext, $allowedtypes)) {
                 // This file is not allowed, delete it from the table.
                 $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
-                mtrace("File submitted to cm:".$cmid. " with an extension ". $ext.
+                debugging("File submitted to cm:".$cmid. " with an extension ". $ext.
                        " This assignment is configured to ignore this filetype, ".
                        "only files of type:".$plagiarismvalues['urkund_selectfiletypes']. " are accepted");
                 return '';
             }
         } else {
             // No path found - this shouldn't happen but ignore this file.
-            mtrace("Could not obtain the extension for a file submitted to cm:".$cmid. " with the filename ". $filename.
+            debugging("Could not obtain the extension for a file submitted to cm:".$cmid. " with the filename ". $filename.
                    "only files of type:".$plagiarismvalues['urkund_selectfiletypes']. " are accepted");
             $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
             return '';
@@ -1181,7 +1181,7 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
 
 function urkund_get_url($baseurl, $plagiarismfile) {
     // Get url of api.
-    global $DB;
+    global $DB, $CFG;
     $receiver = $DB->get_field('plagiarism_urkund_config', 'value', array('cm' => $plagiarismfile->cm,
                                                                           'name' => 'urkund_receiver'));
     if (empty($receiver)) {
@@ -1193,9 +1193,15 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     // Then the course module id of this plugin,
     // Then the id from the plagiarism_files table,
     // Then the full contenthash of the file.
+    if (strpos($plagiarismfile->identifier, $CFG->tempdir) === false) {
+        $identifier = $plagiarismfile->identifier;
+    } else {
+        // in-line text files temporarily use the identifier field as the filepath.
+        $identifier = sha1(file_get_contents($plagiarismfile->identifier));
+    }
 
     $siteid = substr(md5(get_site_identifier()), 0, 8);
-    $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$plagiarismfile->identifier;
+    $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$identifier;
 
     return $baseurl.'/' .trim($receiver).'/'.$urkundid;
 }
@@ -1449,7 +1455,9 @@ function plagiarism_urkund_send_files() {
                         // This file has already been sent and multiple records for this file were created
                         // Delete plagiarism record and file.
                         $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
+                        debugging("This file has been duplicated, deleting the duplicate record. Identifier:".$file->identifier);
                         unlink($pf->identifier); // Delete temp file as we don't need it anymore.
+                        continue;
                     }
                 }
             }
