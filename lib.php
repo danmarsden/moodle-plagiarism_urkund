@@ -370,6 +370,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return;
         }
         if (isset($data->use_urkund)) {
+            if (empty($data->submissiondrafts)) {
+                // Make sure draft_submit is not set if submissiondrafts not used.
+                $data->urkund_draft_submit = 0;
+            }
             // Array of possible plagiarism config options.
             $plagiarismelements = $this->config_options();
             // First get existing values.
@@ -424,12 +428,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $plagiarismelements = $this->config_options();
         if (has_capability('plagiarism/urkund:enable', $context)) {
             urkund_get_form_elements($mform);
-            if ($mform->elementExists('urkund_draft_submit')) {
-                if ($mform->elementExists('var4')) {
-                    $mform->disabledIf('urkund_draft_submit', 'var4', 'eq', 0);
-                } else if ($mform->elementExists('submissiondrafts')) {
-                    $mform->disabledIf('urkund_draft_submit', 'submissiondrafts', 'eq', 0);
-                }
+            if ($mform->elementExists('urkund_draft_submit') && $mform->elementExists('submissiondrafts')) {
+                $mform->disabledIf('urkund_draft_submit', 'submissiondrafts', 'eq', 0);
             }
             // Disable all plagiarism elements if use_plagiarism eg 0.
             foreach ($plagiarismelements as $element) {
@@ -795,8 +795,7 @@ function urkund_get_form_elements($mform) {
     $mform->addElement('select', 'urkund_show_student_report',
                        get_string("urkund_show_student_report", "plagiarism_urkund"), $tiioptions);
     $mform->addHelpButton('urkund_show_student_report', 'urkund_show_student_report', 'plagiarism_urkund');
-    if ($mform->elementExists('var4') ||
-        $mform->elementExists('submissiondrafts')) {
+    if ($mform->elementExists('submissiondrafts')) {
         $mform->addElement('select', 'urkund_draft_submit',
                            get_string("urkund_draft_submit", "plagiarism_urkund"), $urkunddraftoptions);
     }
