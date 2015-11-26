@@ -903,7 +903,7 @@ function urkund_queue_file($cmid, $userid, $file) {
     }
 
     // Check to see if configured to only send certain file-types and if this file matches.
-    if (empty($plagiarismvalues['urkund_allowallfile'])) {
+    if (isset($plagiarismvalues['urkund_allowallfile']) && empty($plagiarismvalues['urkund_allowallfile'])) {
         $allowedtypes = explode(',', $plagiarismvalues['urkund_selectfiletypes']);
 
         $pathinfo = pathinfo($filename);
