@@ -90,7 +90,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
                     } else {
                         $response = get_string('unknownwarning', 'plagiarism_urkund');
                         if (debugging()) {
-                            urkund_pretty_print($file);
+                            echo urkund_pretty_print($file);
                         }
                     }
                     echo "<p>";
@@ -130,7 +130,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
             echo $OUTPUT->notification(get_string('scoreavailable', 'plagiarism_urkund'));
         } else {
             echo $OUTPUT->notification(get_string('unknownwarning', 'plagiarism_urkund'));
-            urkund_pretty_print($file);
+            echo urkund_pretty_print($file);
         }
 
     }
