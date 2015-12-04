@@ -63,6 +63,8 @@ if (!$table->is_downloading($download, $exportfilename)) {
 
     require_once('urkund_tabs.php');
 
+    $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+
     if (!empty($resetall) && confirm_sesskey()) {
         // Check to see if there are any files in this state.
         if (!$confirm) {
@@ -76,7 +78,6 @@ if (!$table->is_downloading($download, $exportfilename)) {
         } else {
             $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
             $i = 0;
-            $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
             foreach ($files as $plagiarismfile) {
                 if ($resetall == '202') {
                     $file = urkund_get_score($plagiarismsettings, $plagiarismfile, true);
