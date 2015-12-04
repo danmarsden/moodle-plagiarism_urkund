@@ -176,7 +176,6 @@ $table->set_attribute('class', 'generaltable generalbox');
 $table->show_download_buttons_at(array(TABLE_P_BOTTOM));
 $table->setup();
 
-$table->set_a
 // Work out direction of sort required.
 $sortcolumns = $table->get_sort_columns();
 
