@@ -152,32 +152,10 @@ $sqlallfiles = "SELECT t.*, ".$userfields.", m.name as moduletype, ".
         "AND t.statuscode <> 'Analyzed' ";
 
 $sqlcount = "SELECT COUNT(id) FROM {plagiarism_urkund_files} WHERE statuscode <> 'Analyzed'";
-
-// Now do sorting if specified.
-$orderby = '';
-if (!empty($sort)) {
-    if ($sort == "name") {
-        $orderby = " ORDER BY u.firstname, u.lastname";
-    } else if ($sort == "module") {
-        $orderby = " ORDER BY cm.id";
-    } else if ($sort == "status") {
-        $orderby = " ORDER BY t.statuscode";
-    } else if ($sort == "id") {
-        $orderby = " ORDER BY t.id";
-    }
-    if (!empty($orderby) && ($dir == 'asc' || $dir == 'desc')) {
-        $orderby .= " ".$dir;
-    }
-}
-
 $count = $DB->count_records_sql($sqlcount);
-if ($showall or $table->is_downloading()) {
-    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null);
-} else {
-    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
+if (!$showall && !$table->is_downloading()) {
     $table->pagesize($limit, $count);
 }
-
 
 $table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'action'));
 
@@ -197,6 +175,40 @@ $table->set_attribute('class', 'generaltable generalbox');
 
 $table->show_download_buttons_at(array(TABLE_P_BOTTOM));
 $table->setup();
+
+$table->set_a
+// Work out direction of sort required.
+$sortcolumns = $table->get_sort_columns();
+
+// Now do sorting if specified.
+$orderby = '';
+if (!empty($sort)) {
+    $direction = ' DESC';
+    if (!empty($sortcolumns[$sort]) && $sortcolumns[$sort] == SORT_ASC) {
+        $direction = ' ASC';
+    }
+
+    if ($sort == "name") {
+        $orderby = " ORDER BY u.firstname $direction, u.lastname $direction";
+    } else if ($sort == "module") {
+        $orderby = " ORDER BY cm.id $direction";
+    } else if ($sort == "status") {
+        $orderby = " ORDER BY t.statuscode $direction";
+    } else if ($sort == "id") {
+        $orderby = " ORDER BY t.id $direction";
+    }
+    if (!empty($orderby) && ($dir == 'asc' || $dir == 'desc')) {
+        $orderby .= " ".$dir;
+    }
+}
+
+
+if ($showall or $table->is_downloading()) {
+    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null);
+} else {
+    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
+}
+
 
 $fs = get_file_storage();
 foreach ($urkundfiles as $tf) {
