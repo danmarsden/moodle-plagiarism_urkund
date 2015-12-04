@@ -85,7 +85,8 @@ if (!$table->is_downloading($download, $exportfilename)) {
                     $DB->update_record('plagiarism_urkund_files', $file);
                     if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
                         $response = get_string('scorenotavailableyet', 'plagiarism_urkund');
-                    } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED) {
+                    } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED ||
+                               $file->statuscode == 'Analyzed') {
                         $response = get_string('scoreavailable', 'plagiarism_urkund');
                     } else {
                         $response = get_string('unknownwarning', 'plagiarism_urkund');
@@ -126,7 +127,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
         $DB->update_record('plagiarism_urkund_files', $file);
         if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
             echo $OUTPUT->notification(get_string('scorenotavailableyet', 'plagiarism_urkund'));
-        } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED) {
+        } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED || $file->statuscode == 'Analyzed') {
             echo $OUTPUT->notification(get_string('scoreavailable', 'plagiarism_urkund'));
         } else {
             echo $OUTPUT->notification(get_string('unknownwarning', 'plagiarism_urkund'));
