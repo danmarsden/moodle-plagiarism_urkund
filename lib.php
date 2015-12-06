@@ -1345,6 +1345,14 @@ function urkund_reset_file($file, $plagiarismsettings = null) {
         return true;
     }
 
+    // Check to make sure cm exists. - delete record if cm has been deleted.
+    if (!$DB->record_exists('course_modules', array('id' => $plagiarismfile->cm))) {
+        // The coursemodule related to this file has been deleted, delete the urkund entry.
+        mtrace("Course module id:".$plagiarismfile->cm. " does not exist, deleting pending record id".$plagiarismfile->id);
+        $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
+        return true;
+    }
+
     if (empty($plagiarismsettings)) {
         $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
     }
@@ -1445,6 +1453,12 @@ function plagiarism_urkund_send_files() {
         // Get all files in a pending state.
         $plagiarismfiles = $DB->get_records("plagiarism_urkund_files", array("statuscode" => "pending"));
         foreach ($plagiarismfiles as $pf) {
+            // Check to make sure cm exists. - delete record if cm has been deleted.
+            if (!$DB->record_exists('course_modules', array('id' => $pf->cm))) {
+                // The coursemodule related to this file has been deleted, delete the urkund entry.
+                mtrace("Course module id:".$pf->cm. " does not exist, deleting pending record id".$pf->id);
+                $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
+            }
             $textfile = false;
             if (strpos($pf->identifier, $CFG->tempdir) === false) {
                 $file = plagiarism_urkund_get_file_object($pf);
