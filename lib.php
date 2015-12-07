@@ -992,7 +992,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true;
     }
-    mtrace("URKUND fileid:".$plagiarismfile->id. ' sent for processing');
+    mtrace("URKUND fileid:".$plagiarismfile->id. ' sending for processing');
     $useremail = $DB->get_field('user', 'email', array('id' => $plagiarismfile->userid));
     // Get url of api.
     $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarismfile);
@@ -1459,6 +1459,7 @@ function plagiarism_urkund_send_files() {
                 mtrace("Course module id:".$pf->cm. " does not exist, deleting pending record id".$pf->id);
                 $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
             }
+            mtrace("URKUND fileid:".$pf->id. ' sending for processing');
             $textfile = false;
             if (strpos($pf->identifier, $CFG->tempdir) === false) {
                 $file = plagiarism_urkund_get_file_object($pf);
