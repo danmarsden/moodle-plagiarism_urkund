@@ -1458,6 +1458,7 @@ function plagiarism_urkund_send_files() {
                 // The coursemodule related to this file has been deleted, delete the urkund entry.
                 mtrace("Course module id:".$pf->cm. " does not exist, deleting pending record id".$pf->id);
                 $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
+                continue;
             }
             mtrace("URKUND fileid:".$pf->id. ' sending for processing');
             $textfile = false;
