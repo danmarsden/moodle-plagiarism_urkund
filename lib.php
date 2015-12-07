@@ -565,7 +565,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $wordcount = 50;
         }
 
-        if ($eventdata['eventtype'] == 'assessable_submitted' && empty($eventdata['other']['submission_editable'])) {
+        if ($eventdata['eventtype'] == 'assignsubmission_submitted' && empty($eventdata['other']['submission_editable'])) {
             // Assignment-specific functionality:
             // This is a 'finalize' event. No files from this event itself,
             // but need to check if files from previous events need to be submitted for processing.
