@@ -27,7 +27,8 @@ namespace plagiarism_urkund\task;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * update_allowed_filetypes class, used to get list of allowed filetypes from URKUND.
+ * update_allowed_filetypes class, used to get list of allowed filetypes from URKUND,
+ * also delete records associated with deleted activities.
  *
  * @package    plagiarism_urkund
  * @author     Dan Marsden http://danmarsden.com
@@ -44,7 +45,8 @@ class update_allowed_filetypes extends \core\task\scheduled_task {
         require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
         $plagiarismsettings = \plagiarism_plugin_urkund::get_settings();
         if (!empty($plagiarismsettings)) {
-            urkund_update_allowed_filetypes();
+            plagiarism_urkund_update_allowed_filetypes();
+            plagiarism_urkund_delete_old_records();
         }
     }
 }

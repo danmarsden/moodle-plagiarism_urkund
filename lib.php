@@ -1223,7 +1223,7 @@ function urkund_get_css_rank ($score) {
  * Function that checks Urkund to see if there are any newly supported filetypes.
  *
  */
-function urkund_update_allowed_filetypes() {
+function plagiarism_urkund_update_allowed_filetypes() {
     global $CFG, $DB;
     $configvars = get_config('plagiarism_urkund');
     $now = time();
@@ -1267,6 +1267,21 @@ function urkund_update_allowed_filetypes() {
             }
         }
         set_config('lastupdatedfiletypes', $now, 'plagiarism_urkund');
+    }
+}
+
+/* Function used to delete records associated with deleted activities.
+ * */
+function plagiarism_urkund_delete_old_records() {
+    global $DB;
+    $sql = "SELECT DISTINCT f.cm
+              FROM {plagiarism_urkund_config} f
+         LEFT JOIN {course_modules} c ON c.id = f.cm
+             WHERE c.id IS null AND f.cm <> 0";
+    $coursemodules = $DB->get_recordset_sql($sql);
+    foreach ($coursemodules as $cm) {
+        $DB->delete_records('plagiarism_urkund_config', array('cm' => $cm->cm));
+        $DB->delete_records('plagiarism_urkund_files', array('cm' => $cm->cm));
     }
 }
 
