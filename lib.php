@@ -979,6 +979,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         if (in_array($status, $allowedstatus)) {
             if ($status == URKUND_STATUSCODE_ACCEPTED) {
                 $plagiarismfile->attempt = 0; // Reset attempts for status checks.
+                plagiarism_urkund_fix_temp_hash(); // Fix hash if temp file used and delete temp file.
             } else {
                 $plagiarismfile->errorresponse = $response;
             }
@@ -1329,6 +1330,7 @@ function urkund_reset_file($file, $plagiarismsettings = null) {
 
     // Get file object for this submission.
     $fileobject = plagiarism_urkund_get_file_object($plagiarismfile);
+
     if (!empty($fileobject)) {
         // Set some new values.
         $plagiarismfile->statuscode = 'pending';
@@ -1351,64 +1353,93 @@ function urkund_reset_file($file, $plagiarismsettings = null) {
 function plagiarism_urkund_get_file_object($plagiarismfile) {
     global $CFG, $DB;
 
-    $cm = get_coursemodule_from_id('', $plagiarismfile->cm);
-    $modulecontext = context_module::instance($plagiarismfile->cm);
-    $fs = get_file_storage();
-    if ($cm->modname == 'assign') {
-        require_once($CFG->dirroot.'/mod/assign/locallib.php');
-        $assign = new assign($modulecontext, null, null);
+    if (strpos($plagiarismfile->identifier, $CFG->tempdir) === true) {
+        // This is a stored text file in temp dir.
+        $file = new stdclass();
+        if (file_exists($plagiarismfile->identifier)) {
+            $file->type = "tempurkund";
+            $file->filename = basename($plagiarismfile->identifier);
+            $file->timestamp = time();
+            $file->identifier = sha1(file_get_contents($plagiarismfile->identifier));
+            $file->filepath = $plagiarismfile->identifier;
 
-        if ($assign->get_instance()->teamsubmission) {
-            $submission = $assign->get_group_submission($plagiarismfile->userid, 0, false);
+            // Sanity check to see if the Sha1 for this file has already been sent to urkund using a different record.
+            if ($DB->record_exists('plagiarism_urkund_files', array('identifier' => $file->identifier,
+                'cm' => $plagiarismfile->cm,
+                'userid' => $plagiarismfile->userid))) {
+                // This file has already been sent and multiple records for this file were created
+                // Delete plagiarism record and file.
+                $DB->delete_records('plagiarism_urkund_files', array('id' => $plagiarismfile->id));
+                debugging("This file has been duplicated, deleting the duplicate record. Identifier:".$file->identifier);
+                unlink($plagiarismfile->identifier); // Delete temp file as we don't need it anymore.
+                return false;
+            }
+            return $file;
         } else {
-            $submission = $assign->get_user_submission($plagiarismfile->userid, false);
+            debugging("The local version of this file has been deleted, and this file cannot be sent");
+            return false;
         }
-        $submissionplugins = $assign->get_submission_plugins();
+    } else {
 
-        foreach ($submissionplugins as $submissionplugin) {
-            $component = $submissionplugin->get_subtype().'_'.$submissionplugin->get_type();
-            $fileareas = $submissionplugin->get_file_areas();
-            foreach ($fileareas as $filearea => $name) {
-                $files = $fs->get_area_files(
-                    $assign->get_context()->id,
-                    $component,
-                    $filearea,
-                    $submission->id,
-                    "timemodified",
-                    false
-                );
+        $cm = get_coursemodule_from_id('', $plagiarismfile->cm);
+        $modulecontext = context_module::instance($plagiarismfile->cm);
+        $fs = get_file_storage();
+        if ($cm->modname == 'assign') {
+            require_once($CFG->dirroot . '/mod/assign/locallib.php');
+            $assign = new assign($modulecontext, null, null);
 
+            if ($assign->get_instance()->teamsubmission) {
+                $submission = $assign->get_group_submission($plagiarismfile->userid, 0, false);
+            } else {
+                $submission = $assign->get_user_submission($plagiarismfile->userid, false);
+            }
+            $submissionplugins = $assign->get_submission_plugins();
+
+            foreach ($submissionplugins as $submissionplugin) {
+                $component = $submissionplugin->get_subtype() . '_' . $submissionplugin->get_type();
+                $fileareas = $submissionplugin->get_file_areas();
+                foreach ($fileareas as $filearea => $name) {
+                    $files = $fs->get_area_files(
+                        $assign->get_context()->id,
+                        $component,
+                        $filearea,
+                        $submission->id,
+                        "timemodified",
+                        false
+                    );
+
+                    foreach ($files as $file) {
+                        if ($file->get_contenthash() == $plagiarismfile->identifier) {
+                            return $file;
+                        }
+                    }
+                }
+            }
+        } else if ($cm->modname == 'workshop') {
+            require_once($CFG->dirroot . '/mod/workshop/locallib.php');
+            $cm = get_coursemodule_from_id('workshop', $plagiarismfile->cm, 0, false, MUST_EXIST);
+            $workshop = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
+            $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
+            $workshop = new workshop($workshop, $cm, $course);
+            $submissions = $workshop->get_submissions($plagiarismfile->userid);
+            foreach ($submissions as $submission) {
+                $files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id);
                 foreach ($files as $file) {
                     if ($file->get_contenthash() == $plagiarismfile->identifier) {
                         return $file;
                     }
                 }
             }
-        }
-    } else if ($cm->modname == 'workshop') {
-        require_once($CFG->dirroot.'/mod/workshop/locallib.php');
-        $cm     = get_coursemodule_from_id('workshop', $plagiarismfile->cm, 0, false, MUST_EXIST);
-        $workshop = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
-        $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
-        $workshop = new workshop($workshop, $cm, $course);
-        $submissions = $workshop->get_submissions($plagiarismfile->userid);
-        foreach ($submissions as $submission) {
-            $files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id);
-            foreach ($files as $file) {
-                if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                    return $file;
-                }
-            }
-        }
-    } else if ($cm->modname == 'forum') {
-        require_once($CFG->dirroot.'/mod/forum/lib.php');
-        $cm     = get_coursemodule_from_id('forum', $plagiarismfile->cm, 0, false, MUST_EXIST);
-        $posts = forum_get_user_posts($cm->instance, $plagiarismfile->userid);
-        foreach ($posts as $post) {
-            $files = $fs->get_area_files($modulecontext->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
-            foreach ($files as $file) {
-                if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                    return $file;
+        } else if ($cm->modname == 'forum') {
+            require_once($CFG->dirroot . '/mod/forum/lib.php');
+            $cm = get_coursemodule_from_id('forum', $plagiarismfile->cm, 0, false, MUST_EXIST);
+            $posts = forum_get_user_posts($cm->instance, $plagiarismfile->userid);
+            foreach ($posts as $post) {
+                $files = $fs->get_area_files($modulecontext->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
+                foreach ($files as $file) {
+                    if ($file->get_contenthash() == $plagiarismfile->identifier) {
+                        return $file;
+                    }
                 }
             }
         }
@@ -1438,32 +1469,9 @@ function plagiarism_urkund_send_files() {
                 continue;
             }
             mtrace("URKUND fileid:".$pf->id. ' sending for processing');
-            $textfile = false;
-            if (strpos($pf->identifier, $CFG->tempdir) === false) {
-                $file = plagiarism_urkund_get_file_object($pf);
-            } else {
-                // This is a stored text file in temp dir.
-                $textfile = true;
-                $file = new stdclass();
-                if (file_exists($pf->identifier)) {
-                    $file->type = "tempurkund";
-                    $file->filename = basename($pf->identifier);
-                    $file->timestamp = time();
-                    $file->identifier = sha1(file_get_contents($pf->identifier));
-                    $file->filepath = $pf->identifier;
-
-                    // Sanity check to see if the Sha1 for this file has already been sent to urkund using a different record.
-                    if ($DB->record_exists('plagiarism_urkund_files', array('identifier' => $file->identifier,
-                                                                            'cm' => $pf->cm,
-                                                                            'userid' => $pf->userid))) {
-                        // This file has already been sent and multiple records for this file were created
-                        // Delete plagiarism record and file.
-                        $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
-                        debugging("This file has been duplicated, deleting the duplicate record. Identifier:".$file->identifier);
-                        unlink($pf->identifier); // Delete temp file as we don't need it anymore.
-                        continue;
-                    }
-                }
+            $file = plagiarism_urkund_get_file_object($pf);
+            if (empty($file)) {
+                continue;
             }
             if ($module = "assign") {
                 // Check for group assignment and adjust userid if required.
@@ -1471,15 +1479,7 @@ function plagiarism_urkund_send_files() {
                 $pf = plagiarism_urkund_check_group($pf);
             }
             if (!empty($file)) {
-                $success = urkund_send_file_to_urkund($pf, $plagiarismsettings, $file);
-                if ($success && $textfile) {
-                    // Text files temporarily use the filepath in the identifier field - convert this to contenthash.
-                    $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $pf->id));
-                    $plagiarismfile->identifier = sha1(file_get_contents($pf->identifier));
-                    $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
-
-                    unlink($pf->identifier); // Delete temp file as we don't need it anymore.
-                }
+                urkund_send_file_to_urkund($pf, $plagiarismsettings, $file);
             } else {
                 $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
                 mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
@@ -1539,4 +1539,22 @@ function plagiarism_urkund_check_group($plagiarismfile) {
         }
     }
     return $plagiarismfile;
+}
+
+/* Function used to clean up after successful text based submission.
+ * We only delete if the file was sucessfully sent to help a future reset.
+ */
+function plagiarism_urkund_fix_temp_hash($originalrecord) {
+    global $DB, $CFG;
+    // Text files temporarily use the filepath in the identifier field - convert this to contenthash.
+    $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $originalrecord->id));
+    if ($plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED &&
+        strpos($plagiarismfile->identifier, $CFG->tempdir) === true) {
+
+        // If this was a succesful submission, convert identifier and delete temp file.
+        $plagiarismfile->identifier = sha1(file_get_contents($plagiarismfile->identifier));
+        $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
+
+        unlink($originalrecord->identifier); // Delete temp file as we don't need it anymore.
+    }
 }
