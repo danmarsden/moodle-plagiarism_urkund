@@ -979,7 +979,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         if (in_array($status, $allowedstatus)) {
             if ($status == URKUND_STATUSCODE_ACCEPTED) {
                 $plagiarismfile->attempt = 0; // Reset attempts for status checks.
-                plagiarism_urkund_fix_temp_hash(); // Fix hash if temp file used and delete temp file.
+                plagiarism_urkund_fix_temp_hash($plagiarismfile); // Fix hash if temp file used and delete temp file.
             } else {
                 $plagiarismfile->errorresponse = $response;
             }
