@@ -1341,7 +1341,7 @@ function urkund_reset_file($file, $plagiarismsettings = null) {
         $plagiarismfile = urkund_queue_file($plagiarismfile->cm, $plagiarismfile->userid, $fileobject);
         if (!empty($plagiarismfile)) {
             // Send this file now.
-            urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file);
+            urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $fileobject);
         }
         return true;
     }
