@@ -1473,7 +1473,7 @@ function plagiarism_urkund_send_files() {
             if (empty($file)) {
                 continue;
             }
-            if ($module = "assign") {
+            if ($modulename == "assign") {
                 // Check for group assignment and adjust userid if required.
                 // This prevents subsequent group submissions from flagging a previous submission as a match.
                 $pf = plagiarism_urkund_check_group($pf);
