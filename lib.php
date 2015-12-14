@@ -1449,7 +1449,7 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
 // Function called by scheduled tasks
 // Responsible for sending queued files.
 function plagiarism_urkund_send_files() {
-    global $DB, $CFG;
+    global $DB;
 
     $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
     if (!empty($plagiarismsettings)) {
@@ -1527,7 +1527,8 @@ function plagiarism_urkund_check_group($plagiarismfile) {
                     if (count($pfgroups) == 1) {
                         // This user made the first valid submission so use their id when sending the file.
                         $plagiarismfile->userid = $pf->userid;
-                        mtrace("URKUND: Group submission by newuser, modify to use original userid:".$pf->userid." id:".$plagiarismfile->id);
+                        mtrace("URKUND: Group submission by newuser, modify to use original userid:".
+                               $pf->userid." id:".$plagiarismfile->id);
                         return $plagiarismfile;
                     }
                     if ($i >= $sanitycheckusers) {

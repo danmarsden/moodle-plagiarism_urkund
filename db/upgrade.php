@@ -95,7 +95,6 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
             upgrade_plugin_savepoint(true, 2015121401, 'plagiarism', 'urkund');
         }
 
-
     }
 
     return true;
