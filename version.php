@@ -25,7 +25,7 @@
 
 $plugin->version = 2015120801;
 $plugin->requires = 2014041100.00;
-$plugin->cron     = 300; // Only run every 5 minutes.
+$plugin->cron     = 86400; // Cron function no longer used.
 $plugin->component = 'plagiarism_urkund';
 $plugin->maturity  = MATURITY_BETA;
 $plugin->release   = '3.2.0';
