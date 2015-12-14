@@ -70,6 +70,9 @@ class urkund_setup_form extends moodleform {
             if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
                 $modstring = 'urkund_enable_mod_' . $mod;
                 $mform->addElement('checkbox', $modstring, get_string('urkund_enableplugin', 'plagiarism_urkund', $mod));
+                if ($modname == 'assign') {
+                    $mform->setDefault($modstring, 1);
+                }
             }
         }
 

@@ -83,6 +83,20 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
 
         upgrade_plugin_savepoint(true, 2015112400, 'plagiarism', 'urkund');
     }
+    if ($oldversion < 2015121401) {
+        if (!$DB->record_exists('plagiarism_urkund_config', array('name' => 'urkund_allowallfile', 'cm' => 0))) {
+            // Set appropriate defaults for new setting.
+            $newelement = new Stdclass();
+            $newelement->cm = 0;
+            $newelement->name = 'urkund_allowallfile';
+            $newelement->value = 1;
+            $DB->insert_record('plagiarism_urkund_config', $newelement);
+
+            upgrade_plugin_savepoint(true, 2015121401, 'plagiarism', 'urkund');
+        }
+
+
+    }
 
     return true;
 }
