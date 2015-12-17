@@ -112,7 +112,7 @@ $string['urkund_username'] = 'Username';
 $string['urkund_username_help'] = 'Username provided by URKUND to access the API';
 $string['urkunddebug'] = 'Debugging';
 $string['urkunddefaults'] = 'URKUND defaults';
-$string['urkundexplain'] = 'For more information on this plugin see: <a href="http://www.urkund.com/int/en/" target="_blank">http://www.urkund.com/int/en/</a>';
+$string['urkundexplain'] = 'For more information on this plugin see: <a href="http://www.urkund.com/en" target="_blank">http://www.urkund.com/int/en/</a>';
 $string['urkundfiles'] = 'Urkund Files';
 $string['useurkund'] = 'Enable URKUND';
 $string['waitingevents'] = 'There are {$a->countallevents} events waiting for cron and {$a->countheld} events are being held for resubmission';
