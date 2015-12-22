@@ -1420,7 +1420,7 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                         }
                         if ($file->get_contenthash() == $plagiarismfile->identifier) {
                             if (debugging()) {
-                                mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->id);
+                                mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
                             }
                             return $file;
                         }
@@ -1503,9 +1503,10 @@ function plagiarism_urkund_send_files() {
             if (empty($file)) {
                 mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
                 if (debugging()) {
-                    urkund_pretty_print($pf);
+                    mtrace(print_r($pf));
                 }
                 $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
+                continue;
             }
             if ($modulename == "assign") {
                 // Check for group assignment and adjust userid if required.
