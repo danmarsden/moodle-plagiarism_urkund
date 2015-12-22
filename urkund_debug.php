@@ -92,7 +92,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
                     } else {
                         $response = get_string('unknownwarning', 'plagiarism_urkund');
                         if (debugging()) {
-                            echo urkund_pretty_print($file);
+                            echo plagiarism_urkund_pretty_print($file);
                         }
                     }
                     echo "<p>";
@@ -132,7 +132,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
             echo $OUTPUT->notification(get_string('scoreavailable', 'plagiarism_urkund'));
         } else {
             echo $OUTPUT->notification(get_string('unknownwarning', 'plagiarism_urkund'));
-            echo urkund_pretty_print($file);
+            echo plagiarism_urkund_pretty_print($file);
         }
 
     }
@@ -296,24 +296,3 @@ if (!$table->is_downloading()) {
     echo $OUTPUT->footer();
 }
 
-function urkund_pretty_print($arr) {
-    if (is_object($arr)) {
-        $arr = (array) $arr;
-    }
-    $retstr = '<table class="generaltable">';
-    $retstr .= '<tr><th width=20%>Key</th><th width=80%>Value</th></tr>';
-    if (is_array($arr)) {
-        foreach ($arr as $key => $val) {
-            if (is_object($val)) {
-                $val = (array) $val;
-            }
-            if (is_array($val)) {
-                $retstr .= '<tr><td>' . $key . '</td><td>' . pretty_print($val) . '</td></tr>';
-            } else {
-                $retstr .= '<tt><td>' . $key . '</td><td>' . ($val == '' ? '""' : $val) . '</td></tr>';
-            }
-        }
-    }
-    $retstr .= '</table>';
-    return $retstr;
-}

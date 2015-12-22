@@ -1503,7 +1503,7 @@ function plagiarism_urkund_send_files() {
             if (empty($file)) {
                 mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
                 if (debugging()) {
-                    print_r($pf);
+                    mtrace(plagiarism_urkund_pretty_print($pf));
                 }
                 $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
                 continue;
@@ -1588,4 +1588,29 @@ function plagiarism_urkund_fix_temp_hash($plagiarismfile) {
 
         unlink($filepath); // Delete temp file as we don't need it anymore.
     }
+}
+
+/* We are not allowed to use print_object so use a hand-rolled function to help with debugging.
+ *
+ */
+function plagiarism_urkund_pretty_print($arr) {
+    if (is_object($arr)) {
+        $arr = (array) $arr;
+    }
+    $retstr = '<table class="generaltable">';
+    $retstr .= '<tr><th width=20%>Key</th><th width=80%>Value</th></tr>';
+    if (is_array($arr)) {
+        foreach ($arr as $key => $val) {
+            if (is_object($val)) {
+                $val = (array) $val;
+            }
+            if (is_array($val)) {
+                $retstr .= '<tr><td>' . $key . '</td><td>' . pretty_print($val) . '</td></tr>';
+            } else {
+                $retstr .= '<tt><td>' . $key . '</td><td>' . ($val == '' ? '""' : $val) . '</td></tr>';
+            }
+        }
+    }
+    $retstr .= '</table>';
+    return $retstr;
 }
