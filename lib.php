@@ -1385,7 +1385,9 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
         $modulecontext = context_module::instance($plagiarismfile->cm);
         $fs = get_file_storage();
         if ($cm->modname == 'assign') {
-            debugging("URKUND fileid:".$plagiarismfile->id. " assignment found");
+            if (debugging()) {
+                mtrace("URKUND fileid:" . $plagiarismfile->id . " assignment found");
+            }
             require_once($CFG->dirroot . '/mod/assign/locallib.php');
             $assign = new assign($modulecontext, null, null);
 
@@ -1400,7 +1402,9 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                 $component = $submissionplugin->get_subtype() . '_' . $submissionplugin->get_type();
                 $fileareas = $submissionplugin->get_file_areas();
                 foreach ($fileareas as $filearea => $name) {
-                    debugging("URKUND fileid:".$plagiarismfile->id. " Check component:".$component ." Filearea:".$filearea. " Submission".$submission->id);
+                    if (debugging()) {
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " Check component:" . $component . " Filearea:" . $filearea . " Submission" . $submission->id);
+                    }
                     $files = $fs->get_area_files(
                         $assign->get_context()->id,
                         $component,
@@ -1411,16 +1415,22 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                     );
 
                     foreach ($files as $file) {
-                        debugging("URKUND fileid:".$plagiarismfile->id. " check fileid:".$file->get_id());
+                        if (debugging()) {
+                            mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
+                        }
                         if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                            debugging("URKUND fileid:".$plagiarismfile->id. " found fileid:".$file->id);
+                            if (debugging()) {
+                                mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->id);
+                            }
                             return $file;
                         }
                     }
                 }
             }
         } else if ($cm->modname == 'workshop') {
-            debugging("URKUND fileid:".$plagiarismfile->id. " workshop found");
+            if (debugging()) {
+                mtrace("URKUND fileid:" . $plagiarismfile->id . " workshop found");
+            }
             require_once($CFG->dirroot . '/mod/workshop/locallib.php');
             $cm = get_coursemodule_from_id('workshop', $plagiarismfile->cm, 0, false, MUST_EXIST);
             $workshop = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
@@ -1430,24 +1440,34 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
             foreach ($submissions as $submission) {
                 $files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id);
                 foreach ($files as $file) {
-                    debugging("URKUND fileid:".$plagiarismfile->id. " check fileid:".$file->get_id());
+                    if (debugging()) {
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
+                    }
                     if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                        debugging("URKUND fileid:".$plagiarismfile->id. " found fileid:".$file->get_id());
+                        if (debugging()) {
+                            mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
+                        }
                         return $file;
                     }
                 }
             }
         } else if ($cm->modname == 'forum') {
-            debugging("URKUND fileid:".$plagiarismfile->id. " forum found");
+            if (debugging()) {
+                mtrace("URKUND fileid:" . $plagiarismfile->id . " forum found");
+            }
             require_once($CFG->dirroot . '/mod/forum/lib.php');
             $cm = get_coursemodule_from_id('forum', $plagiarismfile->cm, 0, false, MUST_EXIST);
             $posts = forum_get_user_posts($cm->instance, $plagiarismfile->userid);
             foreach ($posts as $post) {
                 $files = $fs->get_area_files($modulecontext->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
                 foreach ($files as $file) {
-                    debugging("URKUND fileid:".$plagiarismfile->id. " check fileid:".$file->get_id());
+                    if (debugging()) {
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
+                    }
                     if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                        debugging("URKUND fileid:".$plagiarismfile->id. " found fileid:".$file->get_id());
+                        if (debugging()) {
+                            mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
+                        }
                         return $file;
                     }
                 }
@@ -1481,20 +1501,18 @@ function plagiarism_urkund_send_files() {
             mtrace("URKUND fileid:".$pf->id. ' sending for processing');
             $file = plagiarism_urkund_get_file_object($pf);
             if (empty($file)) {
-                mtrace("URKUND fileid:".$pf->id. ' file not found');
-                continue;
+                mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
+                if (debugging()) {
+                    urkund_pretty_print($pf);
+                }
+                $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
             }
             if ($modulename == "assign") {
                 // Check for group assignment and adjust userid if required.
                 // This prevents subsequent group submissions from flagging a previous submission as a match.
                 $pf = plagiarism_urkund_check_group($pf);
             }
-            if (!empty($file)) {
-                urkund_send_file_to_urkund($pf, $plagiarismsettings, $file);
-            } else {
-                $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
-                mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
-            }
+            urkund_send_file_to_urkund($pf, $plagiarismsettings, $file);
         }
     }
 }
