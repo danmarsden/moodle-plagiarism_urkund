@@ -547,6 +547,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true;
         }
 
+        // Check if this is a submission on-behalf.
+        if (!empty($eventdata['relateduserid'])) {
+            $userid = $eventdata['relateduserid'];
+        } else {
+            $userid = $eventdata['userid'];
+        }
+
         // Check to see if restrictcontent is in use.
         $showcontent = true;
         $showfiles = true;
@@ -584,7 +591,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
                         ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata['objectid'], "id", false)) {
                         foreach ($files as $file) {
-                            urkund_queue_file($cmid, $eventdata['userid'], $file);
+                            urkund_queue_file($cmid, $userid, $file);
                         }
                     }
                 }
@@ -594,8 +601,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     if (!empty($submission) && str_word_count($submission->onlinetext) > $wordcount) {
                         $content = trim(format_text($submission->onlinetext, $submission->onlineformat,
                             array('context' => $modulecontext)));
-                        $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $eventdata['userid'], $content);
-                        urkund_queue_file($cmid, $eventdata['userid'], $file);
+                        $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $userid, $content);
+                        urkund_queue_file($cmid, $userid, $file);
                     }
                 }
             }
@@ -613,8 +620,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $result = true;
         if (!empty($eventdata['other']['content']) && $showcontent && str_word_count($eventdata['other']['content']) > $wordcount) {
 
-            $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $eventdata['userid'], $eventdata['other']['content']);
-            urkund_queue_file($cmid, $eventdata['userid'], $file);
+            $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $userid, $eventdata['other']['content']);
+            urkund_queue_file($cmid, $userid, $file);
         }
 
         // Normal situation: 1 or more assessable files attached to event, ready to be checked.
@@ -631,7 +638,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     continue;
                 }
 
-                urkund_queue_file($cmid, $eventdata['userid'], $efile);
+                urkund_queue_file($cmid, $userid, $efile);
             }
         }
         return $result;
