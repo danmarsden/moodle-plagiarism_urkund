@@ -377,6 +377,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // Array of possible plagiarism config options.
             $plagiarismelements = $this->config_options();
             // First get existing values.
+            if (empty($data->coursemodule)) {
+                debugging("URKUND settings failure - no coursemodule set in form data, URKUND could not be enabled.");
+                return;
+            }
             $existingelements = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $data->coursemodule),
                                                       '', 'name, id');
             foreach ($plagiarismelements as $element) {
