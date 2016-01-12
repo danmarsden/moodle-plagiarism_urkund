@@ -96,6 +96,26 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         }
 
     }
+    if ($oldversion < 2015122901) {
+        // Fix incorrect URKUND config.
+        // Assignments that do not have submission drafts set but
+        // URKUND is set to only send on submit drafts.
+        $sql = "SELECT u.* from {plagiarism_urkund_config} u
+                  JOIN {course_modules} cm ON cm.id = u.cm
+                  JOIN {assign} a ON a.id = cm.instance
+                  JOIN {modules} m ON m.id = cm.module
+                 WHERE u.name = 'urkund_draft_submit'
+                       AND m.name = 'assign'
+                       AND a.submissiondrafts = '0'
+                       AND u.value = '1'";
+        $urkundconfig = $DB->get_recordset_sql($sql);
+        foreach ($urkundconfig as $uc) {
+            $uc->value = 0;
+            $DB->update_record('plagiarism_urkund_config', $uc);
+        }
+        $urkundconfig->close();
+        upgrade_plugin_savepoint(true, 2015122901, 'plagiarism', 'urkund');
+    }
 
     return true;
 }
