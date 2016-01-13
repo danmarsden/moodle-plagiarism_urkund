@@ -23,9 +23,9 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-$plugin->version = 2015122901;
+$plugin->version = 2015122902;
 $plugin->requires = 2014041100.00;
 $plugin->cron     = 86400; // Cron function no longer used.
 $plugin->component = 'plagiarism_urkund';
-$plugin->maturity  = MATURITY_STABLE;
+$plugin->maturity  = MATURITY_ALPHA;
 $plugin->release   = '3.2.2';
