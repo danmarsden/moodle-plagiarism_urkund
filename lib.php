@@ -556,44 +556,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $userid = $eventdata['userid'];
         }
 
-        $modulecontext = context_module::instance($cmid);
-
-        // Check if this is a group submission event and the teacher is submitting on-behalf.
-        if ($eventdata['eventtype'] == 'assignsubmission_file_uploaded' &&
-            has_capability('mod/assign:editothersubmission', $modulecontext)) {
-            // This is a user that can submit on behalf.
-
-            // Check if this assignment uses teambased submissions.
-            $assign = new assign($modulecontext, null, null);
-            if ($assign->get_instance()->teamsubmission && !empty($eventdata['objectid'])) {
-                // Get the group submission record for this submission.
-                $submission = $DB->get_record('assign_submission', array('id' => $eventdata['objectid']));
-                if (!empty($submission->groupid)) {
-                    // Get the members of the group assigned to this submission.
-                    $groupmembers = $assign->get_submission_group_members($submission->groupid, true);
-                    $users = array();
-                    foreach($groupmembers as $member) {
-                        $users[] = $member->id;
-                    }
-                    // Check if the $userid is a member of the group.
-                    if (!in_array($userid, $users)) {
-                        // This is a submission on-behalf from a teacher that is not a member of the group.
-                        $olduserid = $userid; // Store userid to use in debug message.
-
-                        // Grab one of the members of the team and use their id.
-                        // There could be a better way to do this - perhaps getting the last valid user that has submitted.
-                        $userid = reset($users);
-                        debugging("Team Submission on-behalf from userid:".$olduserid. " submission id:".$submission->id.
-                            "Correcting userid to:".$userid);
-
-                        //debugging("Team Submission on-behalf from userid:".$olduserid. " submission id:".$submission->id.
-                        //    "Correcting userid to:".$userid, DEBUG_DEVELOPER);
-                    }
-                }
-            }
-
-        }
-
         // Check to see if restrictcontent is in use.
         $showcontent = true;
         $showfiles = true;
@@ -623,6 +585,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 // These files are now finalized, and should be submitted for processing.
                 require_once("$CFG->dirroot/mod/assign/locallib.php");
                 require_once("$CFG->dirroot/mod/assign/submission/file/locallib.php");
+
+                $modulecontext = context_module::instance($cmid);
 
                 if ($showfiles) { // If we should be handling files.
                     $fs = get_file_storage();
