@@ -284,7 +284,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         // Under certain circumstances, users are allowed to see plagiarism info
         // even if they don't have view report capability.
-        if ($USER->id == $userid) {
+        if ($USER->id == $userid || // If this is a user viewing their own report, check if settings allow it.
+            (!empty($module->teamsubmission) && !$viewscore)) { // If teamsubmisson is enabled, the file may be from a different user.
             $selfreport = true;
             if (isset($plagiarismvalues['urkund_show_student_report']) &&
                     ($plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_ALWAYS ||
