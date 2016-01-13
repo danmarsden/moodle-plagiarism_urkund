@@ -285,7 +285,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         // Under certain circumstances, users are allowed to see plagiarism info
         // even if they don't have view report capability.
         if ($USER->id == $userid || // If this is a user viewing their own report, check if settings allow it.
-            (!$viewscore)) { // If teamsubmisson is enabled or submitted on behalf, the file may be from a different user,
+            (!empty($module->teamsubmission) && !$viewscore)) { // If teamsubmisson is enabled, the file may be from a different user.
             $selfreport = true;
             if (isset($plagiarismvalues['urkund_show_student_report']) &&
                     ($plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_ALWAYS ||
@@ -549,7 +549,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true;
         }
 
-        $userid = $eventdata['userid'];
+        // Check if this is a submission on-behalf.
+        if (!empty($eventdata['relateduserid'])) {
+            $userid = $eventdata['relateduserid'];
+        } else {
+            $userid = $eventdata['userid'];
+        }
 
         // Check to see if restrictcontent is in use.
         $showcontent = true;
