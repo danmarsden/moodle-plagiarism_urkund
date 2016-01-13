@@ -285,7 +285,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         // Under certain circumstances, users are allowed to see plagiarism info
         // even if they don't have view report capability.
         if ($USER->id == $userid || // If this is a user viewing their own report, check if settings allow it.
-            (!empty($module->teamsubmission) && !$viewscore)) { // If teamsubmisson is enabled, the file may be from a different user.
+            (!$viewscore)) { // If teamsubmisson is enabled or teacher submitted, the file may be from a different user.
             $selfreport = true;
             if (isset($plagiarismvalues['urkund_show_student_report']) &&
                     ($plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_ALWAYS ||
@@ -997,6 +997,14 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
             if ($status == URKUND_STATUSCODE_ACCEPTED) {
                 $plagiarismfile->attempt = 0; // Reset attempts for status checks.
                 plagiarism_urkund_fix_temp_hash($plagiarismfile); // Fix hash if temp file used and delete temp file.
+                // If $file owned by a different user than in the plagiarism record, update the record.
+                // This may occur if a teacher has submitted the file for the student.
+                if ($file instanceof stored_file && $plagiarismfile->userid <> $file->get_userid()) {
+                    debugging("Sent file associated with different userid. plagiarism recordid:".$plagiarismfile->id.
+                    " originaluserid:$plagiarismfile->userid  New userid:".$file->get_userid(), DEBUG_DEVELOPER);
+                    $plagiarismfile->userid = $file->get_userid();
+                }
+
             } else {
                 $plagiarismfile->errorresponse = $response;
             }
