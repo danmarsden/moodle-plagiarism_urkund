@@ -1162,6 +1162,8 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
                         $urkund = new plagiarism_plugin_urkund();
                         $urkund->urkund_send_student_email($plagiarismfile);
                     }
+                } else {
+                    $plagiarismfile->errorresponse = $response;
                 }
             } else {
                 $plagiarismfile->statuscode = $httpstatus;
