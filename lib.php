@@ -1000,8 +1000,10 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
                 // If $file owned by a different user than in the plagiarism record, update the record.
                 // This may occur if a teacher has submitted the file for the student.
                 if ($file instanceof stored_file && $plagiarismfile->userid <> $file->get_userid()) {
-                    debugging("Sent file associated with different userid. plagiarism recordid:".$plagiarismfile->id.
-                    " originaluserid:$plagiarismfile->userid  New userid:".$file->get_userid(), DEBUG_DEVELOPER);
+                    if (debugging()) {
+                        mtrace("Sent file associated with different userid. plagiarism recordid:".$plagiarismfile->id.
+                            " originaluserid:$plagiarismfile->userid  New userid:".$file->get_userid());
+                    }
                     $plagiarismfile->userid = $file->get_userid();
                 }
 
