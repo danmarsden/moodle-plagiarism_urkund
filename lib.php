@@ -658,9 +658,16 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $a->modulename = format_string($cm->name);
         $a->modulelink = $CFG->wwwroot.'/mod/'.$cm->modname.'/view.php?id='.$cm->id;
         $a->coursename = format_string($DB->get_field('course', 'fullname', array('id' => $cm->course)));
-        $a->optoutlink = $plagiarismfile->optout;
+        $plagiarismsettings = $this->get_settings();
+        if (!empty($plagiarismsettings['urkund_optout'])) {
+            $a->optoutlink = $plagiarismfile->optout;
+            $emailcontent = get_string('studentemailcontent', 'plagiarism_urkund', $a);
+        } else {
+            $emailcontent = get_string('studentemailcontentnoopt', 'plagiarism_urkund', $a);
+        }
+
         $emailsubject = get_string('studentemailsubject', 'plagiarism_urkund');
-        $emailcontent = get_string('studentemailcontent', 'plagiarism_urkund', $a);
+
         email_to_user($user, $site->shortname, $emailsubject, $emailcontent);
     }
 

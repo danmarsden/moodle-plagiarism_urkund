@@ -79,6 +79,9 @@ $string['studentemailcontent'] = 'The file you submitted to {$a->modulename} in 
 
 If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use this link to opt-out:.
 {$a->optoutlink}';
+$string['studentemailcontentnoopt'] = 'The file you submitted to {$a->modulename} in {$a->coursename} has now been processed by the Plagiarism tool URKUND.
+{$a->modulelink}';
+
 $string['studentemailsubject'] = 'File processed by URKUND';
 $string['submitondraft'] = 'Submit file when first uploaded';
 $string['submitonfinal'] = 'Submit file when student sends for marking';
