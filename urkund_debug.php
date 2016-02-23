@@ -40,10 +40,11 @@ $download = optional_param('download', '', PARAM_ALPHA);
 $showall = optional_param('showall', 0, PARAM_INT);
 $resetall = optional_param('resetall', '', PARAM_ALPHANUMEXT);
 $confirm = optional_param('confirm', 0, PARAM_INT);
+$filterdays = optional_param('filterdays', 0, PARAM_INT);
 
 require_login();
 
-$url = new moodle_url('/plagiarism/urkund/urkund_debug.php', array('showall' => $showall));
+$url = new moodle_url('/plagiarism/urkund/urkund_debug.php', array('showall' => $showall, 'filterdays' => $filterdays));
 admin_externalpage_setup('plagiarismurkund', '', array(), $url);
 
 $context = context_system::instance();
@@ -52,7 +53,7 @@ $exportfilename = 'UrkundDebugOutput.csv';
 
 $limit = 30;
 
-$baseurl = new moodle_url('urkund_debug.php', array('page' => $page, 'sort' => $sort));
+$baseurl = new moodle_url('urkund_debug.php', array('page' => $page, 'sort' => $sort, 'filterdays' => $filterdays));
 
 
 $table = new flexible_table('urkundfiles');
@@ -145,13 +146,20 @@ if (!$table->is_downloading($download, $exportfilename)) {
 }
 // Now show files in an error state.
 $userfields = get_all_user_name_fields(true, 'u');
+$oldest = time() - $filterdays * 24 * 3600;
 $sqlallfiles = "SELECT t.*, ".$userfields.", m.name as moduletype, ".
         "cm.course as courseid, cm.instance as cminstance FROM ".
         "{plagiarism_urkund_files} t, {user} u, {modules} m, {course_modules} cm ".
         "WHERE m.id=cm.module AND cm.id=t.cm AND t.userid=u.id ".
         "AND t.statuscode <> 'Analyzed' ";
+if ($filterdays) {
+    $oldfilter = "AND t.timesubmitted > $oldest ";
+    $sqlallfiles .= $oldfilter;
+} else {
+    $oldfilter = '';
+}
 
-$sqlcount = "SELECT COUNT(id) FROM {plagiarism_urkund_files} WHERE statuscode <> 'Analyzed'";
+$sqlcount = "SELECT COUNT(id) FROM {plagiarism_urkund_files} t WHERE t.statuscode <> 'Analyzed' $oldfilter";
 $count = $DB->count_records_sql($sqlcount);
 if (!$showall && !$table->is_downloading()) {
     $table->pagesize($limit, $count);
@@ -165,7 +173,7 @@ $table->define_headers(array(get_string('id', 'plagiarism_urkund'),
                        get_string('identifier', 'plagiarism_urkund'),
                        get_string('status', 'plagiarism_urkund'),
                        get_string('attempts', 'plagiarism_urkund'), ''));
-$table->define_baseurl('urkund_debug.php');
+$table->define_baseurl('urkund_debug.php?filterdays=' . $filterdays);
 $table->sortable(true);
 $table->no_sorting('file', 'action');
 $table->collapsible(true);
@@ -269,6 +277,17 @@ if ($table->is_downloading()) {
 if (!$table->is_downloading()) {
     echo $OUTPUT->heading(get_string('urkundfiles', 'plagiarism_urkund'));
     echo $OUTPUT->box(get_string('explainerrors', 'plagiarism_urkund'));
+    $filterchoices = array(
+        0 => get_string('nofilter', 'plagiarism_urkund'),
+        7 => get_string('filter7', 'plagiarism_urkund'),
+        30 => get_string('filter30', 'plagiarism_urkund'),
+        90 => get_string('filter90', 'plagiarism_urkund'),
+    );
+    echo '<form id="filterdays" action="urkund_debug.php" method="post">';
+    echo '<label>' . get_string('debugfilter', 'plagiarism_urkund') . '&nbsp;';
+    echo html_writer::select($filterchoices, 'filterdays', $filterdays, false);
+    echo '<input type="submit" class="btn btn-sm" value="'.  get_string('filter').'" />';
+    echo '</label></form>';
 }
 $table->finish_output();
 if (!$table->is_downloading()) {
