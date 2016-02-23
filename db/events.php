@@ -15,9 +15,6 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 $observers = array (
-    /**
-     * Event observers
-     */
     array(
         'eventname' => '\assignsubmission_file\event\assessable_uploaded',
         'callback' => 'plagiarism_urkund_observer::assignsubmission_file_uploaded'

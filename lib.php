@@ -910,7 +910,7 @@ function urkund_check_attempt_timeout($plagiarismfile) {
 
     // Time to wait between checks array(number of attempts-1, time delay in minutes)..
     $statusdelay = array(2 => 5, // Up to attempt 3 check every 5 minutes.
-                         3 => 15, // Up to attempt 4 check every 15 minutes,
+                         3 => 15, // Up to attempt 4 check every 15 minutes.
                          6 => 30,
                         11 => 120,
                         20 => 240,
@@ -1438,7 +1438,8 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                 $fileareas = $submissionplugin->get_file_areas();
                 foreach ($fileareas as $filearea => $name) {
                     if (debugging()) {
-                        mtrace("URKUND fileid:" . $plagiarismfile->id . " Check component:" . $component . " Filearea:" . $filearea . " Submission" . $submission->id);
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " Check component:" . $component . " Filearea:" .
+                               $filearea . " Submission" . $submission->id);
                     }
                     $files = $fs->get_area_files(
                         $assign->get_context()->id,

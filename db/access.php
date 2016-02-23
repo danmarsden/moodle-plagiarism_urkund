@@ -20,8 +20,7 @@ $capabilities = array(
         'contextlevel' => CONTEXT_COURSE,
          'legacy' => array(
          'editingteacher' => CAP_ALLOW,
-         'manager' => CAP_ALLOW
-        )
+         'manager' => CAP_ALLOW)
     ),
     'plagiarism/urkund:viewreport' => array(
         'captype' => 'write',
@@ -29,8 +28,7 @@ $capabilities = array(
          'legacy' => array(
          'editingteacher' => CAP_ALLOW,
          'teacher' => CAP_ALLOW,
-         'manager' => CAP_ALLOW
-        )
+         'manager' => CAP_ALLOW)
     ),
     'plagiarism/urkund:resetfile' => array(
         'captype' => 'write',
@@ -38,7 +36,6 @@ $capabilities = array(
          'legacy' => array(
          'editingteacher' => CAP_ALLOW,
          'teacher' => CAP_ALLOW,
-         'manager' => CAP_ALLOW
-        )
+         'manager' => CAP_ALLOW)
     ),
 );

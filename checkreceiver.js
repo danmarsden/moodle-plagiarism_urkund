@@ -52,9 +52,9 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                             receiver.insert(valid, 'after');
 
                         }
-                        // Remove error from form
+                        // Remove error from form.
                         parentdiv.removeClass('error');
-                        // Remove error span
+                        // Remove error span.
                         var existingerror = parentdiv.one('.error');
                         if (existingerror) {
                             existingerror.remove();
