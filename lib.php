@@ -1641,7 +1641,7 @@ function plagiarism_urkund_pretty_print($arr) {
                 $val = (array) $val;
             }
             if (is_array($val)) {
-                $retstr .= '<tr><td>' . $key . '</td><td>' . pretty_print($val) . '</td></tr>';
+                $retstr .= '<tr><td>' . $key . '</td><td>' . plagiarism_urkund_pretty_print($val) . '</td></tr>';
             } else {
                 $retstr .= '<tt><td>' . $key . '</td><td>' . ($val == '' ? '""' : $val) . '</td></tr>';
             }
