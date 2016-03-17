@@ -40,8 +40,8 @@ class backup_plagiarism_urkund_plugin extends backup_plagiarism_plugin {
         // Now information about files to module.
         $urkundfiles = new backup_nested_element('urkund_files');
         $urkundfile = new backup_nested_element('urkund_file', array('id'),
-                            array('userid', 'identifier', 'filename', 'reporturl', 'optout', 'statuscode',
-                                  'similarityscore', 'errorresponse', 'timesubmitted'));
+            array('userid', 'identifier', 'filename', 'reporturl', 'optout', 'statuscode',
+                  'similarityscore', 'errorresponse', 'timesubmitted'));
 
         $pluginwrapper->add_child($urkundfiles);
         $urkundfiles->add_child($urkundfile);
