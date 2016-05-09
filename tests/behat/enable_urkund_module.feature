@@ -61,7 +61,7 @@ Feature: Enable URKUND for modules
   @javascript
   Scenario: Create a forum and enable URKUND for it
     When I add a "Workshop" to section "1" and I fill the form with:
-      | Forum name | Test Workshop |
+      | Workshop name | Test Workshop |
       | Description | Test Workshop for URKUND |
       | Enable URKUND                        | Yes |
       | Show similarity score to student     | Always |
