@@ -1,4 +1,4 @@
-#URKUND Plagiarism plugin for Moodle [![Build Status](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund.svg?branch=master)](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund)
+#URKUND Plagiarism plugin for Moodle [![Build Status](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund.svg?branch=MOODLE_30_STABLE)](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund)
 
 * Author: Dan Marsden <dan@danmarsden.com>
 * Copyright: Prioinfo AB, http://www.urkund.com, http://www.prioinfo.se
