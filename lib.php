@@ -705,10 +705,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         return false;
     }
-    public function cron() {
-        // Core lib requires this function to be defined.
-        return;
-    }
 }
 
 function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
