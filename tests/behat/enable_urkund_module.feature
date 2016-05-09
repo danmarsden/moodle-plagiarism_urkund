@@ -26,7 +26,7 @@ Feature: Enable URKUND for modules
     And I set the field "Enable URKUND for forum" to "1"
     And I set the field "Enable URKUND for workshop" to "1"
     And I press "Save changes"
-    When I follow "URKUND Defaults"
+    When I follow "URKUND defaults"
     And I set the field "Show similarity score to student" to "Always"
     And I set the field "Show similarity report to student" to "Always"
     And I press "Save changes"
