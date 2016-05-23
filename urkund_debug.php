@@ -286,7 +286,7 @@ if (!$table->is_downloading()) {
     echo '<form id="filterdays" action="urkund_debug.php" method="post">';
     echo '<label>' . get_string('debugfilter', 'plagiarism_urkund') . '&nbsp;';
     echo html_writer::select($filterchoices, 'filterdays', $filterdays, false);
-    echo '<input type="submit" class="btn btn-sm" value="'.  get_string('filter').'" />';
+    echo '<input type="submit" class="btn btn-sm" value="' . s(get_string('filter')) . '" />';
     echo '</label></form>';
 }
 $table->finish_output();
