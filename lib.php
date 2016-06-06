@@ -687,6 +687,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $c = new curl(array('proxy' => true));
         $c->setopt(array());
         $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
+                         'CURLOPT_TIMEOUT' => 60, // Set to 60seconds just in case.
                          'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
                          'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
 
@@ -991,6 +992,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     $c = new curl(array('proxy' => true));
     $c->setopt(array());
     $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
+                     'CURLOPT_TIMEOUT' => 1800, // Set to 30min just in case.
                      'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
                      'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
 
@@ -1143,6 +1145,7 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
     $c = new curl(array('proxy' => true));
     $c->setopt(array());
     $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
+        'CURLOPT_TIMEOUT' => 300, // Set to 5min just in case.
         'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
         'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
 
@@ -1287,6 +1290,9 @@ function plagiarism_urkund_update_allowed_filetypes() {
         require_once($CFG->libdir.'/filelib.php');
         $url = URKUND_FILETYPE_URL;
         $c = new curl(array('proxy' => true));
+        $c->setopt(array());
+        $c->setopt(array('CURLOPT_TIMEOUT' => 300));
+
         $response = $c->get($url);
         $xml = new SimpleXMLElement($response);
         foreach ($xml->format as $format) {
