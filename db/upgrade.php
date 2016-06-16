@@ -117,5 +117,20 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2015122901, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2016061600) {
+
+        // Define field relateduserid to be added to plagiarism_urkund_files.
+        $table = new xmldb_table('plagiarism_urkund_files');
+        $field = new xmldb_field('relateduserid', XMLDB_TYPE_INTEGER, '10', null, null, null, null, 'userid');
+
+        // Conditionally launch add field relateduserid.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Urkund savepoint reached.
+        upgrade_plugin_savepoint(true, 2016061600, 'plagiarism', 'urkund');
+    }
+
     return true;
 }
