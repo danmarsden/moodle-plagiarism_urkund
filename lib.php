@@ -549,11 +549,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             return true;
         }
 
+        $userid = $eventdata['userid'];
+        $relateduserid = null;
+
         // Check if this is a submission on-behalf.
         if (!empty($eventdata['relateduserid'])) {
-            $userid = $eventdata['relateduserid'];
-        } else {
-            $userid = $eventdata['userid'];
+            $relateduserid = $eventdata['relateduserid'];
         }
 
         // Check to see if restrictcontent is in use.
@@ -593,7 +594,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     if ($files = $fs->get_area_files($modulecontext->id, 'assignsubmission_file',
                         ASSIGNSUBMISSION_FILE_FILEAREA, $eventdata['objectid'], "id", false)) {
                         foreach ($files as $file) {
-                            urkund_queue_file($cmid, $userid, $file);
+                            urkund_queue_file($cmid, $userid, $file, $relateduserid);
                         }
                     }
                 }
@@ -604,7 +605,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                         $content = trim(format_text($submission->onlinetext, $submission->onlineformat,
                             array('context' => $modulecontext)));
                         $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $userid, $content);
-                        urkund_queue_file($cmid, $userid, $file);
+                        urkund_queue_file($cmid, $userid, $file, $relateduserid);
                     }
                 }
             }
@@ -623,7 +624,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if (!empty($eventdata['other']['content']) && $showcontent && str_word_count($eventdata['other']['content']) > $wordcount) {
 
             $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $userid, $eventdata['other']['content']);
-            urkund_queue_file($cmid, $userid, $file);
+            urkund_queue_file($cmid, $userid, $file, $relateduserid);
         }
 
         // Normal situation: 1 or more assessable files attached to event, ready to be checked.
@@ -640,7 +641,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     continue;
                 }
 
-                urkund_queue_file($cmid, $userid, $efile);
+                urkund_queue_file($cmid, $userid, $efile, $relateduserid);
             }
         }
         return $result;
@@ -651,7 +652,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if (empty($plagiarismfile->userid)) { // Sanity check.
             return false;
         }
-        $user = $DB->get_record('user', array('id' => $plagiarismfile->userid));
+        if (!empty($plagiarismfile->relateduserid)) {
+            $user = $DB->get_record('user', array('id' => $plagiarismfile->relateduserid));
+        } else {
+            $user = $DB->get_record('user', array('id' => $plagiarismfile->userid));
+        }
         $site = get_site();
         $a = new stdClass();
         $cm = get_coursemodule_from_id('', $plagiarismfile->cm);
@@ -800,9 +805,10 @@ function urkund_get_form_elements($mform) {
  * @param int $cmid - course module id
  * @param int $userid - user id
  * @param varied $identifier - identifier for this plagiarism record - hash of file, id of quiz question etc
+ * @param int $relateduserid - relateduserid if passed.
  * @return int - id of urkund_files record
  */
-function urkund_get_plagiarism_file($cmid, $userid, $file) {
+function urkund_get_plagiarism_file($cmid, $userid, $file, $relateduserid = null) {
     global $DB;
 
     if (is_string($file)) { // This is a local file path.
@@ -825,6 +831,7 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
         $plagiarismfile = new stdClass();
         $plagiarismfile->cm = $cmid;
         $plagiarismfile->userid = $userid;
+        $plagiarismfile->relateduserid = $relateduserid;
         $plagiarismfile->identifier = $filehash;
         $plagiarismfile->filename = $filename;
         $plagiarismfile->statuscode = 'pending';
@@ -844,11 +851,12 @@ function urkund_get_plagiarism_file($cmid, $userid, $file) {
  * @param int $cmid - course module id
  * @param int $userid - user id
  * @param varied $file string if path to temp file or full Moodle file object.
+ * @param int $relateduserid - related user if if passed. (use when sending to URKUND.
  * @return boolean
  */
-function urkund_queue_file($cmid, $userid, $file) {
+function urkund_queue_file($cmid, $userid, $file, $relateduserid = null) {
     global $DB;
-    $plagiarismfile = urkund_get_plagiarism_file($cmid, $userid, $file);
+    $plagiarismfile = urkund_get_plagiarism_file($cmid, $userid, $file, $relateduserid);
     $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
 
     // Check if $plagiarismfile actually needs to be submitted.
@@ -972,7 +980,12 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         return true;
     }
     mtrace("URKUND fileid:".$plagiarismfile->id. ' sending to URKUND');
-    $useremail = $DB->get_field('user', 'email', array('id' => $plagiarismfile->userid));
+    if (!empty($plagiarismfile->relateduserid)) {
+        $useremail = $DB->get_field('user', 'email', array('id' => $plagiarismfile->relateduserid));
+    } else {
+        $useremail = $DB->get_field('user', 'email', array('id' => $plagiarismfile->userid));
+    }
+
     // Get url of api.
     $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarismfile);
     if (empty($url)) {
@@ -1384,6 +1397,10 @@ function urkund_reset_file($file, $plagiarismsettings = null) {
 // Helper function used to get file record for given identifier.
 function plagiarism_urkund_get_file_object($plagiarismfile) {
     global $CFG, $DB;
+    $userid = $plagiarismfile->userid;
+    if (!empty($plagiarismfile->relateduserid)) {
+        $userid = $plagiarismfile->relateduserid;
+    }
     if (strpos($plagiarismfile->identifier, $CFG->tempdir) !== false) {
         // This is a stored text file in temp dir.
         $file = new stdclass();
@@ -1423,9 +1440,9 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
             $assign = new assign($modulecontext, null, null);
 
             if ($assign->get_instance()->teamsubmission) {
-                $submission = $assign->get_group_submission($plagiarismfile->userid, 0, false);
+                $submission = $assign->get_group_submission($userid, 0, false);
             } else {
-                $submission = $assign->get_user_submission($plagiarismfile->userid, false);
+                $submission = $assign->get_user_submission($userid, false);
             }
             $submissionplugins = $assign->get_submission_plugins();
 
@@ -1468,7 +1485,7 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
             $workshop = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
             $workshop = new workshop($workshop, $cm, $course);
-            $submissions = $workshop->get_submissions($plagiarismfile->userid);
+            $submissions = $workshop->get_submissions($userid);
             foreach ($submissions as $submission) {
                 $files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id);
                 foreach ($files as $file) {
@@ -1489,7 +1506,7 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
             }
             require_once($CFG->dirroot . '/mod/forum/lib.php');
             $cm = get_coursemodule_from_id('forum', $plagiarismfile->cm, 0, false, MUST_EXIST);
-            $posts = forum_get_user_posts($cm->instance, $plagiarismfile->userid);
+            $posts = forum_get_user_posts($cm->instance, $userid);
             foreach ($posts as $post) {
                 $files = $fs->get_area_files($modulecontext->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
                 foreach ($files as $file) {
