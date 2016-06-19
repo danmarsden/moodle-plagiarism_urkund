@@ -77,6 +77,11 @@ if (!$table->is_downloading($download, $exportfilename)) {
             exit;
 
         } else {
+            if ($resetall == '202') {
+                // Reset attempt value so that we restart the attempt cycle for these records.
+                // We don't do this for file submissions because if they fail sending the file it's as likely to change.
+                $DB->set_field('plagiarism_urkund_files', 'attempt', 1, array('statuscode' => $resetall));
+            }
             $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
             $i = 0;
             foreach ($files as $plagiarismfile) {
