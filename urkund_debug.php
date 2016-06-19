@@ -226,6 +226,9 @@ foreach ($urkundfiles as $tf) {
     $coursemodule = get_coursemodule_from_id($tf->moduletype, $tf->cm);
 
     $user = "<a href='".$CFG->wwwroot."/user/profile.php?id=".$tf->userid."'>".fullname($tf)."</a>";
+    if (!empty($tf->relateduserid)) {
+        $user .= " (On behalf userid: ".$tf->relateduserid .")";
+    }
     if ($tf->statuscode == 'Analyzed') { // Sanity check - don't show a resubmit link.
         $reset = '';
     } else if ($tf->statuscode == URKUND_STATUSCODE_ACCEPTED) { // Sanity Check.
