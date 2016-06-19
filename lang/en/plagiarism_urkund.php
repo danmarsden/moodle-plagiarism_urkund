@@ -99,3 +99,4 @@ $string['scorenotavailableyet'] = 'This file has not been processed by URKUND ye
 $string['scoreavailable'] = 'This file has been processed by URKUND and a report is now available.';
 $string['receivernotvalid'] = 'This is not a valid receiver address.';
 $string['attempts'] = 'Attempts made';
+$string['timesubmitted'] = 'Time submitted';
