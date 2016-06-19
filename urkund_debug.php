@@ -165,14 +165,15 @@ if (!$showall && !$table->is_downloading()) {
     $table->pagesize($limit, $count);
 }
 
-$table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'action'));
+$table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'timesubmitted', 'action'));
 
 $table->define_headers(array(get_string('id', 'plagiarism_urkund'),
                        get_string('user'),
                        get_string('module', 'plagiarism_urkund'),
                        get_string('identifier', 'plagiarism_urkund'),
                        get_string('status', 'plagiarism_urkund'),
-                       get_string('attempts', 'plagiarism_urkund'), ''));
+                       get_string('attempts', 'plagiarism_urkund'),
+                       get_string('timesubmitted', 'plagiarism_urkund'), ''));
 $table->define_baseurl('urkund_debug.php?filterdays=' . $filterdays);
 $table->sortable(true);
 $table->no_sorting('file', 'action');
@@ -203,6 +204,8 @@ if (!empty($sort)) {
         $orderby = " ORDER BY t.statuscode $direction";
     } else if ($sort == "id") {
         $orderby = " ORDER BY t.id $direction";
+    } else if ($sort == "timesubmitted") {
+        $orderby = " ORDER BY t.timesubmitted $direction";
     }
     if (!empty($orderby) && ($dir == 'asc' || $dir == 'desc')) {
         $orderby .= " ".$dir;
@@ -237,9 +240,9 @@ foreach ($urkundfiles as $tf) {
     $cmlink = html_writer::link($cmurl, shorten_text($coursemodule->name, 40, true), array('title' => $coursemodule->name));
     if ($table->is_downloading()) {
         $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode,
-                     $tf->attempt, $tf->errorresponse);
+                     $tf->attempt, userdate($tf->timesubmitted), $tf->errorresponse);
     } else {
-        $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, $reset);
+        $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, userdate($tf->timesubmitted), $reset);
     }
 
     $table->add_data($row);
