@@ -66,6 +66,8 @@ define('PLAGIARISM_URKUND_RESTRICTCONTENTNO', 0);
 define('PLAGIARISM_URKUND_RESTRICTCONTENTFILES', 1);
 define('PLAGIARISM_URKUND_RESTRICTCONTENTTEXT', 2);
 
+define('PLAGIARISM_URKUND_MAXATTEMPTS', 28);
+
 
 class plagiarism_plugin_urkund extends plagiarism_plugin {
     /**
@@ -911,7 +913,7 @@ function urkund_check_attempt_timeout($plagiarismfile) {
 
     // Maximum number of times to try and obtain the status of a submission.
     // Make sure the max attempt value in $statusdelay is higher than this.
-    $maxstatusattempts = 28;
+    $maxstatusattempts = PLAGIARISM_URKUND_MAXATTEMPTS;
 
     // Time to wait between checks array(number of attempts-1, time delay in minutes)..
     $statusdelay = array(2 => 5, // Up to attempt 3 check every 5 minutes.
@@ -1028,6 +1030,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     // Invalid response returned - increment attempt value and return false to allow this to be called again.
     $plagiarismfile->statuscode = URKUND_STATUSCODE_INVALID_RESPONSE;
     $plagiarismfile->errorresponse = $response;
+    $plagiarismfile->attempt = $plagiarismfile->attempt + 1;
     $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
     return false;
 }
@@ -1529,7 +1532,9 @@ function plagiarism_urkund_send_files() {
     $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
     if (!empty($plagiarismsettings)) {
         // Get all files in a pending state.
-        $plagiarismfiles = $DB->get_records("plagiarism_urkund_files", array("statuscode" => "pending"));
+        $sql = '(statuscode = "pending" or statuscode = ?) AND attempt <= ?';
+        $plagiarismfiles = $DB->get_recordset_select("plagiarism_urkund_files", $sql,
+            array(URKUND_STATUSCODE_INVALID_RESPONSE, PLAGIARISM_URKUND_MAXATTEMPTS));
         foreach ($plagiarismfiles as $pf) {
             // Check to make sure cm exists. - delete record if cm has been deleted.
             $sql = "SELECT m.name
@@ -1552,6 +1557,13 @@ function plagiarism_urkund_send_files() {
                 }
                 $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
                 continue;
+            }
+            if ($pf->statuscode == URKUND_STATUSCODE_INVALID_RESPONSE) {
+                // Check if we can handle this attempt.
+                if (!urkund_check_attempt_timeout($pf)) {
+                    mtrace("URKUND fileid:$pf->id File, Attempt:$pf->attempt, failed submission, queued for resumbission after wait.");
+                    continue;
+                }
             }
             if ($modulename == "assign") {
                 // Check for group assignment and adjust userid if required.
