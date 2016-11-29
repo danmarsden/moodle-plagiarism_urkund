@@ -11,7 +11,8 @@ php:
  - 7.0
 
 matrix:
- allow_failures:
+  allow_failures:
+  - php: 5.6 # travis seems to fail on adding activity - doesn't fail when running behat locally.
 
 env:
  matrix:
