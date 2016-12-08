@@ -48,6 +48,7 @@ define('URKUND_STATUSCODE_UNSUPPORTED', '415');
 define('URKUND_STATUSCODE_TOO_LARGE', '413');
 define('URKUND_STATUSCODE_NORECEIVER', '444');
 define('URKUND_STATUSCODE_INVALID_RESPONSE', '613'); // Invalid response received from URKUND.
+define('URKUND_STATUSCODE_PENDING', 'pending');
 
 // Url to external xml that states URKUNDS allowed file type list.
 define('URKUND_FILETYPE_URL', 'https://secure.urkund.com/ws/integration/accepted-formats.xml');
@@ -1532,9 +1533,9 @@ function plagiarism_urkund_send_files() {
     $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
     if (!empty($plagiarismsettings)) {
         // Get all files in a pending state.
-        $sql = '(statuscode = "pending" or statuscode = ?) AND attempt <= ?';
+        $sql = '(statuscode = ? or statuscode = ?) AND attempt <= ?';
         $plagiarismfiles = $DB->get_recordset_select("plagiarism_urkund_files", $sql,
-            array(URKUND_STATUSCODE_INVALID_RESPONSE, PLAGIARISM_URKUND_MAXATTEMPTS));
+            array(URKUND_STATUSCODE_PENDING, URKUND_STATUSCODE_INVALID_RESPONSE, PLAGIARISM_URKUND_MAXATTEMPTS));
         foreach ($plagiarismfiles as $pf) {
             // Check to make sure cm exists. - delete record if cm has been deleted.
             $sql = "SELECT m.name
