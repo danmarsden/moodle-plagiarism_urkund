@@ -138,7 +138,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $showfiles = false;
             }
         }
-
         if (!empty($linkarray['content']) && $showcontent && str_word_count($linkarray['content']) > $wordcount) {
             $filename = "content-" . $COURSE->id . "-" . $cmid . "-". $userid . ".htm";
             $filepath = $CFG->tempdir."/urkund/" . $filename;
@@ -147,6 +146,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $file->filename = $filename;
             $file->timestamp = time();
             $file->identifier = sha1(plagiarism_urkund_format_temp_content($linkarray['content']));
+            $file->altidentifier = sha1(plagiarism_urkund_format_temp_content($linkarray['content'], true));
             $file->oldidentifier = sha1($linkarray['content']);
             $file->filepath = $filepath;
         } else if (!empty($linkarray['file']) && $showfiles) {
@@ -314,6 +314,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if (!empty($file->oldidentifier)) {
             $extrasql = ' OR identifier = ?';
             $params[] = $file->oldidentifier;
+        }
+        if (!empty($file->altidentifier)) {
+            $extrasql .= ' OR identifier = ?';
+            $params[] = $file->altidentifier;
         }
         $plagiarismfile = $DB->get_record_sql(
                     "SELECT * FROM {plagiarism_urkund_files}
@@ -735,7 +739,11 @@ function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
 }
 
 // Helper function used to add extra html around file contents.
-function plagiarism_urkund_format_temp_content($content) {
+function plagiarism_urkund_format_temp_content($content, $strippretag = false) {
+    // MDL-57886
+    if ($strippretag) {
+        $content = substr($content, 25, strlen($content)-31);
+    }
     return '<html>' .
            '<head>' .
            '<meta charset="UTF-8">' .
