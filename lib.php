@@ -741,9 +741,9 @@ function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
 
 // Helper function used to add extra html around file contents.
 function plagiarism_urkund_format_temp_content($content, $strippretag = false) {
-    // MDL-57886
+    // See MDL-57886.
     if ($strippretag) {
-        $content = substr($content, 25, strlen($content)-31);
+        $content = substr($content, 25, strlen($content) - 31);
     }
     return '<html>' .
            '<head>' .
