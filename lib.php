@@ -386,6 +386,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $existingelements = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $data->coursemodule),
                                                       '', 'name, id');
             foreach ($plagiarismelements as $element) {
+                // Don't allow changes to receiver address if urkund is disabled.
+                if (empty($data->use_urkund) && $element == 'urkund_receiver') {
+                    continue;
+                }
                 $newelement = new stdClass();
                 $newelement->cm = $data->coursemodule;
                 $newelement->name = $element;
@@ -402,7 +406,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 }
 
             }
-            if (!empty($data->urkund_receiver)) {
+            // Don't save user preference if this assignment doesn't use Urkund.
+            if (!empty($data->urkund_receiver) && !empty($data->use_urkund)) {
                 set_user_preference('urkund_receiver', trim($data->urkund_receiver));
             }
         }
