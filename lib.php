@@ -306,7 +306,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // User is not permitted to see any details.
             return false;
         }
-        $params = array($cmid, $userid, $filehash);
+        $params = array($cmid, $userid, $userid, $filehash);
         $extrasql = '';
         if (!empty($file->oldidentifier)) {
             $extrasql = ' OR identifier = ?';
@@ -314,7 +314,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         $plagiarismfile = $DB->get_record_sql(
                     "SELECT * FROM {plagiarism_urkund_files}
-                    WHERE cm = ? AND userid = ? AND " .
+                    WHERE cm = ? AND (userid = ? OR relateduserid = ?) AND " .
                     "(identifier = ? ".$extrasql.")", $params);
         if (empty($plagiarismfile)) {
             // No record of that submitted file.
