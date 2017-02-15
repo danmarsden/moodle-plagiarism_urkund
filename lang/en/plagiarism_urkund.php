@@ -131,3 +131,4 @@ $string['cannotupgradeunprocesseddata'] = '<h1>Cannot upgrade to this version of
  You should revert to an older version of the URKUND plugin, put the site into maintenance mode, run the Moodle Cron process and make sure all old events are cleared. Then try upgrading to this version of the URKUND plugin again.</p>
  <p>For more information see: <a href="https://docs.moodle.org/en/Plagiarism_Prevention_URKUND_Settings#Installation_failed_due_to_unprocessed_data">URKUND Installation failed due to unprocessed data</a></p>';
 $string['timesubmitted'] = 'Time submitted';
+$string['urkund:advancedsettings'] = 'Allow the teacher to view advanced module settings from URKUND';
