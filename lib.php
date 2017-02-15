@@ -493,9 +493,19 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
         }
 
-        // Now set some fields as advanced options.
-        $mform->setAdvanced('urkund_allowallfile');
-        $mform->setAdvanced('urkund_selectfiletypes');
+        // show advanced elements only if allowed
+        $advancedsettings = array('urkund_receiver', 'urkund_studentemail', 'urkund_allowallfile', 'urkund_selectfiletypes');
+        if (has_capability('plagiarism/urkund:advancedsettings', $context)) {
+            foreach ($advancedsettings as $name) {
+                $mform->setAdvanced($name, true);
+            }
+        } else {
+            // otherwise, put them as hidden elements
+            foreach ($advancedsettings as $name) {
+                $element = $mform->removeElement($name);
+                $mform->addElement('hidden', $name, $element->getValue());
+            }
+        }
 
         // Now handle content restriction settings.
 
@@ -503,12 +513,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // I can't see a way to check if a particular checkbox exists
             // elementExists on the checkbox name doesn't work.
             $mform->disabledIf('urkund_restrictcontent', 'assignsubmission_onlinetext_enabled');
-            $mform->setAdvanced('urkund_restrictcontent');
         } else if ($modulename != 'mod_forum') {
             // Forum doesn't need any changes but all other modules should disable this.
             $mform->setDefault('urkund_restrictcontent', 0);
             $mform->hardFreeze('urkund_restrictcontent');
-            $mform->setAdvanced('urkund_restrictcontent');
         }
     }
 
@@ -776,8 +784,6 @@ function urkund_get_form_elements($mform) {
 
     $mform->addElement('header', 'plagiarismdesc', get_string('urkund', 'plagiarism_urkund'));
     $mform->addElement('select', 'use_urkund', get_string("useurkund", "plagiarism_urkund"), $ynoptions);
-    $mform->addElement('text', 'urkund_receiver', get_string("urkund_receiver", "plagiarism_urkund"), array('size' => 40));
-    $mform->addHelpButton('urkund_receiver', 'urkund_receiver', 'plagiarism_urkund');
     $mform->setType('urkund_receiver', PARAM_TEXT);
     $mform->addElement('select', 'urkund_show_student_score',
                        get_string("urkund_show_student_score", "plagiarism_urkund"), $tiioptions);
@@ -789,8 +795,19 @@ function urkund_get_form_elements($mform) {
         $mform->addElement('select', 'urkund_draft_submit',
                            get_string("urkund_draft_submit", "plagiarism_urkund"), $urkunddraftoptions);
     }
+    $contentoptions = array(PLAGIARISM_URKUND_RESTRICTCONTENTNO => get_string('restrictcontentno', 'plagiarism_urkund'),
+                            PLAGIARISM_URKUND_RESTRICTCONTENTFILES => get_string('restrictcontentfiles', 'plagiarism_urkund'),
+                            PLAGIARISM_URKUND_RESTRICTCONTENTTEXT => get_string('restrictcontenttext', 'plagiarism_urkund'));
+    $mform->addElement('select', 'urkund_restrictcontent', get_string('restrictcontent', 'plagiarism_urkund'), $contentoptions);
+    $mform->addHelpButton('urkund_restrictcontent', 'restrictcontent', 'plagiarism_urkund');
+    $mform->setType('urkund_restrictcontent', PARAM_INT);
+    $mform->addElement('text', 'urkund_receiver', get_string("urkund_receiver", "plagiarism_urkund"), array('size' => 40));
+    $mform->addHelpButton('urkund_receiver', 'urkund_receiver', 'plagiarism_urkund');
+    $mform->setType('urkund_receiver', PARAM_EMAIL);
     $mform->addElement('select', 'urkund_studentemail', get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
     $mform->addHelpButton('urkund_studentemail', 'urkund_studentemail', 'plagiarism_urkund');
+    $mform->setType('urkund_studentemail', PARAM_INT);
+
 
     $filetypes = urkund_default_allowed_file_types(true);
 
@@ -800,16 +817,10 @@ function urkund_get_form_elements($mform) {
     }
     $mform->addElement('select', 'urkund_allowallfile', get_string('allowallsupportedfiles', 'plagiarism_urkund'), $ynoptions);
     $mform->addHelpButton('urkund_allowallfile', 'allowallsupportedfiles', 'plagiarism_urkund');
+    $mform->setType('urkund_allowallfile', PARAM_INT);
     $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'),
                        $supportedfiles, array('multiple' => true));
-
-    $contentoptions = array(PLAGIARISM_URKUND_RESTRICTCONTENTNO => get_string('restrictcontentno', 'plagiarism_urkund'),
-                            PLAGIARISM_URKUND_RESTRICTCONTENTFILES => get_string('restrictcontentfiles', 'plagiarism_urkund'),
-                            PLAGIARISM_URKUND_RESTRICTCONTENTTEXT => get_string('restrictcontenttext', 'plagiarism_urkund'));
-
-    $mform->addElement('select', 'urkund_restrictcontent', get_string('restrictcontent', 'plagiarism_urkund'), $contentoptions);
-    $mform->addHelpButton('urkund_restrictcontent', 'restrictcontent', 'plagiarism_urkund');
-
+    $mform->setType('urkund_selectfiletypes', PARAM_TAGLIST);
 }
 
 /**
