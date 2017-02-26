@@ -1575,7 +1575,7 @@ function plagiarism_urkund_send_files() {
             if ($pf->statuscode == URKUND_STATUSCODE_INVALID_RESPONSE) {
                 // Check if we can handle this attempt.
                 if (!urkund_check_attempt_timeout($pf)) {
-                    mtrace("URKUND fileid:$pf->id File, Attempt:$pf->attempt, failed submission, queued for resumbission after wait.");
+                    mtrace("URKUND fileid:$pf->id File, Attempt:$pf->attempt, failed, queued for resumbission after wait.");
                     continue;
                 }
             }
