@@ -92,16 +92,22 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
     }
     /**
-     * Function which returns an array of all the module instance settings.
+     * We return an array of all the module instance or administration settings, correspondingly.
+     *
+     * @param bool $adminsettings true if we get the admin settings.
      *
      * @return array
-     *
      */
-    public function config_options() {
-        return array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
+    public static function config_options($adminsettings = false) {
+        $options = array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
                      'urkund_draft_submit', 'urkund_receiver', 'urkund_studentemail', 'urkund_allowallfile',
                      'urkund_selectfiletypes', 'urkund_restrictcontent');
+        if ($adminsettings) {
+            $options[] = 'urkund_advanceditems';
+        }
+        return $options;
     }
+
     /**
      * Hook to allow plagiarism specific information to be displayed beside a submission.
      * @param array  $linkarraycontains all relevant information for the plugin to generate a link.
@@ -456,13 +462,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         } else { // Add plagiarism settings as hidden vars.
             foreach ($plagiarismelements as $element) {
                 $mform->addElement('hidden', $element);
-                $mform->setType('use_urkund', PARAM_INT);
-                $mform->setType('urkund_show_student_score', PARAM_INT);
-                $mform->setType('urkund_show_student_report', PARAM_INT);
-                $mform->setType('urkund_draft_submit', PARAM_INT);
-                $mform->setType('urkund_receiver', PARAM_TEXT);
-                $mform->setType('urkund_studentemail', PARAM_INT);
             }
+            $mform->setType('use_urkund', PARAM_INT);
+            $mform->setType('urkund_show_student_score', PARAM_INT);
+            $mform->setType('urkund_show_student_report', PARAM_INT);
+            $mform->setType('urkund_draft_submit', PARAM_INT);
+            $mform->setType('urkund_receiver', PARAM_TEXT);
+            $mform->setType('urkund_studentemail', PARAM_INT);
         }
         // Now set defaults.
         foreach ($plagiarismelements as $element) {
@@ -494,7 +500,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
 
         // show advanced elements only if allowed
-        $advancedsettings = array('urkund_receiver', 'urkund_studentemail', 'urkund_allowallfile', 'urkund_selectfiletypes');
+        $advancedsettings = explode(',', $plagiarismdefaults['urkund_advanceditems']);
         if (has_capability('plagiarism/urkund:advancedsettings', $context)) {
             foreach ($advancedsettings as $name) {
                 $mform->setAdvanced($name, true);
@@ -773,7 +779,7 @@ function plagiarism_urkund_format_temp_content($content, $strippretag = false) {
  *
  * @param object $mform - Moodle form object.
  */
-function urkund_get_form_elements($mform) {
+function urkund_get_form_elements($mform, $adminsettings = false) {
     $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
     $tiioptions = array(0 => get_string("never"), 1 => get_string("always"),
                         2 => get_string("showwhenclosed", "plagiarism_urkund"));
@@ -821,6 +827,24 @@ function urkund_get_form_elements($mform) {
     $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'),
                        $supportedfiles, array('multiple' => true));
     $mform->setType('urkund_selectfiletypes', PARAM_TAGLIST);
+
+    if ($adminsettings) {
+        $items = array();
+        $aliases = array(
+            'use_urkund' => 'useurkund',
+            'urkund_allowallfile' => 'allowallsupportedfiles',
+            'urkund_selectfiletypes' => 'restrictfiles',
+            'urkund_restrictcontent' => 'restrictcontent',
+        );
+        foreach (plagiarism_plugin_urkund::config_options() as $setting) {
+            $key = isset($aliases[$setting]) ? $aliases[$setting] : $setting;
+            $items[$setting] = get_string($key, 'plagiarism_urkund');
+        }
+        $mform->addElement('select', 'urkund_advanceditems', get_string('urkund_advanceditems', 'plagiarism_urkund'), $items);
+        $mform->getElement('urkund_advanceditems')->setMultiple(true);
+        $mform->addHelpButton('urkund_advanceditems', 'urkund_advanceditems', 'plagiarism_urkund');
+        $mform->setType('urkund_advanceditems', PARAM_TAGLIST);
+    }
 }
 
 /**
