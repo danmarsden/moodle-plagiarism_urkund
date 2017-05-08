@@ -32,8 +32,7 @@ Feature: Enable URKUND for modules
     And I press "Save changes"
     And I log out
     And I log in as "teacher1"
-    And I follow "Course 1"
-    And I turn editing mode on
+    And I am on "Course 1" course homepage with editing mode on
 
   @javascript
   Scenario: Create an assignment and enable URKUND for it
