@@ -35,10 +35,10 @@ M.plagiarism_urkund.init = function(Y, contextid) {
             method: 'get',
             context: this,
             sync: false,
-            data : {
-                'sesskey' : M.cfg.sesskey,
-                'ur' : rval,
-                'c' : contextid
+            data: {
+                'sesskey': M.cfg.sesskey,
+                'ur': rval,
+                'c': contextid
             },
             on: {
                 success: function(tid, response) {
@@ -67,7 +67,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                         }
                     }
                 },
-                /*jshint unused: vars */
+                /* jshint unused: vars */
                 failure: function(tid, response) {
                     receiver.insert(invalid, 'after');
                 }
@@ -80,7 +80,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
     // Validate existing content.
     check_urkund_receiver(Y, receiver, contextid);
     // Validate on change.
-    /*jshint unused: vars */
+    /* jshint unused: vars */
     receiver.on('change', function(e) {
         check_urkund_receiver(Y, receiver, contextid);
     });
