@@ -169,7 +169,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if ($results['statuscode'] == 'pending') {
             // TODO: check to make sure there is a pending event entry for this file - if not add one.
             $output .= '<span class="plagiarismreport">'.
-                       '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
+                       '<img src="'.$OUTPUT->image_url('processing', 'plagiarism_urkund') .
                         '" alt="'.get_string('pending', 'plagiarism_urkund').'" '.
                         '" title="'.get_string('pending', 'plagiarism_urkund').'" />'.
                         '</span>';
@@ -204,19 +204,19 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $output .= '</span>';
         } else if ($results['statuscode'] == URKUND_STATUSCODE_ACCEPTED) {
             $output .= '<span class="plagiarismreport">'.
-                       '<img src="'.$OUTPUT->pix_url('processing', 'plagiarism_urkund') .
+                       '<img src="'.$OUTPUT->image_url('processing', 'plagiarism_urkund') .
                         '" alt="'.get_string('processing', 'plagiarism_urkund').'" '.
                         '" title="'.get_string('processing', 'plagiarism_urkund').'" />'.
                         '</span>';
         } else if ($results['statuscode'] == URKUND_STATUSCODE_UNSUPPORTED) {
             $output .= '<span class="plagiarismreport">'.
-                       '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                       '<img src="'.$OUTPUT->image_url('warning', 'plagiarism_urkund') .
                         '" alt="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" '.
                         '" title="'.get_string('unsupportedfiletype', 'plagiarism_urkund').'" />'.
                         '</span>';
         } else if ($results['statuscode'] == URKUND_STATUSCODE_TOO_LARGE) {
             $output .= '<span class="plagiarismreport">'.
-                       '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                       '<img src="'.$OUTPUT->image_url('warning', 'plagiarism_urkund') .
                         '" alt="'.get_string('toolarge', 'plagiarism_urkund').'" '.
                         '" title="'.get_string('toolarge', 'plagiarism_urkund').'" />'.
                         '</span>';
@@ -235,7 +235,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $reset = "<a href='$url'>".get_string('reset')."</a>";
             }
             $output .= '<span class="plagiarismreport">'.
-                       '<img src="'.$OUTPUT->pix_url('warning', 'plagiarism_urkund') .
+                       '<img src="'.$OUTPUT->image_url('warning', 'plagiarism_urkund') .
                         '" alt="'.get_string('unknownwarning', 'plagiarism_urkund').'" '.
                         '" title="'.$title.'" />'.$reset.'</span>';
         }
