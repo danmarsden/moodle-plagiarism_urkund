@@ -502,14 +502,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
         }
 
-        // show advanced elements only if allowed
+        // Show advanced elements only if allowed.
         $advancedsettings = explode(',', $plagiarismdefaults['urkund_advanceditems']);
         if (has_capability('plagiarism/urkund:advancedsettings', $context)) {
             foreach ($advancedsettings as $name) {
                 $mform->setAdvanced($name, true);
             }
         } else {
-            // otherwise, put them as hidden elements
+            // Otherwise, put them as hidden elements.
             foreach ($advancedsettings as $name) {
                 $element = $mform->removeElement($name);
                 $mform->addElement('hidden', $name, $element->getValue());
@@ -812,7 +812,6 @@ function urkund_get_form_elements($mform, $adminsettings = false) {
     $mform->addElement('select', 'urkund_studentemail', get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
     $mform->addHelpButton('urkund_studentemail', 'urkund_studentemail', 'plagiarism_urkund');
     $mform->setType('urkund_studentemail', PARAM_INT);
-
 
     $filetypes = urkund_default_allowed_file_types(true);
 
