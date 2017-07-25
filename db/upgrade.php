@@ -134,7 +134,7 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2016061600, 'plagiarism', 'urkund');
     }
 
-    if ($oldversion < 2017021700) {
+    if ($oldversion < 2017072500) {
 
         // Set advanceditems setting.
         if (!$DB->record_exists('plagiarism_urkund_config', array('cm' => 0, 'name' => 'urkund_advanceditems'))) {
@@ -146,7 +146,7 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         }
 
         // Urkund savepoint reached.
-        upgrade_plugin_savepoint(true, 2017021700, 'plagiarism', 'urkund');
+        upgrade_plugin_savepoint(true, 2017072500, 'plagiarism', 'urkund');
     }
 
     return true;
