@@ -134,5 +134,20 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2016061600, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2017020802) {
+
+        // Set advanceditems setting.
+        if (!$DB->record_exists('plagiarism_urkund_config', array('cm' => 0, 'name' => 'urkund_advanceditems'))) {
+            $advsetting = new stdClass();
+            $advsetting->cm = 0;
+            $advsetting->name = 'urkund_advanceditems';
+            $advsetting->value = 'urkund_receiver,urkund_studentemail,urkund_allowallfile,urkund_selectfiletypes';
+            $DB->insert_record('plagiarism_urkund_config', $advsetting);
+        }
+
+        // Urkund savepoint reached.
+        upgrade_plugin_savepoint(true, 2017020802, 'plagiarism', 'urkund');
+    }
+
     return true;
 }

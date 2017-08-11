@@ -98,6 +98,8 @@ $string['urkund'] = 'URKUND plagiarism plugin';
 $string['urkund:enable'] = 'Allow the teacher to enable/disable URKUND inside an activity';
 $string['urkund:resetfile'] = 'Allow the teacher to resubmit the file to URKUND after an error';
 $string['urkund:viewreport'] = 'Allow the teacher to view the full report from URKUND';
+$string['urkund_advanceditems'] = 'Set of settings to consider advanced';
+$string['urkund_advanceditems_help'] = 'The list of settings set as advanced here, will be shown as advanced in module settings. If so, they will be also hidden from teachers if they do not have capability \'urkund:advancedsettings\'.';
 $string['urkund_api'] = 'URKUND Integration Address';
 $string['urkund_api_help'] = 'This is the address of the URKUND API';
 $string['urkund_draft_submit'] = 'When should the file be submitted';
@@ -133,3 +135,4 @@ $string['cannotupgradeunprocesseddata'] = '<h1>Cannot upgrade to this version of
  You should revert to an older version of the URKUND plugin, put the site into maintenance mode, run the Moodle Cron process and make sure all old events are cleared. Then try upgrading to this version of the URKUND plugin again.</p>
  <p>For more information see: <a href="https://docs.moodle.org/en/Plagiarism_Prevention_URKUND_Settings#Installation_failed_due_to_unprocessed_data">URKUND Installation failed due to unprocessed data</a></p>';
 $string['timesubmitted'] = 'Time submitted';
+$string['urkund:advancedsettings'] = 'Allow the teacher to view advanced module settings from URKUND';
