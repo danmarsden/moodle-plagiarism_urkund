@@ -46,7 +46,7 @@ require_once('urkund_tabs.php');
 if (($data = $mform->get_data()) && confirm_sesskey()) {
     $plagiarismplugin = new plagiarism_plugin_urkund();
 
-    $plagiarismelements = $plagiarismplugin->config_options();
+    $plagiarismelements = $plagiarismplugin->config_options(true);
     foreach ($plagiarismelements as $element) {
         if (isset($data->$element)) {
             $newelement = new Stdclass();
