@@ -89,7 +89,7 @@ class urkund_defaults_form extends moodleform {
     // Define the form.
     public function definition () {
         $mform =& $this->_form;
-        urkund_get_form_elements($mform);
+        urkund_get_form_elements($mform, true);
         $this->add_action_buttons(true);
     }
 }
