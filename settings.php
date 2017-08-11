@@ -61,6 +61,9 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->urkund_optout)) {
         $data->urkund_optout = 0;
     }
+    if (!isset($data->urkund_hidefilename)) {
+        $data->urkund_hidefilename = 0;
+    }
     foreach ($data as $field => $value) {
         if (strpos($field, 'urkund') === 0) {
             $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with uasername/password
