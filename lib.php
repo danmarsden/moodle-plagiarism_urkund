@@ -900,6 +900,7 @@ function urkund_queue_file($cmid, $userid, $file, $relateduserid = null) {
     // Check to see if configured to only send certain file-types and if this file matches.
     if (isset($plagiarismvalues['urkund_allowallfile']) && empty($plagiarismvalues['urkund_allowallfile'])) {
         $allowedtypes = explode(',', $plagiarismvalues['urkund_selectfiletypes']);
+        $allowedtypes[] = 'htm'; // Always allow htm files as they come from online submissions.
 
         $pathinfo = pathinfo($filename);
         if (!empty($pathinfo['extension'])) {
