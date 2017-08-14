@@ -150,28 +150,32 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
     }
 
     if ($oldversion < 2017051502) {
-        $defaults = $DB->get_records('plagiarism_urkund_config', array('cm' => 0));
+        // Check to see if this has already been completed.
+        $sql = "cm = 0 AND (name LIKE '%_assign' OR name LIKE '%_forum' OR name LIKE '%_workshop')";
+        if (!$DB->record_exists_select('plagiarism_urkund_config', $sql)) {
+            $defaults = $DB->get_records('plagiarism_urkund_config', array('cm' => 0));
 
-        // Store list of id's to delete.
-        $defaultsdelete = array();
-        foreach ($defaults as $default) {
-            $defaultsdelete[] = $default->id;
-        }
-
-        // Set the existing default as the default for assign/forum/workshop.
-        $supportedmodules = array('assign', 'forum', 'workshop');
-        foreach ($supportedmodules as $sm) {
+            // Store list of id's to delete.
+            $defaultsdelete = array();
             foreach ($defaults as $default) {
-                $newitem = clone $default;
-                unset($newitem->id);
-                $newitem->name .= '_'.$sm;
-                $DB->insert_record('plagiarism_urkund_config', $newitem);
+                $defaultsdelete[] = $default->id;
             }
-        }
 
-        // Delete old records.
-        foreach ($defaults as $default) {
-            $DB->delete_records_list('plagiarism_urkund_config', 'id', $defaultsdelete);
+            // Set the existing default as the default for assign/forum/workshop.
+            $supportedmodules = array('assign', 'forum', 'workshop');
+            foreach ($supportedmodules as $sm) {
+                foreach ($defaults as $default) {
+                    $newitem = clone $default;
+                    unset($newitem->id);
+                    $newitem->name .= '_'.$sm;
+                    $DB->insert_record('plagiarism_urkund_config', $newitem);
+                }
+            }
+
+            // Delete old records.
+            foreach ($defaults as $default) {
+                $DB->delete_records_list('plagiarism_urkund_config', 'id', $defaultsdelete);
+            }
         }
 
         // Urkund savepoint reached.
