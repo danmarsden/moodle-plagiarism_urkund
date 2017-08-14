@@ -149,5 +149,34 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2017051501, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2017051502) {
+        $defaults = $DB->get_records('plagiarism_urkund_config', array('cm' => 0));
+
+        // Store list of id's to delete.
+        $defaultsdelete = array();
+        foreach ($defaults as $default) {
+            $defaultsdelete[] = $default->id;
+        }
+
+        // Set the existing default as the default for assign/forum/workshop.
+        $supportedmodules = array('assign', 'forum', 'workshop');
+        foreach ($supportedmodules as $sm) {
+            foreach ($defaults as $default) {
+                $newitem = clone $default;
+                unset($newitem->id);
+                $newitem->name .= '_'.$sm;
+                $DB->insert_record('plagiarism_urkund_config', $newitem);
+            }
+        }
+
+        // Delete old records.
+        foreach ($defaults as $default) {
+            $DB->delete_records_list('plagiarism_urkund_config', 'id', $defaultsdelete);
+        }
+
+        // Urkund savepoint reached.
+        upgrade_plugin_savepoint(true, 2017051502, 'plagiarism', 'urkund');
+    }
+
     return true;
 }
