@@ -477,17 +477,18 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         // Now set defaults.
         foreach ($plagiarismelements as $element) {
+            $defaultelement = $element.'_'.str_replace('mod_', '', $modulename);
             if (isset($plagiarismvalues[$element])) {
                 $mform->setDefault($element, $plagiarismvalues[$element]);
             } else if ($element == 'urkund_receiver') {
                 $def = get_user_preferences($element);
                 if (!empty($def)) {
                     $mform->setDefault($element, $def);
-                } else if (isset($plagiarismdefaults[$element])) {
-                    $mform->setDefault($element, $plagiarismdefaults[$element]);
+                } else if (isset($plagiarismdefaults[$defaultelement])) {
+                    $mform->setDefault($element, $plagiarismdefaults[$defaultelement]);
                 }
-            } else if (isset($plagiarismdefaults[$element])) {
-                $mform->setDefault($element, $plagiarismdefaults[$element]);
+            } else if (isset($plagiarismdefaults[$defaultelement])) {
+                $mform->setDefault($element, $plagiarismdefaults[$defaultelement]);
             }
         }
         $mform->registerRule('urkundvalidatereceiver', null, 'urkundvalidatereceiver',
@@ -505,8 +506,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
 
         // Show advanced elements only if allowed.
-        if (!empty($plagiarismdefaults['urkund_advanceditems'])) {
-            $advancedsettings = explode(',', $plagiarismdefaults['urkund_advanceditems']);
+        $defaultelementadvanced = 'urkund_advanceditems_'.str_replace('mod_', '', $modulename);
+        if (!empty($plagiarismdefaults[$defaultelementadvanced])) {
+            $advancedsettings = explode(',', $plagiarismdefaults[$defaultelementadvanced]);
             if (has_capability('plagiarism/urkund:advancedsettings', $context)) {
                 foreach ($advancedsettings as $name) {
                     $mform->setAdvanced($name, true);
@@ -781,7 +783,7 @@ function plagiarism_urkund_format_temp_content($content, $strippretag = false) {
  *
  * @param object $mform - Moodle form object.
  */
-function urkund_get_form_elements($mform, $adminsettings = false) {
+function urkund_get_form_elements($mform) {
     $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
     $tiioptions = array(0 => get_string("never"), 1 => get_string("always"),
                         2 => get_string("showwhenclosed", "plagiarism_urkund"));
@@ -828,24 +830,6 @@ function urkund_get_form_elements($mform, $adminsettings = false) {
     $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'),
                        $supportedfiles, array('multiple' => true));
     $mform->setType('urkund_selectfiletypes', PARAM_TAGLIST);
-
-    if ($adminsettings) {
-        $items = array();
-        $aliases = array(
-            'use_urkund' => 'useurkund',
-            'urkund_allowallfile' => 'allowallsupportedfiles',
-            'urkund_selectfiletypes' => 'restrictfiles',
-            'urkund_restrictcontent' => 'restrictcontent',
-        );
-        foreach (plagiarism_plugin_urkund::config_options() as $setting) {
-            $key = isset($aliases[$setting]) ? $aliases[$setting] : $setting;
-            $items[$setting] = get_string($key, 'plagiarism_urkund');
-        }
-        $mform->addElement('select', 'urkund_advanceditems', get_string('urkund_advanceditems', 'plagiarism_urkund'), $items);
-        $mform->getElement('urkund_advanceditems')->setMultiple(true);
-        $mform->addHelpButton('urkund_advanceditems', 'urkund_advanceditems', 'plagiarism_urkund');
-        $mform->setType('urkund_advanceditems', PARAM_TAGLIST);
-    }
 }
 
 /**
