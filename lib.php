@@ -502,21 +502,22 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
 
         // Show advanced elements only if allowed.
-        $advancedsettings = explode(',', $plagiarismdefaults['urkund_advanceditems']);
-        if (has_capability('plagiarism/urkund:advancedsettings', $context)) {
-            foreach ($advancedsettings as $name) {
-                $mform->setAdvanced($name, true);
-            }
-        } else {
-            // Otherwise, put them as hidden elements.
-            foreach ($advancedsettings as $name) {
-                $element = $mform->removeElement($name);
-                $mform->addElement('hidden', $name, $element->getValue());
+        if (!empty($plagiarismdefaults['urkund_advanceditems'])) {
+            $advancedsettings = explode(',', $plagiarismdefaults['urkund_advanceditems']);
+            if (has_capability('plagiarism/urkund:advancedsettings', $context)) {
+                foreach ($advancedsettings as $name) {
+                    $mform->setAdvanced($name, true);
+                }
+            } else {
+                // Otherwise, put them as hidden elements.
+                foreach ($advancedsettings as $name) {
+                    $element = $mform->removeElement($name);
+                    $mform->addElement('hidden', $name, $element->getValue());
+                }
             }
         }
 
         // Now handle content restriction settings.
-
         if ($modulename == 'mod_assign' && $mform->elementExists("submissionplugins")) { // This should be mod_assign
             // I can't see a way to check if a particular checkbox exists
             // elementExists on the checkbox name doesn't work.
