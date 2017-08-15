@@ -27,14 +27,13 @@ require_once(dirname(dirname(__FILE__)) . '/../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-require_once('urkund_form.php');
 
 require_login();
 admin_externalpage_setup('plagiarismurkund');
 
 $context = context_system::instance();
 
-$mform = new urkund_defaults_form(null);
+$mform = new plagiarism_urkund_defaults_form(null);
 $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config',
     array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
 if (!empty($plagiarismdefaults)) {

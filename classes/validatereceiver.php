@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * form_customrule.php - allows custom rule form validation
+ * validatereciever.php - allows custom rule form validation
  * We use this because the plagiarism api doesn't hook into the validation function of activity editing page.
  *
  * @package   plagiarism_urkund
@@ -24,20 +24,19 @@
  * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
-if (!defined('MOODLE_INTERNAL')) {
-    die('Direct access to this script is forbidden.'); // It must be included from a Moodle page.
-}
+defined('MOODLE_INTERNAL') || die();
 
-// Get global class.
-global $CFG;
-
-require_once($CFG->libdir. '/pear/HTML/QuickForm/Rule.php');
-require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-
-// Returns false if email already exists, true if it doesn't.
-class urkundvalidatereceiver extends HTML_QuickForm_Rule {
-
-    // Var $receiver will be the receiver address passed.
+/**
+ * Class plagiarism_urkund_validatereceiver
+ *
+ * @package   plagiarism_urkund
+ * @copyright 2017 Dan Marsden
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+class plagiarism_urkund_validatereceiver extends HTML_QuickForm_Rule {
+    /**
+     * Var $receiver will be the receiver address passed.
+     */
     public function validate($receiver, $options = null) {
         $urkund = new plagiarism_plugin_urkund();
         $valid = $urkund->validate_receiver($receiver);
