@@ -28,7 +28,6 @@ require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/tablelib.php');
 require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-require_once('urkund_form.php');
 
 $id = optional_param('id', 0, PARAM_INT);
 $resetuser = optional_param('reset', 0, PARAM_INT);
