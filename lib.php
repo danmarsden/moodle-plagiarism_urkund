@@ -152,6 +152,18 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $file->altidentifier = sha1(plagiarism_urkund_format_temp_content($linkarray['content'], true));
             $file->oldidentifier = sha1($linkarray['content']);
             $file->filepath = $filepath;
+            // TODO: Remove this when MDL-57886 is fixed.
+            if (!empty($linkarray['assignment'])) {
+                // Get raw content to calculate sha1.
+                $sql = "SELECT a.id, o.onlinetext
+                          FROM {assignsubmission_onlinetext} o
+                          JOIN {assign_submission} a ON a.id = o.submission
+                         WHERE a.userid = ? AND o.assignment = ?
+                         ORDER BY a.id DESC";
+                $moodletextsubmissions = $DB->get_records_sql($sql, array($userid, $linkarray['assignment']), 0, 1);
+                $moodletextsubmission = end($moodletextsubmissions);
+                $file->altidentifier = sha1(plagiarism_urkund_format_temp_content($moodletextsubmission->onlinetext));
+            }
         } else if (!empty($linkarray['file']) && $showfiles) {
             $file = new stdclass();
             $file->filename = $linkarray['file']->get_filename();
