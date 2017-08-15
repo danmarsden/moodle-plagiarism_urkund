@@ -503,8 +503,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $mform->setDefault($element, $plagiarismdefaults[$defaultelement]);
             }
         }
-        $mform->registerRule('urkundvalidatereceiver', null, 'urkundvalidatereceiver',
-                             $CFG->dirroot.'/plagiarism/urkund/form_customrule.php');
+        $mform->registerRule('urkundvalidatereceiver', null, 'plagiarism_urkund_validatereceiver',
+                             $CFG->dirroot.'/plagiarism/urkund/classes/validatereceiver.php');
         $mform->addRule('urkund_receiver', get_string('receivernotvalid', 'plagiarism_urkund'), 'urkundvalidatereceiver');
 
         // Now add JS to validate receiver indicator using Ajax.

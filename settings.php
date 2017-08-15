@@ -27,7 +27,6 @@ require_once(dirname(dirname(__FILE__)) . '/../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
-require_once($CFG->dirroot.'/plagiarism/urkund/urkund_form.php');
 
 require_login();
 admin_externalpage_setup('plagiarismurkund');
@@ -35,7 +34,7 @@ admin_externalpage_setup('plagiarismurkund');
 $context = context_system::instance();
 require_capability('moodle/site:config', $context, $USER->id, true, "nopermissions");
 
-$mform = new urkund_setup_form();
+$mform = new plagiarism_urkund_setup_form();
 $plagiarismplugin = new plagiarism_plugin_urkund();
 
 if ($mform->is_cancelled()) {
