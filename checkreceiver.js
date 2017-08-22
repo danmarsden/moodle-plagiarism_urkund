@@ -25,7 +25,7 @@ M.plagiarism_urkund = {};
 
 M.plagiarism_urkund.init = function(Y, contextid) {
 
-    var check_urkund_receiver = function(Y, receiver, contextid) {
+    var checkUrkundReceiver = function(Y, receiver, contextid) {
         var rval = receiver.get('value');
         var parentdiv = receiver.ancestor('div');
         var url = M.cfg.wwwroot + '/plagiarism/urkund/checkreceiver.php';
@@ -68,7 +68,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                     }
                 },
                 /* jshint unused: vars */
-                failure: function(tid, response) {
+                failure: function(tid) {
                     receiver.insert(invalid, 'after');
                 }
             }
@@ -78,10 +78,10 @@ M.plagiarism_urkund.init = function(Y, contextid) {
 
     var receiver = Y.one('#id_urkund_receiver');
     // Validate existing content.
-    check_urkund_receiver(Y, receiver, contextid);
+    checkUrkundReceiver(Y, receiver, contextid);
     // Validate on change.
     /* jshint unused: vars */
-    receiver.on('change', function(e) {
-        check_urkund_receiver(Y, receiver, contextid);
+    receiver.on('change', function() {
+        checkUrkundReceiver(Y, receiver, contextid);
     });
 };
