@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * validatereciever.php - allows custom rule form validation
- * We use this because the plagiarism api doesn't hook into the validation function of activity editing page.
+ * Custom rule form validation, no hooks into the validation function of activity editing page.
  *
  * @package   plagiarism_urkund
  * @author    Dan Marsden <dan@danmarsden.com>
@@ -35,7 +34,10 @@ defined('MOODLE_INTERNAL') || die();
  */
 class plagiarism_urkund_validatereceiver extends HTML_QuickForm_Rule {
     /**
-     * Var $receiver will be the receiver address passed.
+     * Validate receiver address.
+     *
+     * @param string $receiver - the receiver address passed.
+     * @param array $options
      */
     public function validate($receiver, $options = null) {
         $urkund = new plagiarism_plugin_urkund();

@@ -19,6 +19,7 @@
  *
  * @package    plagiarism_urkund
  * @author     Dan Marsden http://danmarsden.com
+ * @copyright  2017 Dan Marsden
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -27,19 +28,25 @@ namespace plagiarism_urkund\task;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * update_allowed_filetypes class, used to get list of allowed filetypes from URKUND,
- * also delete records associated with deleted activities.
+ * Get list of allowed filetypes from urkund and delete old records.
  *
  * @package    plagiarism_urkund
  * @author     Dan Marsden http://danmarsden.com
+ * @copyright  2017 Dan Marsden
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class update_allowed_filetypes extends \core\task\scheduled_task {
+    /**
+     * Returns the name of this task.
+     */
     public function get_name() {
         // Shown in admin screens.
         return get_string('updateallowedfiletypes', 'plagiarism_urkund');
     }
 
+    /**
+     * Execute task.
+     */
     public function execute() {
         global $CFG;
         require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');

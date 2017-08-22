@@ -15,11 +15,12 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
+ * Language strings for Urkund plugin.
  *
- * @package   plagiarism_urkund
+ * @package    plagiarism_urkund
  * @author     Dan Marsden <dan@danmarsden.com>
  * @copyright  2011 Dan Marsden http://danmarsden.com
- * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 $string['allowallsupportedfiles'] = 'Allow all supported file types';
