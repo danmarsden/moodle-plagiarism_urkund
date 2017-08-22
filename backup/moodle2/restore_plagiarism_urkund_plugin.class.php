@@ -14,9 +14,23 @@
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
+/**
+ * Contains class restore_plagiarism_urkund_plugin
+ *
+ * @package   plagiarism_urkund
+ * @copyright 2017 Dan Marsden
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
+
 defined('MOODLE_INTERNAL') || die();
 
-
+/**
+ * Class restore_plagiarism_urkund_plugin
+ *
+ * @package   plagiarism_urkund
+ * @copyright 2017 Dan Marsden
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
     /**
      * Returns the paths to be handled by the plugin at question level.
@@ -32,6 +46,10 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
         return $paths; // And we return the interesting paths.
     }
 
+    /**
+     * Process the urkund config data.
+     * @param stdClass $data
+     */
     public function process_urkundconfig($data) {
         $data = (object)$data;
 
@@ -57,6 +75,10 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
 
     }
 
+    /**
+     * Process the urkund config mod data.
+     * @param stdClass $data
+     */
     public function process_urkundconfigmod($data) {
         global $DB;
 
@@ -66,6 +88,10 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
         $DB->insert_record('plagiarism_urkund_config', $data);
     }
 
+    /**
+     * Process the urkund files data.
+     * @param stdClass $data
+     */
     public function process_urkundfiles($data) {
         global $DB;
 

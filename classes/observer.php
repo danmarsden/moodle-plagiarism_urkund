@@ -16,12 +16,22 @@
 
 /**
  * Event observers used in Urkund Plagiarism plugin.
+ *
+ * @package   plagiarism_urkund
  * @author     Dan Marsden <dan@danmarsden.com>, Ramindu Deshapriya <rasade88@gmail.com>
  * @copyright  2011 Dan Marsden http://danmarsden.com
  * @copyright  2015 Ramindu Deshapriya <rasade88@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 defined('MOODLE_INTERNAL') || die();
+
+/**
+ * Class plagiarism_urkund_observer
+ *
+ * @package   plagiarism_urkund
+ * @copyright 2017 Dan Marsden
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class plagiarism_urkund_observer {
     /**
      * Observer function to handle the assessable_uploaded event in mod_assign.

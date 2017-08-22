@@ -19,6 +19,7 @@
  *
  * @package    plagiarism_urkund
  * @author     Dan Marsden http://danmarsden.com
+ * @copyright  2017 Dan Marsden
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -31,14 +32,21 @@ defined('MOODLE_INTERNAL') || die();
  *
  * @package    plagiarism_urkund
  * @author     Dan Marsden http://danmarsden.com
+ * @copyright  2017 Dan Marsden
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 class send_files extends \core\task\scheduled_task {
+    /**
+     * Returns the name of this task.
+     */
     public function get_name() {
         // Shown in admin screens.
         return get_string('sendfiles', 'plagiarism_urkund');
     }
 
+    /**
+     * Execute task.
+     */
     public function execute() {
         global $CFG;
         require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
