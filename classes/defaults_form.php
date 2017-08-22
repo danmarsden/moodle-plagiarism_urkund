@@ -64,13 +64,16 @@ class plagiarism_urkund_defaults_form extends moodleform {
             $contentoptions = array(PLAGIARISM_URKUND_RESTRICTCONTENTNO => get_string('restrictcontentno', 'plagiarism_urkund'),
                 PLAGIARISM_URKUND_RESTRICTCONTENTFILES => get_string('restrictcontentfiles', 'plagiarism_urkund'),
                 PLAGIARISM_URKUND_RESTRICTCONTENTTEXT => get_string('restrictcontenttext', 'plagiarism_urkund'));
-            $mform->addElement('select', 'urkund_restrictcontent_'.$sm, get_string('restrictcontent', 'plagiarism_urkund'), $contentoptions);
+            $mform->addElement('select', 'urkund_restrictcontent_'.$sm,
+                get_string('restrictcontent', 'plagiarism_urkund'), $contentoptions);
             $mform->addHelpButton('urkund_restrictcontent_'.$sm, 'restrictcontent', 'plagiarism_urkund');
             $mform->setType('urkund_restrictcontent_'.$sm, PARAM_INT);
-            $mform->addElement('text', 'urkund_receiver_'.$sm, get_string("urkund_receiver", "plagiarism_urkund"), array('size' => 40));
+            $mform->addElement('text', 'urkund_receiver_'.$sm,
+                get_string("urkund_receiver", "plagiarism_urkund"), array('size' => 40));
             $mform->addHelpButton('urkund_receiver_'.$sm, 'urkund_receiver', 'plagiarism_urkund');
             $mform->setType('urkund_receiver_'.$sm, PARAM_EMAIL);
-            $mform->addElement('select', 'urkund_studentemail_'.$sm, get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
+            $mform->addElement('select', 'urkund_studentemail_'.$sm,
+                get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
             $mform->addHelpButton('urkund_studentemail_'.$sm, 'urkund_studentemail', 'plagiarism_urkund');
             $mform->setType('urkund_studentemail_'.$sm, PARAM_INT);
 
@@ -80,7 +83,8 @@ class plagiarism_urkund_defaults_form extends moodleform {
             foreach ($filetypes as $ext => $mime) {
                 $supportedfiles[$ext] = $ext;
             }
-            $mform->addElement('select', 'urkund_allowallfile_'.$sm, get_string('allowallsupportedfiles', 'plagiarism_urkund'), $ynoptions);
+            $mform->addElement('select', 'urkund_allowallfile_'.$sm,
+                get_string('allowallsupportedfiles', 'plagiarism_urkund'), $ynoptions);
             $mform->addHelpButton('urkund_allowallfile_'.$sm, 'allowallsupportedfiles', 'plagiarism_urkund');
             $mform->setType('urkund_allowallfile_'.$sm, PARAM_INT);
             $mform->addElement('select', 'urkund_selectfiletypes_'.$sm, get_string('restrictfiles', 'plagiarism_urkund'),
@@ -98,7 +102,8 @@ class plagiarism_urkund_defaults_form extends moodleform {
                 $key = isset($aliases[$setting]) ? $aliases[$setting] : $setting;
                 $items[$setting] = get_string($key, 'plagiarism_urkund');
             }
-            $mform->addElement('select', 'urkund_advanceditems_'.$sm, get_string('urkund_advanceditems', 'plagiarism_urkund'), $items);
+            $mform->addElement('select', 'urkund_advanceditems_'.$sm,
+                get_string('urkund_advanceditems', 'plagiarism_urkund'), $items);
             $mform->getElement('urkund_advanceditems_'.$sm)->setMultiple(true);
             $mform->addHelpButton('urkund_advanceditems_'.$sm, 'urkund_advanceditems', 'plagiarism_urkund');
             $mform->setType('urkund_advanceditems_'.$sm, PARAM_TAGLIST);
