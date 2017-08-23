@@ -67,8 +67,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                         }
                     }
                 },
-                /* jshint unused: vars */
-                failure: function(tid) {
+                failure: function() {
                     receiver.insert(invalid, 'after');
                 }
             }
