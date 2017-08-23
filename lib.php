@@ -69,7 +69,13 @@ define('PLAGIARISM_URKUND_RESTRICTCONTENTTEXT', 2);
 
 define('PLAGIARISM_URKUND_MAXATTEMPTS', 28);
 
-
+/**
+ * Class plagiarism_plugin_urkund
+ *
+ * @package   plagiarism_urkund
+ * @copyright 2011 Dan Marsden
+ * @license   http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
+ */
 class plagiarism_plugin_urkund extends plagiarism_plugin {
     /**
      * This function should be used to initialise settings and check if plagiarism is enabled.
@@ -113,9 +119,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
     /**
      * Hook to allow plagiarism specific information to be displayed beside a submission.
-     * @param array  $linkarraycontains all relevant information for the plugin to generate a link.
+     * @param array $linkarray - contains all relevant information for the plugin to generate a link.
      * @return string
-     *
      */
     public function get_links($linkarray) {
         global $COURSE, $OUTPUT, $CFG, $DB;
@@ -260,6 +265,15 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         return $output;
     }
 
+    /**
+     * returns array of plagiarism details about specified file
+     *
+     * @param int $cmid
+     * @param int $userid
+     * @param object $file moodle file object
+     * @return array - sets of details about specified file, one array of details per plagiarism plugin
+     *  - each set contains at least 'analyzed', 'score', 'reporturl'
+     */
     public function get_file_results($cmid, $userid, $file) {
         global $DB, $USER, $CFG;
         $plagiarismsettings = $this->get_settings();
@@ -308,7 +322,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if ($USER->id == $userid || // If this is a user viewing their own report, check if settings allow it.
             // In workshop and assign if the user can see the submission they might be allowed to see the urkund report.
             // If they are in the forum activity they should not see other users reports.
-            (!$viewscore && $moduledetail->name <> 'forum')) { // If teamsubmisson is enabled or teacher submitted, the file may be from a different user.
+            (!$viewscore && $moduledetail->name <> 'forum')) { // Teamsubmisson or teacher submitted may be from different user.
             $selfreport = true;
             if (isset($plagiarismvalues['urkund_show_student_report']) &&
                     ($plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_ALWAYS ||
@@ -386,9 +400,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         return $results;
     }
-    /* Hook to save plagiarism specific settings on a module settings page.
+    /**
+     * Hook to save plagiarism specific settings on a module settings page.
      * @param object $data - data from an mform submission.
-    */
+     */
     public function save_form_elements($data) {
         global $DB;
         if (!$this->get_settings()) {
@@ -437,9 +452,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     }
 
     /**
-     * hook to add plagiarism specific settings to a module settings page
-     * @param object $mform  - Moodle form
-     * @param object $context - current context
+     * Hook to add plagiarism specific settings to a module settings page
+     * @param stdClass $mform  - Moodle form
+     * @param stdClass $context - current context
+     * @param string $modulename - name of module.
      */
     public function get_form_elements_module($mform, $context, $modulename = "") {
         global $DB, $PAGE, $CFG;
@@ -571,6 +587,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
     /**
      * Generic handler function for all events - queues files for sending.
+     * @param stdClass $eventdata
      * @return boolean
      */
     public function event_handler($eventdata) {
@@ -690,6 +707,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         return $result;
     }
 
+    /**
+     * Send student e-mail when score available.
+     *
+     * @param stdClass $plagiarismfile - file record.
+     */
     public function urkund_send_student_email($plagiarismfile) {
         global $DB, $CFG;
         if (empty($plagiarismfile->userid)) { // Sanity check.
@@ -719,7 +741,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         email_to_user($user, $site->shortname, $emailsubject, $emailcontent);
     }
 
-    // Function to validate the receiver address.
+    /**
+     * Validates receiver address.
+     *
+     * @param string $receiver
+     */
     public function validate_receiver($receiver) {
         $plagiarismsettings = $this->get_settings();
         $url = URKUND_INTEGRATION_SERVICE .'/receivers'.'/'. trim($receiver);;
@@ -756,6 +782,16 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     }
 }
 
+/**
+ * Create temp file for text content
+ *
+ * @param int $cmid - coursemodule id.
+ * @param int $courseid - course id.
+ * @param int $userid - user id.
+ * @param string $filecontent - raw content of file.
+ *
+ * @return string
+ */
 function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
     global $CFG;
     if (!check_dir_exists($CFG->tempdir."/urkund", true, true)) {
@@ -774,7 +810,14 @@ function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
     return $filepath;
 }
 
-// Helper function used to add extra html around file contents.
+/**
+ * Helper function used to add extra html around file contents.
+ *
+ * @param string $content - raw content of file.
+ * @param boolean $strippretag - should we strip tags first.
+ *
+ * @return string
+ */
 function plagiarism_urkund_format_temp_content($content, $strippretag = false) {
     // See MDL-57886.
     if ($strippretag) {
@@ -849,7 +892,7 @@ function urkund_get_form_elements($mform) {
  *
  * @param int $cmid - course module id
  * @param int $userid - user id
- * @param varied $identifier - identifier for this plagiarism record - hash of file, id of quiz question etc
+ * @param stored_file|string $file - identifier for this plagiarism record - hash of file, id of quiz question etc
  * @param int $relateduserid - relateduserid if passed.
  * @return int - id of urkund_files record
  */
@@ -954,8 +997,13 @@ function urkund_queue_file($cmid, $userid, $file, $relateduserid = null) {
 
     return $plagiarismfile;
 }
-// Function to check timesubmitted and attempt to see if we need to delay an API check.
-// also checks max attempts to see if it has exceeded.
+
+/**
+ * Check timesubmitted and attempt to see if we need to delay check, checks max attempts to see if it has exceeded.
+ *
+ * @param stdClass $plagiarismfile - plagiarism file record.
+ * @return boolean
+ */
 function urkund_check_attempt_timeout($plagiarismfile) {
     global $DB;
 
@@ -1009,6 +1057,15 @@ function urkund_check_attempt_timeout($plagiarismfile) {
     }
 }
 
+/**
+ * Send file to urkund
+ *
+ * @param stdClass $plagiarismfile - plagiarism file record.
+ * @param stdClass $plagiarismsettings - settings.
+ * @param stored_file $file
+ *
+ * @return boolean
+ */
 function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file) {
     global $DB;
 
@@ -1089,7 +1146,14 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     return false;
 }
 
-// Function to check for the allowed file types, returns the mimetype that URKUND expects.
+/**
+ * Check for the allowed file types, returns the mimetype that URKUND expects.
+ *
+ * @param string $filename
+ * @param boolean $checkdb
+ *
+ * @return boolean
+ */
 function urkund_check_file_type($filename, $checkdb = true) {
     $pathinfo = pathinfo($filename);
 
@@ -1113,10 +1177,9 @@ function urkund_check_file_type($filename, $checkdb = true) {
 /**
  * Used to obtain allowed file types
  *
- * @param object $plagiarismsettings - from a call to plagiarism_get_settings.
- *
+ * @param boolean $checkdb
+ * @return array()
  */
-
 function urkund_default_allowed_file_types($checkdb = false) {
     global $DB;
     $filetypes = array('doc'  => 'application/msword',
@@ -1168,6 +1231,15 @@ function urkund_get_scores($plagiarismsettings) {
     $files->close();
 }
 
+/**
+ * Used to obtain similarity score from URKUND for a file.
+ *
+ * @param stdClass $plagiarismsettings - from a call to plagiarism_get_settings.
+ * @param stdClass $plagiarismfile
+ * @param boolean $force
+ *
+ * @return stdClass
+ */
 function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) {
     global $DB;
     // Check if we need to delay this submission.
@@ -1241,6 +1313,14 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
     return $plagiarismfile;
 }
 
+/**
+ * Get url of api.
+ *
+ * @param string $baseurl
+ * @param stdClass $plagiarismfile
+ *
+ * @return string
+ */
 function urkund_get_url($baseurl, $plagiarismfile) {
     // Get url of api.
     global $DB, $CFG;
@@ -1268,7 +1348,13 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     return $baseurl.'/' .trim($receiver).'/'.$urkundid;
 }
 
-// Helper function to save multiple db calls.
+/**
+ * Helper function with static var to save multiple db calls.
+ *
+ * @param int $cmid
+ *
+ * @return array
+ */
 function urkund_cm_use($cmid) {
     global $DB;
     static $useurkund = array();
@@ -1369,8 +1455,10 @@ function plagiarism_urkund_update_allowed_filetypes() {
     }
 }
 
-/* Function used to delete records associated with deleted activities.
- * */
+/**
+ * Function used to delete records associated with deleted activities.
+ *
+ */
 function plagiarism_urkund_delete_old_records() {
     global $DB;
     $sql = "SELECT DISTINCT f.cm
@@ -1384,9 +1472,15 @@ function plagiarism_urkund_delete_old_records() {
     }
 }
 
-// Old function to get url using old method of generating an indentifier.
-// This function should only be used if the file is known to have been
-// generated using old code.
+/**
+ * Old function to get url using old method of generating an indentifier.
+ * This function should only be used if the file is known to have been generated using old code.
+ *
+ * @param string $baseurl
+ * @param stdClass $plagiarismfile
+ *
+ * @return string
+ */
 function old_urkund_get_url($baseurl, $plagiarismfile) {
     // Get url of api.
     global $DB;
@@ -1399,7 +1493,14 @@ function old_urkund_get_url($baseurl, $plagiarismfile) {
     '_'.$plagiarismfile->cm.'_'.$plagiarismfile->id;
 }
 
-// The $file can be id or full record.
+/**
+ * Reset file.
+ *
+ * @param int|stdClass $file
+ * @param stdClass $plagiarismsettings
+ *
+ * @return boolean
+ */
 function urkund_reset_file($file, $plagiarismsettings = null) {
     global $DB;
     if (is_int($file)) {
@@ -1447,7 +1548,13 @@ function urkund_reset_file($file, $plagiarismsettings = null) {
     return false;
 }
 
-// Helper function used to get file record for given identifier.
+/**
+ * Helper function used to get file record for given identifier.
+ *
+ * @param stdClass $plagiarismfile
+ *
+ * @return stdclass
+ */
 function plagiarism_urkund_get_file_object($plagiarismfile) {
     global $CFG, $DB;
     $userid = $plagiarismfile->userid;
@@ -1578,8 +1685,10 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
     }
 }
 
-// Function called by scheduled tasks
-// Responsible for sending queued files.
+/**
+ * Function called by scheduled tasks and sends queued files.
+ *
+ */
 function plagiarism_urkund_send_files() {
     global $DB;
 
@@ -1629,8 +1738,13 @@ function plagiarism_urkund_send_files() {
     }
 }
 
-// Check if assign group submission is being used in assign activity.
-// This is based on old-code, there might be a more efficient way to do this.
+/**
+ * Check if assign group submission is being used in assign activity.
+ * This is based on old-code, there might be a more efficient way to do this.
+ *
+ * @param stdClass $plagiarismfile
+ * @return stdClass
+ */
 function plagiarism_urkund_check_group($plagiarismfile) {
     global $DB, $CFG;
 
@@ -1683,8 +1797,11 @@ function plagiarism_urkund_check_group($plagiarismfile) {
     return $plagiarismfile;
 }
 
-/* Function used to clean up after successful text based submission.
+/**
+ * Function used to clean up after successful text based submission.
  * We only delete if the file was sucessfully sent to help a future reset.
+ *
+ * @param stdClass $plagiarismfile
  */
 function plagiarism_urkund_fix_temp_hash($plagiarismfile) {
     global $DB, $CFG;
@@ -1701,8 +1818,10 @@ function plagiarism_urkund_fix_temp_hash($plagiarismfile) {
     }
 }
 
-/* We are not allowed to use print_object so use a hand-rolled function to help with debugging.
+/**
+ * We are not allowed to use print_object so use a hand-rolled function to help with debugging.
  *
+ * @param stdClass|array $arr
  */
 function plagiarism_urkund_pretty_print($arr) {
     if (is_object($arr)) {
