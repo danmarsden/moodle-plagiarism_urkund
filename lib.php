@@ -1041,7 +1041,8 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true;
     }
-    if (!empty(get_config('plagiarism', 'urkund_hidefilename'))) {
+    $hidefilename = get_config('plagiarism', 'urkund_hidefilename');
+    if (!empty($hidefilename)) {
         $pathinfo = pathinfo($filename);
         $filenametopass = "submission.".$pathinfo['extension'];
     } else {
