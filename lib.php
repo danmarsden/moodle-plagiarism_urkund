@@ -539,13 +539,17 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $advancedsettings = explode(',', $plagiarismdefaults[$defaultelementadvanced]);
             if (has_capability('plagiarism/urkund:advancedsettings', $context)) {
                 foreach ($advancedsettings as $name) {
-                    $mform->setAdvanced($name, true);
+                    if ($mform->elementExists($name)) {
+                        $mform->setAdvanced($name, true);
+                    }
                 }
             } else {
                 // Otherwise, put them as hidden elements.
                 foreach ($advancedsettings as $name) {
-                    $element = $mform->removeElement($name);
-                    $mform->addElement('hidden', $name, $element->getValue());
+                    if ($mform->elementExists($name)) {
+                        $element = $mform->removeElement($name);
+                        $mform->addElement('hidden', $name, $element->getValue());
+                    }
                 }
             }
         }
