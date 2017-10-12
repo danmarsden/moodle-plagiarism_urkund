@@ -1348,6 +1348,14 @@ function urkund_get_url($baseurl, $plagiarismfile) {
 
     $siteid = substr(md5(get_site_identifier()), 0, 8);
     $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$identifier;
+    // Check if we are over the 64 char limit and strip from $identifier sha1.
+    // Collisions not likely as we are also passing cm and plagiarismfile_id.
+    if (strlen($urkundid) > 64) {
+        $numtoremove = strlen($urkundid) - 64;
+        $identifier = substr($identifier, 0, -$numtoremove);
+
+        $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$identifier;
+    }
 
     return $baseurl.'/' .trim($receiver).'/'.$urkundid;
 }
