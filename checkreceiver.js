@@ -77,6 +77,12 @@ M.plagiarism_urkund.init = function(Y, contextid) {
     };
 
     var receiver = Y.one('#id_urkund_receiver');
+    if (null == receiver) {
+        // there is nothing to check.
+        // for cases where receiver setting is advanced and
+        // hidden to users via capabilities.
+        return;
+    }
     // Validate existing content.
     check_urkund_receiver(Y, receiver, contextid);
     // Validate on change.
