@@ -496,13 +496,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             foreach ($plagiarismelements as $element) {
                 $mform->addElement('hidden', $element);
             }
-            $mform->setType('use_urkund', PARAM_INT);
-            $mform->setType('urkund_show_student_score', PARAM_INT);
-            $mform->setType('urkund_show_student_report', PARAM_INT);
-            $mform->setType('urkund_draft_submit', PARAM_INT);
-            $mform->setType('urkund_receiver', PARAM_TEXT);
-            $mform->setType('urkund_studentemail', PARAM_INT);
         }
+        $mform->setType('use_urkund', PARAM_INT);
+        $mform->setType('urkund_show_student_score', PARAM_INT);
+        $mform->setType('urkund_show_student_report', PARAM_INT);
+        $mform->setType('urkund_draft_submit', PARAM_INT);
+        $mform->setType('urkund_receiver', PARAM_TEXT);
+        $mform->setType('urkund_studentemail', PARAM_INT);
+
         // Now set defaults.
         foreach ($plagiarismelements as $element) {
             $defaultelement = $element.'_'.str_replace('mod_', '', $modulename);
