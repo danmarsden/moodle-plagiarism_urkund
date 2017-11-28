@@ -61,6 +61,7 @@ class plagiarism_urkund_defaults_form extends moodleform {
                 $mform->addElement('select', 'urkund_draft_submit_'.$sm,
                     get_string("urkund_draft_submit", "plagiarism_urkund"), $urkunddraftoptions);
             }
+            $mform->addElement('select', 'urkund_resubmit_on_close_'.$sm, get_string("urkund_resubmitonclose", "plagiarism_urkund"), $ynoptions);
             $contentoptions = array(PLAGIARISM_URKUND_RESTRICTCONTENTNO => get_string('restrictcontentno', 'plagiarism_urkund'),
                 PLAGIARISM_URKUND_RESTRICTCONTENTFILES => get_string('restrictcontentfiles', 'plagiarism_urkund'),
                 PLAGIARISM_URKUND_RESTRICTCONTENTTEXT => get_string('restrictcontenttext', 'plagiarism_urkund'));
