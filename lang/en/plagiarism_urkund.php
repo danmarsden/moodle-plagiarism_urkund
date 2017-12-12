@@ -25,7 +25,7 @@
 
 $string['allowallsupportedfiles'] = 'Allow all supported file types';
 $string['allowallsupportedfiles_help'] = 'This allows the teacher to restrict which file types will be sent to URKUND for processing. It does not prevent students from uploading different file types to the assignment.';
-$string['assignmentresubmitted'] = 'Assignment resubmitted';
+$string['assessmentresubmitted'] = 'Assessment resubmitted';
 $string['attempts'] = 'Attempts made';
 $string['confirmresetall'] = 'This will reset all files in the state: {$a}';
 $string['cronwarning'] = 'The <a href="../../admin/cron.php">cron.php</a> maintenance script has not been run for at least 30 min - Cron must be configured to allow URKUND to function correctly.';
@@ -117,9 +117,9 @@ $string['urkund_password'] = 'Password';
 $string['urkund_password_help'] = 'Password provided by URKUND to access the API';
 $string['urkund_receiver'] = 'Receiver address';
 $string['urkund_receiver_help'] = 'This is the unique address provided from URKUND for the teacher';
-$string['urkund_resubmitonclose'] = 'Resubmit on close';
-$string['urkund_resubmitonclose_desc'] = 'Resubmit work to URKUND upon closure of submission period.';
-$string['urkund_resubmitonclose_help'] = 'Enabling this option will cause submissions to be resent to URKUND on closure of the assignment submission period.';
+$string['urkund_resubmit_on_close'] = 'Resubmit on close';
+$string['urkund_resubmit_on_close_desc'] = 'Resubmit work to URKUND upon closure of submission period.';
+$string['urkund_resubmit_on_close_help'] = 'Enabling this option will cause submissions to be resent to URKUND on closure of the assignment submission period.';
 $string['urkund_show_student_report'] = 'Show similarity report to student';
 $string['urkund_show_student_report_help'] = 'The similarity report gives a breakdown on what parts of the submission were plagiarised and the location that URKUND first saw this content';
 $string['urkund_show_student_score'] = 'Show similarity score to student';
@@ -145,3 +145,7 @@ $string['cannotupgradeunprocesseddata'] = '<h1>Cannot upgrade to this version of
  <p>For more information see: <a href="https://docs.moodle.org/en/Plagiarism_Prevention_URKUND_Settings#Installation_failed_due_to_unprocessed_data">URKUND Installation failed due to unprocessed data</a></p>';
 $string['timesubmitted'] = 'Time submitted';
 $string['urkund:advancedsettings'] = 'Allow the teacher to view advanced module settings from URKUND';
+$string['resubmitdue'] = 'Resubmit after due date';
+$string['resubmitclose'] = 'Resubmit after close date';
+$string['resubmittourkund'] = 'Regenerate all URKUND reports';
+$string['regenerationrequested'] = 'All reports have been flagged for regeneration, it may take some time before updated reports are available.';

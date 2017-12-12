@@ -15,10 +15,11 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * This file contains an event for when an assignment is resubmitted to URKUND.
+ * This file contains an event for when an assessment is resubmitted to URKUND.
  *
  * @package    plagiarism_urkund
- * @copyright  2017 onwards Dan Marsden
+ * @author     Oliver Redding
+ * @copyright  2017 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
@@ -26,7 +27,7 @@ namespace plagiarism_urkund\event;
 defined('MOODLE_INTERNAL') || die();
 
 /**
- * Event for when an assignment is resubmitted to URKUND.
+ * Event for when an assessment is resubmitted to URKUND.
  *
  * @property-read array $other {
  *      Extra information about event properties.
@@ -35,10 +36,11 @@ defined('MOODLE_INTERNAL') || die();
  * }
  * @package    plagiarism_urkund
  * @since      Moodle 3.4
- * @copyright  2017 onwards Dan Marsden
+ * @author     Oliver Redding
+ * @copyright  2017 Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-class assignment_resubmitted extends \core\event\base {
+class assessment_resubmitted extends \core\event\base {
 
     /**
      * Init method.
@@ -46,7 +48,7 @@ class assignment_resubmitted extends \core\event\base {
     protected function init() {
         $this->data['crud'] = 'u';
         $this->data['edulevel'] = self::LEVEL_TEACHING;
-        $this->data['objecttable'] = 'attendance_log';
+        $this->data['objecttable'] = 'plagiarism_urkund_files';
     }
 
     /**
@@ -55,7 +57,7 @@ class assignment_resubmitted extends \core\event\base {
      * @return string
      */
     public function get_description() {
-        return 'User with id ' . $this->userid . ' resubmitted assignment to URKUND with instanceid ' .
+        return 'User with id ' . $this->userid . ' resubmitted all assessments for cmid ' .
             $this->objectid;
     }
 
@@ -65,7 +67,7 @@ class assignment_resubmitted extends \core\event\base {
      * @return string
      */
     public static function get_name() {
-        return get_string('assignmentresubmitted', 'plagiarism_urkund');
+        return get_string('assessmentresubmitted', 'plagiarism_urkund');
     }
 
     /**
@@ -74,19 +76,7 @@ class assignment_resubmitted extends \core\event\base {
      * @return \moodle_url
      */
     public function get_url() {
-        return new \moodle_url('/plagiarism/urkund/take.php', array('id' => $this->contextinstanceid,
-                                                                 'sessionid' => $this->other['sessionid'],
-                                                                 'grouptype' => $this->other['grouptype']));
-    }
-
-    /**
-     * Replace add_to_log() statement.
-     *
-     * @return array of parameters to be passed to legacy add_to_log() function.
-     */
-    protected function get_legacy_logdata() {
-        return array($this->courseid, 'attendance', 'taken', $this->get_url(),
-            '', $this->contextinstanceid);
+        return null;
     }
 
     /**
@@ -95,19 +85,6 @@ class assignment_resubmitted extends \core\event\base {
      * @return array of parameters for object mapping.
      */
     public static function get_objectid_mapping() {
-        return array('db' => 'attendance', 'restore' => 'attendance');
-    }
-
-    /**
-     * Custom validation.
-     *
-     * @throws \coding_exception
-     * @return void
-     */
-    protected function validate_data() {
-        if (empty($this->other['sessionid'])) {
-            throw new \coding_exception('The event mod_attendance\\event\\attendance_taken must specify sessionid.');
-        }
-        parent::validate_data();
+        return base::NOT_MAPPED;
     }
 }

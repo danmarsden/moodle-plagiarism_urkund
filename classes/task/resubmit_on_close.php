@@ -41,7 +41,7 @@ class resubmit_on_close extends \core\task\scheduled_task {
      */
     public function get_name() {
         // Shown in admin screens.
-        return get_string('urkund_resubmitonclose_desc', 'plagiarism_urkund');
+        return get_string('urkund_resubmit_on_close_desc', 'plagiarism_urkund');
     }
 
     /**
