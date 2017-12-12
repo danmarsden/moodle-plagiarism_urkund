@@ -29,7 +29,8 @@ require_once(dirname(dirname(__FILE__)) . '/../config.php');
 require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 
 $cmid = required_param('cmid', PARAM_INT);  // Course Module ID
-$pf  = required_param('pf', PARAM_INT);   // plagiarism file id.
+$pf   = optional_param('pf', 0, PARAM_INT);   // plagiarism file id.
+$resetall = optional_param('resetall', 0, PARAM_INT);   // plagiarism file id.
 require_sesskey();
 $url = new moodle_url('/plagiarism/urkund/reset.php');
 $cm = get_coursemodule_from_id('', $cmid, 0, false, MUST_EXIST);
@@ -40,7 +41,14 @@ require_login($cm->course, true, $cm);
 $modulecontext = context_module::instance($cmid);
 require_capability('plagiarism/urkund:resetfile', $modulecontext);
 
-urkund_reset_file($pf);
+$message = '';
+if (!empty($pf)) {
+    urkund_reset_file($pf);
+    $message = get_string('filereset', 'plagiarism_urkund');
+} else if (!empty($resetall)) {
+    plagiarism_urkund_resubmit_cm($cmid);
+    $message = get_string('regenerationrequested', 'plagiarism_urkund');
+}
 
 if ($cm->modname == 'assign') {
     $redirect = new moodle_url('/mod/assign/view.php', array('id' => $cmid, 'action' => 'grading'));
@@ -49,4 +57,4 @@ if ($cm->modname == 'assign') {
     $redirect = $CFG->wwwroot;
 }
 
-redirect($redirect, get_string('filereset', 'plagiarism_urkund'));
+redirect($redirect, $message);

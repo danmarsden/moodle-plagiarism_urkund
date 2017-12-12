@@ -192,19 +192,5 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2017081402, 'plagiarism', 'urkund');
     }
 
-    if ($oldversion < 2017120403) {
-        // Define field timeresubmitted to be added to plagiarism_urkund_files.
-        $table = new xmldb_table('plagiarism_urkund_files');
-        $field = new xmldb_field('timeresubmitted', XMLDB_TYPE_INTEGER, '10', XMLDB_UNSIGNED);
-
-        // Conditionally add field timeresubmitted.
-        if (!$dbman->field_exists($table, $field)) {
-            $dbman->add_field($table, $field);
-        }
-
-        // Urkund savepoint reached.
-        upgrade_plugin_savepoint(true, 2017120403, 'plagiarism', 'urkund');
-    }
-
     return true;
 }
