@@ -67,6 +67,11 @@ define('PLAGIARISM_URKUND_RESTRICTCONTENTNO', 0);
 define('PLAGIARISM_URKUND_RESTRICTCONTENTFILES', 1);
 define('PLAGIARISM_URKUND_RESTRICTCONTENTTEXT', 2);
 
+// Used by resubmit form element.
+define('PLAGIARISM_URKUND_RESUBMITNO', 0);
+define('PLAGIARISM_URKUND_RESUBMITDUEDATE', 1);
+define('PLAGIARISM_URKUND_RESUBMITCLOSEDATE', 2);
+
 define('PLAGIARISM_URKUND_MAXATTEMPTS', 28);
 
 
@@ -103,8 +108,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      */
     public static function config_options($adminsettings = false) {
         $options = array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
-                     'urkund_draft_submit', 'urkund_resubmit_on_close', 'urkund_receiver', 'urkund_studentemail', 'urkund_allowallfile',
-                     'urkund_selectfiletypes', 'urkund_restrictcontent');
+                     'urkund_draft_submit', 'urkund_resubmit_on_close', 'urkund_receiver', 'urkund_studentemail',
+                     'urkund_allowallfile', 'urkund_selectfiletypes', 'urkund_restrictcontent');
         if ($adminsettings) {
             $options[] = 'urkund_advanceditems';
         }
@@ -485,7 +490,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $mform->setType('urkund_show_student_score', PARAM_INT);
         $mform->setType('urkund_show_student_report', PARAM_INT);
         $mform->setType('urkund_draft_submit', PARAM_INT);
-        $mform->setType('urkund_resubmit_on_close', PARAM_INT);
         $mform->setType('urkund_receiver', PARAM_TEXT);
         $mform->setType('urkund_studentemail', PARAM_INT);
 
@@ -760,6 +764,32 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         return false;
     }
+    /**
+     * hook to allow status of submitted files to be updated - called on grading/report pages.
+     *
+     * @param object $course - full Course object
+     * @param object $cm - full cm object
+     */
+    public function update_status($course, $cm) {
+        global $OUTPUT, $DB;
+        // Check if this is an assignment.
+        if (!empty($cm->modname) && $cm->modname == 'assign') {
+            // Check to see if the user can reset files.
+            $modulecontext = context_module::instance($cm->id);
+            if (!has_capability('plagiarism/urkund:resetfile', $modulecontext)) {
+                return;
+            }
+            // Check to see if urkund enabled.
+            $useurkund = $DB->get_field('plagiarism_urkund_config', 'value',
+                array('cm' => $cm->id, 'name' => 'use_urkund'));
+            if (!empty($useurkund)) {
+                $url = new moodle_url('/plagiarism/urkund/reset.php', array('cmid' => $cm->id, 'resetall' => 1));
+                return '<div class="urkundresubmit">'.
+                    $OUTPUT->single_button($url, get_string('resubmittourkund', 'plagiarism_urkund'))
+                    ."</div>";
+            }
+        }
+    }
 }
 
 function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
@@ -823,8 +853,15 @@ function urkund_get_form_elements($mform) {
         $mform->addElement('select', 'urkund_draft_submit',
                            get_string("urkund_draft_submit", "plagiarism_urkund"), $urkunddraftoptions);
     }
-    $mform->addElement('select', 'urkund_resubmit_on_close', get_string("urkund_resubmitonclose", "plagiarism_urkund"), $ynoptions);
-    $mform->addHelpButton('urkund_resubmit_on_close', 'urkund_resubmitonclose', 'plagiarism_urkund');
+    if ($mform->elementExists('submissiondrafts')) { // Just show this on assignment submission page for now.
+        $resubmitoptions = array(PLAGIARISM_URKUND_RESUBMITNO => get_string('no'),
+            PLAGIARISM_URKUND_RESUBMITDUEDATE => get_string('resubmitdue', 'plagiarism_urkund'),
+            PLAGIARISM_URKUND_RESUBMITCLOSEDATE => get_string('resubmitclose', 'plagiarism_urkund'));
+        $mform->addElement('select', 'urkund_resubmit_on_close', get_string("urkund_resubmit_on_close", "plagiarism_urkund"), $resubmitoptions);
+        $mform->addHelpButton('urkund_resubmit_on_close', 'urkund_resubmit_on_close', 'plagiarism_urkund');
+        $mform->setType('urkund_resubmit_on_close', PARAM_INT);
+    }
+
     $contentoptions = array(PLAGIARISM_URKUND_RESTRICTCONTENTNO => get_string('restrictcontentno', 'plagiarism_urkund'),
                             PLAGIARISM_URKUND_RESTRICTCONTENTFILES => get_string('restrictcontentfiles', 'plagiarism_urkund'),
                             PLAGIARISM_URKUND_RESTRICTCONTENTTEXT => get_string('restrictcontenttext', 'plagiarism_urkund'));
@@ -1622,12 +1659,37 @@ function plagiarism_urkund_send_files() {
             mtrace("URKUND fileid:".$pf->id. ' sending for processing');
             $file = plagiarism_urkund_get_file_object($pf);
             if (empty($file)) {
-                mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
-                if (debugging()) {
-                    mtrace(plagiarism_urkund_pretty_print($pf));
+                // If file has previously generated a report and it is an active assignment - we don't want to delete it.
+                if ($modulename == "assign" && strpos($pf->filename, 'content-') === 0) {
+                    $cm = get_coursemodule_from_id('assign', $pf->cm);
+                    // This is probably an online file submission - check and regenerate the file if required.
+                    $sql = "SELECT a.id, o.onlinetext
+                              FROM {assignsubmission_onlinetext} o
+                              JOIN {assign_submission} a ON a.id = o.submission
+                             WHERE a.userid = ? AND o.assignment = ?
+                          ORDER BY a.id DESC";
+                    $moodletextsubmissions = $DB->get_records_sql($sql, array($pf->userid, $cm->instance), 0, 1);
+                    $moodletextsubmission = end($moodletextsubmissions);
+                    $tempfile = urkund_create_temp_file($cm->id, $cm->course, $pf->userid, $moodletextsubmission);
+
+                    $pf->identifier = $tempfile;
+                    $DB->update_record('plagiarism_urkund_files', $pf);
+                    $file = plagiarism_urkund_get_file_object($pf);
+                    if (empty($file)) {
+                        mtrace("URKUND fileid:$pf->id online submission found, but unable to create new temp file");
+                        continue;
+                    }
+                } else if (empty($pf->reporturl)) { // File not found and no existing report, so delete record.
+                    mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
+                    if (debugging()) {
+                        mtrace(plagiarism_urkund_pretty_print($pf));
+                    }
+                    $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
+                    continue;
+                } else {
+                    // No file found, but we have a report, so don't delete.
+                    continue;
                 }
-                $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
-                continue;
             }
             if ($pf->statuscode == URKUND_STATUSCODE_INVALID_RESPONSE) {
                 // Check if we can handle this attempt.
@@ -1750,71 +1812,77 @@ function plagiarism_urkund_pretty_print($arr) {
 function plagiarism_urkund_resubmit_on_close() {
     global $DB;
 
-    // Get all Assignments with expired duedate
-    $modtype = 'assign';
+    // Get all Assignments that use Urkund and have expired duedate that have not been run.
     $now = time();
-    $select = "duedate > 1 AND duedate < $now";
-    $assignments = $DB->get_records_select($modtype,$select);
-    // For each Assignment
-    foreach($assignments as $assignment) {
-        $id = $assignment->id;
-        $course = $assignment->course;
-        $duedate = $assignment->duedate;
+    $sql = "SELECT a.*, cm.id as cmid from {assign} a
+              JOIN {course_modules} cm ON cm.instance = a.id
+              JOIN {modules} m ON m.id = cm.module
+              JOIN {plagiarism_urkund_config} uc ON uc.cm = cm.id AND uc.name = 'use_urkund' AND uc.value = '1'
+              JOIN {plagiarism_urkund_config} uc1 ON uc1.cm = cm.id AND uc1.name = 'urkund_resubmit_on_close' AND uc1.value = :resubmit
+         LEFT JOIN {plagiarism_urkund_config} uc2 ON uc2.cm = cm.id AND uc2.name = 'timeresubmitted'
+             WHERE m.name = 'assign' AND a.duedate > 1 AND a.duedate < :now
+                   AND uc2.value IS NULL OR ". $DB->sql_cast_char2int('uc2.value'). " < a.duedate";
+    $assignments = $DB->get_records_sql($sql, array('resubmit' => PLAGIARISM_URKUND_RESUBMITDUEDATE, 'now' => $now));
 
-        // Check if course module exists. If not, continue to next module.
-        if(!$cm = get_coursemodule_from_instance($modtype, $id, $course)) {
-            print_error('modulenotfound', 'plagiarism_urkund', '', array('module'=>$modtype, 'modid'=>$id));
-            continue;
-        }
-        $cmid = $cm->id;
-
-        // Get plagiarism settings for module
-        $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
-
-        // Check if urkund and the resubmit_on_close option is enabled for this module. If not, continue to next module.
-        if (empty($plagiarismvalues['use_urkund']) or empty($plagiarismvalues['urkund_resubmit_on_close'])) {
-            continue;
-        }
-
-        if (!empty($plagiarismvalues['urkund_timeresubmitted'])) {
-            $timeresubmitted = $plagiarismvalues['urkund_timeresubmitted'];
-            $resubmitted_since_duedate = $timeresubmitted > $duedate;
-        }
-
-        // Check if module has already been resubmitted since the deadline. If yes, continue to next module.
-        if(isset($timeresubmitted) and $resubmitted_since_duedate) {
-            continue;
-        }
-
-        // Get all plagiarism files that match cmid and that have not exceeded their max attempts and are not already in the queue
-        $select = 'cm = ? AND attempt <= ? AND statuscode <> ? ';
-        $plagiarism_files = $DB->get_recordset_select('plagiarism_urkund_files', $select, array($cmid, PLAGIARISM_URKUND_MAXATTEMPTS, URKUND_STATUSCODE_PENDING));
-
-        // Change the status of the plagiarism files to pending so that they get resent during the next cron run
-        try {
-            $transaction = $DB->start_delegated_transaction();
-            foreach($plagiarism_files as $plagiarism_file) {
-                $plagiarism_file->statuscode = URKUND_STATUSCODE_PENDING;
-                $DB->update_record('plagiarism_urkund_files', $plagiarism_file);
-                print_r($plagiarism_file);
-            }
-            $transaction->allow_commit();
-        } catch(Exception $e) {
-            $transaction->rollback($e);
-        }
-
-        $plagiarism_files->close();
-
-
+    // For each Assignment with close date.
+    foreach ($assignments as $assignment) {
+        plagiarism_urkund_resubmit_cm($assignment->cmid);
     }
 
+    // Get all Assignments that use Urkund and have expired closedate that have not been run.
+    $sql = "SELECT a.*, cm.id as cmid from {assign} a
+              JOIN {course_modules} cm ON cm.instance = a.id
+              JOIN {modules} m ON m.id = cm.module
+              JOIN {plagiarism_urkund_config} uc ON uc.cm = cm.id AND uc.name = 'use_urkund' AND uc.value = '1'
+              JOIN {plagiarism_urkund_config} uc1 ON uc1.cm = cm.id AND uc1.name = 'urkund_resubmit_on_close'
+                                                     AND uc1.value = :resubmit
+         LEFT JOIN {plagiarism_urkund_config} uc2 ON uc2.cm = cm.id AND uc2.name = 'timeresubmitted'
+             WHERE m.name = 'assign' AND a.cutoffdate > 1 AND a.cutoffdate < :now
+                   AND uc2.value IS NULL OR ". $DB->sql_cast_char2int('uc2.value'). " < a.cutoffdate";
+    $assignments = $DB->get_records_sql($sql, array('resubmit' => PLAGIARISM_URKUND_RESUBMITCLOSEDATE, 'now' => $now));
 
-        // Fire send to urkund
-        // Add event log
-        // Update resubmitted timestamp in config
+    // For each Assignment with cut off date.
+    foreach ($assignments as $assignment) {
+        plagiarism_urkund_resubmit_cm($assignment->cmid);
+    }
+}
 
-    // Do same for workshops
 
+function plagiarism_urkund_resubmit_cm($cmid) {
+    global $DB;
 
+    $now = time();
 
+    // Get plagiarism settings for module.
+    $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
+
+    // Rests all plagiarism files that match cmid, have not exceeded their max attempts and not already in the queue.
+    $sql = "UPDATE {plagiarism_urkund_files}
+               SET statuscode = :newstatus
+             WHERE cm = :cmid AND attempt <= :maxa AND statuscode <> :pending AND statuscode <> :waiting";
+    $params = array('newstatus' => URKUND_STATUSCODE_PENDING,
+                    'cmid' => $cmid,
+                    'maxa' => PLAGIARISM_URKUND_MAXATTEMPTS,
+                    'pending' => URKUND_STATUSCODE_PENDING,
+                    'waiting' => URKUND_STATUSCODE_ACCEPTED);
+    $DB->execute($sql, $params);
+
+    if (isset($plagiarismvalues['timeresubmitted'])) {
+        $DB->set_field('plagiarism_urkund_config', 'value', $now,
+            array('name' => 'timeresubmitted', 'cm' => $cmid));
+    } else {
+        $newvalue = new stdClass();
+        $newvalue->cm = $cmid;
+        $newvalue->name = 'timeresubmitted';
+        $newvalue->value = $now;
+        $DB->insert_record('plagiarism_urkund_config', $newvalue);
+    }
+    // Trigger event to say this has been called.
+    $context = context_module::instance($cmid);
+    $event = \plagiarism_urkund\event\assessment_resubmitted::create(array(
+        'objectid' => $cmid,
+        'context' => $context,
+        'other' => array()
+    ));
+    $event->trigger();
 }
