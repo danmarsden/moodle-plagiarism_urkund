@@ -970,6 +970,7 @@ function urkund_get_plagiarism_file($cmid, $userid, $file, $relateduserid = null
         $plagiarismfile->statuscode = 'pending';
         $plagiarismfile->attempt = 0;
         $plagiarismfile->timesubmitted = time();
+        $plagiarismfile->revision = 0;
         if (!$pid = $DB->insert_record('plagiarism_urkund_files', $plagiarismfile)) {
             debugging("insert into urkund_files failed");
         }
@@ -1379,6 +1380,7 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     // first 8 chars of this site_indentifier full id isn't used as Urkund has a 64 char limit on the identifier passed,
     // Then the course module id of this plugin,
     // Then the id from the plagiarism_files table,
+    // Then if revision field is not empty it is added - allows handling of resubmission.
     // Then the full contenthash of the file.
     if (strpos($plagiarismfile->identifier, $CFG->tempdir) !== false) {
         // In-line text files temporarily use the identifier field as the filepath.
@@ -1386,9 +1388,12 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     } else {
         $identifier = $plagiarismfile->identifier;
     }
+    // Files can be re-sent for processing which will bump the revision number.
+    // We pass a different identifier so that we can make sure a new revised report is provided.
+    $revision = empty($plagiarismfile->revision) ? '' : '_'.$plagiarismfile->revision;
 
     $siteid = substr(md5(get_site_identifier()), 0, 8);
-    $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$identifier;
+    $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$revision.$identifier;
     // Check if we are over the 64 char limit and strip from $identifier sha1.
     // Collisions not likely as we are also passing cm and plagiarismfile_id.
     if (strlen($urkundid) > 64) {
@@ -1976,7 +1981,7 @@ function plagiarism_urkund_resubmit_cm($cmid) {
 
     // Rests all plagiarism files that match cmid, have not exceeded their max attempts and not already in the queue.
     $sql = "UPDATE {plagiarism_urkund_files}
-               SET statuscode = :newstatus
+               SET statuscode = :newstatus, revision = revision + 1
              WHERE cm = :cmid AND attempt <= :maxa AND statuscode <> :pending AND statuscode <> :waiting";
     $params = array('newstatus' => URKUND_STATUSCODE_PENDING,
                     'cmid' => $cmid,
