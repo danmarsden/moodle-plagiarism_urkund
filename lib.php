@@ -484,19 +484,19 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if (has_capability('plagiarism/urkund:enable', $context)) {
             urkund_get_form_elements($mform);
             if ($mform->elementExists('urkund_draft_submit') && $mform->elementExists('submissiondrafts')) {
-                $mform->disabledIf('urkund_draft_submit', 'submissiondrafts', 'eq', 0);
+                $mform->hideif('urkund_draft_submit', 'submissiondrafts', 'eq', 0);
             }
             // Disable all plagiarism elements if use_plagiarism eg 0.
             foreach ($plagiarismelements as $element) {
                 if ($element <> 'use_urkund') { // Ignore this var.
-                    $mform->disabledIf($element, 'use_urkund', 'eq', 0);
+                    $mform->hideif($element, 'use_urkund', 'eq', 0);
                 }
             }
             // Check if files have been submitted and we need to disable the receiver address.
             if ($DB->record_exists('plagiarism_urkund_files', array('cm' => $cmid, 'statuscode' => 'pending'))) {
-                $mform->disabledIf('urkund_receiver', 'use_urkund');
+                $mform->hideif('urkund_receiver', 'use_urkund');
             }
-            $mform->disabledIf('urkund_selectfiletypes', 'urkund_allowallfile', 'eq', 1);
+            $mform->hideif('urkund_selectfiletypes', 'urkund_allowallfile', 'eq', 1);
         } else { // Add plagiarism settings as hidden vars.
             foreach ($plagiarismelements as $element) {
                 $mform->addElement('hidden', $element);
@@ -564,7 +564,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if ($modulename == 'mod_assign' && $mform->elementExists("submissionplugins")) { // This should be mod_assign
             // I can't see a way to check if a particular checkbox exists
             // elementExists on the checkbox name doesn't work.
-            $mform->disabledIf('urkund_restrictcontent', 'assignsubmission_onlinetext_enabled');
+            $mform->hideif('urkund_restrictcontent', 'assignsubmission_onlinetext_enabled');
         } else if ($modulename != 'mod_forum') {
             // Forum doesn't need any changes but all other modules should disable this.
             $mform->setDefault('urkund_restrictcontent', 0);
