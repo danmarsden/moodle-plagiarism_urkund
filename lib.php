@@ -1331,14 +1331,16 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
             if ($httpstatus == URKUND_STATUSCODE_PROCESSED) {
                 // Get similarity score from xml.
                 $xml = new SimpleXMLElement($response);
-                $status = (string)$xml->SubmissionData[0]->Status[0]->State[0];
+                // When multiple results returned, the last one is the important one.
+                $last = count($xml->SubmissionData)-1;
+                $status = (string)$xml->SubmissionData[$last]->Status[0]->State[0];
                 if (!empty($status) && in_array($status, $successfulstates)) {
                     $plagiarismfile->statuscode = $status;
                 }
                 if (!empty($status) && $status == 'Analyzed') {
-                    $plagiarismfile->reporturl = (string)$xml->SubmissionData[0]->Report[0]->ReportUrl[0];
-                    $plagiarismfile->similarityscore = (int)$xml->SubmissionData[0]->Report[0]->Significance[0];
-                    $plagiarismfile->optout = (string)$xml->SubmissionData[0]->Document[0]->OptOutInfo[0]->Url[0];
+                    $plagiarismfile->reporturl = (string)$xml->SubmissionData[$last]->Report[0]->ReportUrl[0];
+                    $plagiarismfile->similarityscore = (int)$xml->SubmissionData[$last]->Report[0]->Significance[0];
+                    $plagiarismfile->optout = (string)$xml->SubmissionData[$last]->Document[0]->OptOutInfo[0]->Url[0];
                     // Now send e-mail to user.
                     $emailstudents = $DB->get_field('plagiarism_urkund_config', 'value',
                                                     array('cm' => $plagiarismfile->cm, 'name' => 'urkund_studentemail'));
@@ -1380,7 +1382,6 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     // first 8 chars of this site_indentifier full id isn't used as Urkund has a 64 char limit on the identifier passed,
     // Then the course module id of this plugin,
     // Then the id from the plagiarism_files table,
-    // Then if revision field is not empty it is added - allows handling of resubmission.
     // Then the full contenthash of the file.
     if (strpos($plagiarismfile->identifier, $CFG->tempdir) !== false) {
         // In-line text files temporarily use the identifier field as the filepath.
@@ -1388,12 +1389,9 @@ function urkund_get_url($baseurl, $plagiarismfile) {
     } else {
         $identifier = $plagiarismfile->identifier;
     }
-    // Files can be re-sent for processing which will bump the revision number.
-    // We pass a different identifier so that we can make sure a new revised report is provided.
-    $revision = empty($plagiarismfile->revision) ? '' : '_'.$plagiarismfile->revision;
 
     $siteid = substr(md5(get_site_identifier()), 0, 8);
-    $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$revision.$identifier;
+    $urkundid = $siteid.'_'.$plagiarismfile->cm.'_'.$plagiarismfile->id.'_'.$identifier;
     // Check if we are over the 64 char limit and strip from $identifier sha1.
     // Collisions not likely as we are also passing cm and plagiarismfile_id.
     if (strlen($urkundid) > 64) {
