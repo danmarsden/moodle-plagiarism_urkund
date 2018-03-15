@@ -1332,7 +1332,7 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
                 // Get similarity score from xml.
                 $xml = new SimpleXMLElement($response);
                 // When multiple results returned, the last one is the important one.
-                $last = count($xml->SubmissionData)-1;
+                $last = count($xml->SubmissionData) - 1;
                 $status = (string)$xml->SubmissionData[$last]->Status[0]->State[0];
                 if (!empty($status) && in_array($status, $successfulstates)) {
                     $plagiarismfile->statuscode = $status;
