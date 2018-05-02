@@ -49,15 +49,17 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->urkund_use)) {
         $data->urkund_use = 0;
     }
-    if (!isset($data->urkund_enable_mod_assign)) {
-        $data->urkund_enable_mod_assign = 0;
+
+    $mods = core_component::get_plugin_list('mod');
+    foreach ($mods as $mod => $modname) {
+        if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
+            $modstring = 'urkund_enable_mod_' . $mod;
+            if (!isset($data->$modstring)) {
+                $data->$modstring = 0;
+            }
+        }
     }
-    if (!isset($data->urkund_enable_mod_forum)) {
-        $data->urkund_enable_mod_forum = 0;
-    }
-    if (!isset($data->urkund_enable_mod_workshop)) {
-        $data->urkund_enable_mod_workshop = 0;
-    }
+
     if (!isset($data->urkund_optout)) {
         $data->urkund_optout = 0;
     }
