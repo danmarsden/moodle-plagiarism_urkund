@@ -47,3 +47,11 @@ $observers = array (
         'callback' => 'plagiarism_urkund_observer::assignsubmission_submitted'
     )
 );
+
+global $CFG; // Not sure if global CFG is actually needed here but just in case.
+if (file_exists($CFG->dirroot.'/mod/hsuforum/version.php')) {
+    $observers[] = array(
+        'eventname' => '\mod_hsuforum\event\assessable_uploaded',
+        'callback' => 'plagiarism_urkund_observer::hsuforum_file_uploaded'
+    );
+}
