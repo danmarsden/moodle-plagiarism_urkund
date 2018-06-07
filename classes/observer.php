@@ -98,4 +98,18 @@ class plagiarism_urkund_observer {
         $urkund = new plagiarism_plugin_urkund();
         $urkund->event_handler($eventdata);
     }
+
+    /**
+     * Observer function to handle the assessable_uploaded event in mod_hsuforum.
+     * @param \mod_forum\event\assessable_uploaded $event
+     */
+    public static function hsuforum_file_uploaded(
+        \mod_hsuforum\event\assessable_uploaded $event) {
+        global $CFG;
+        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+        $eventdata = $event->get_data();
+        $eventdata['eventtype'] = 'hsuforum_file_uploaded';
+        $urkund = new plagiarism_plugin_urkund();
+        $urkund->event_handler($eventdata);
+    }
 }
