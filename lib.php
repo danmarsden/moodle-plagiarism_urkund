@@ -327,7 +327,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if ($USER->id == $userid || // If this is a user viewing their own report, check if settings allow it.
             // In workshop and assign if the user can see the submission they might be allowed to see the urkund report.
             // If they are in the forum activity they should not see other users reports.
-            (!$viewscore && $moduledetail->name <> 'forum')) { // Teamsubmisson or teacher submitted may be from different user.
+            (!$viewscore && $moduledetail->name <> 'forum' && $moduledetail->name <> 'hsuform')) { // Teamsubmisson or teacher submitted may be from different user.
             $selfreport = true;
             if (isset($plagiarismvalues['urkund_show_student_report']) &&
                     ($plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_ALWAYS ||
@@ -565,7 +565,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // I can't see a way to check if a particular checkbox exists
             // elementExists on the checkbox name doesn't work.
             $mform->hideif('urkund_restrictcontent', 'assignsubmission_onlinetext_enabled');
-        } else if ($modulename != 'mod_forum') {
+        } else if ($modulename != 'mod_forum' && $modulename != 'mod_hsuforum') {
             // Forum doesn't need any changes but all other modules should disable this.
             $mform->setDefault('urkund_restrictcontent', 0);
             $mform->hardFreeze('urkund_restrictcontent');
@@ -704,7 +704,6 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 $efile = $fs->get_file_by_hash($hash);
 
                 if (empty($efile)) {
-                    mtrace("nofilefound!");
                     continue;
                 } else if ($efile->get_filename() === '.') {
                     // This 'file' is actually a directory - nothing to submit.
@@ -1737,7 +1736,28 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                     }
                 }
             }
+        } else if ($cm->modname == 'hsuforum') {
+        if (debugging()) {
+            mtrace("URKUND fileid:" . $plagiarismfile->id . " hsuforum found");
         }
+        require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
+        $cm = get_coursemodule_from_id('hsuforum', $plagiarismfile->cm, 0, false, MUST_EXIST);
+        $posts = hsuforum_get_user_posts($cm->instance, $userid);
+        foreach ($posts as $post) {
+            $files = $fs->get_area_files($modulecontext->id, 'mod_hsuforum', 'attachment', $post->id, "timemodified", false);
+            foreach ($files as $file) {
+                if (debugging()) {
+                    mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
+                }
+                if ($file->get_contenthash() == $plagiarismfile->identifier) {
+                    if (debugging()) {
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
+                    }
+                    return $file;
+                }
+            }
+        }
+    }
     }
 }
 
@@ -2006,4 +2026,18 @@ function plagiarism_urkund_resubmit_cm($cmid) {
         'other' => array()
     ));
     $event->trigger();
+}
+
+/**
+ * Function to list plugins that urkund supports.
+ * @return array
+ *
+ */
+function urkund_supported_modules() {
+    global $CFG;
+    $supportedmodules = array('assign', 'forum', 'workshop');
+    if (file_exists($CFG->dirroot.'/mod/hsuforum/version.php')) {
+        $supportedmodules[] = 'hsuforum';
+    }
+    return $supportedmodules;
 }

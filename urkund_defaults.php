@@ -46,8 +46,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     $plagiarismplugin = new plagiarism_plugin_urkund();
 
     $plagiarismelements = $plagiarismplugin->config_options(true);
-    $supportedmodules = array('assign', 'forum', 'workshop');
-
+    $supportedmodules = urkund_supported_modules();
     foreach ($supportedmodules as $sm) {
         foreach ($plagiarismelements as $element) {
             $element .= "_".$sm;

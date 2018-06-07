@@ -38,7 +38,7 @@ class plagiarism_urkund_defaults_form extends moodleform {
     public function definition () {
         $mform =& $this->_form;
 
-        $supportedmodules = array('assign', 'forum', 'workshop');
+        $supportedmodules = urkund_supported_modules();
 
         foreach ($supportedmodules as $sm) {
             $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
