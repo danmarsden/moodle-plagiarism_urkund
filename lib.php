@@ -327,7 +327,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if ($USER->id == $userid || // If this is a user viewing their own report, check if settings allow it.
             // In workshop and assign if the user can see the submission they might be allowed to see the urkund report.
             // If they are in the forum activity they should not see other users reports.
-            (!$viewscore && $moduledetail->name <> 'forum' && $moduledetail->name <> 'hsuform')) { // Teamsubmisson or teacher submitted may be from different user.
+            (!$viewscore &&
+                $moduledetail->name <> 'forum' &&
+                $moduledetail->name <> 'hsuform')) { // Teamsubmisson or teacher submitted may be from different user.
             $selfreport = true;
             if (isset($plagiarismvalues['urkund_show_student_report']) &&
                     ($plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_ALWAYS ||
@@ -899,7 +901,8 @@ function urkund_get_form_elements($mform) {
         $resubmitoptions = array(PLAGIARISM_URKUND_RESUBMITNO => get_string('no'),
             PLAGIARISM_URKUND_RESUBMITDUEDATE => get_string('resubmitdue', 'plagiarism_urkund'),
             PLAGIARISM_URKUND_RESUBMITCLOSEDATE => get_string('resubmitclose', 'plagiarism_urkund'));
-        $mform->addElement('select', 'urkund_resubmit_on_close', get_string("urkund_resubmit_on_close", "plagiarism_urkund"), $resubmitoptions);
+        $mform->addElement('select', 'urkund_resubmit_on_close', get_string("urkund_resubmit_on_close", "plagiarism_urkund"),
+            $resubmitoptions);
         $mform->addHelpButton('urkund_resubmit_on_close', 'urkund_resubmit_on_close', 'plagiarism_urkund');
         $mform->setType('urkund_resubmit_on_close', PARAM_INT);
     }
@@ -1737,27 +1740,27 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                 }
             }
         } else if ($cm->modname == 'hsuforum') {
-        if (debugging()) {
-            mtrace("URKUND fileid:" . $plagiarismfile->id . " hsuforum found");
-        }
-        require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
-        $cm = get_coursemodule_from_id('hsuforum', $plagiarismfile->cm, 0, false, MUST_EXIST);
-        $posts = hsuforum_get_user_posts($cm->instance, $userid);
-        foreach ($posts as $post) {
-            $files = $fs->get_area_files($modulecontext->id, 'mod_hsuforum', 'attachment', $post->id, "timemodified", false);
-            foreach ($files as $file) {
-                if (debugging()) {
-                    mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
-                }
-                if ($file->get_contenthash() == $plagiarismfile->identifier) {
+            if (debugging()) {
+                mtrace("URKUND fileid:" . $plagiarismfile->id . " hsuforum found");
+            }
+            require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
+            $cm = get_coursemodule_from_id('hsuforum', $plagiarismfile->cm, 0, false, MUST_EXIST);
+            $posts = hsuforum_get_user_posts($cm->instance, $userid);
+            foreach ($posts as $post) {
+                $files = $fs->get_area_files($modulecontext->id, 'mod_hsuforum', 'attachment', $post->id, "timemodified", false);
+                foreach ($files as $file) {
                     if (debugging()) {
-                        mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
+                        mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
                     }
-                    return $file;
+                    if ($file->get_contenthash() == $plagiarismfile->identifier) {
+                        if (debugging()) {
+                            mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
+                        }
+                        return $file;
+                    }
                 }
             }
         }
-    }
     }
 }
 
