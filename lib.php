@@ -493,7 +493,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 }
             }
             // Check if files have been submitted and we need to disable the receiver address.
-            if ($DB->record_exists('plagiarism_urkund_files', array('cm' => $cmid, 'statuscode' => 'pending'))) {
+            if ($DB->record_exists('plagiarism_urkund_files', array('cm' => $cmid, 'statuscode' => URKUND_STATUSCODE_ACCEPTED))) {
                 $mform->disabledIf('urkund_receiver', 'use_urkund');
             }
             $mform->hideif('urkund_selectfiletypes', 'urkund_allowallfile', 'eq', 1);
