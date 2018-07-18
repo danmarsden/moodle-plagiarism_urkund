@@ -809,7 +809,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             // Check to see if urkund enabled.
             $useurkund = $DB->get_field('plagiarism_urkund_config', 'value',
                 array('cm' => $cm->id, 'name' => 'use_urkund'));
-            if (!empty($useurkund)) {
+            if (!empty($useurkund) && has_capability('plagiarism/urkund:resubmitallfiles', $modulecontext)) {
                 $url = new moodle_url('/plagiarism/urkund/reset.php', array('cmid' => $cm->id, 'resetall' => 1));
                 return '<div class="urkundresubmit">'.
                     $OUTPUT->single_button($url, get_string('resubmittourkund', 'plagiarism_urkund'))
