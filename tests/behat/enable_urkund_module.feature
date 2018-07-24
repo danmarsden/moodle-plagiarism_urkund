@@ -39,7 +39,7 @@ Feature: Enable URKUND for modules
     When I add a "Assignment" to section "1" and I fill the form with:
       | Assignment name | Test assignment |
       | Description | Test assignment for URKUND |
-      | Require students click submit button | Yes |
+      | Require students to click the submit button | Yes |
       | Enable URKUND                        | Yes |
       | Show similarity score to student     | Always |
       | Show similarity report to student    | Always |
