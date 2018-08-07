@@ -454,6 +454,14 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             }
             // Array of possible plagiarism config options.
             $plagiarismelements = $this->config_options();
+            $contextmodule = context_module::instance($data->coursemodule);
+
+            foreach ($plagiarismelements as $key => $elements) {
+                if (!has_capability('plagiarism/urkund:resubmitonclose', $contextmodule)&& $elements == 'urkund_resubmit_on_close') {
+                  unset($plagiarismelements[$key]);
+                }
+            }
+
             // First get existing values.
             if (empty($data->coursemodule)) {
                 debugging("URKUND settings failure - no coursemodule set in form data, URKUND could not be enabled.");
@@ -514,11 +522,21 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         // Get Defaults - cmid(0) is the default list.
         $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => 0), '', 'name, value');
         $plagiarismelements = $this->config_options();
+        foreach ($plagiarismelements as $key => $elements) {
+            if (!has_capability('plagiarism/urkund:resubmitonclose', $context) && $elements == 'urkund_resubmit_on_close') {
+                unset($plagiarismelements[$key]);
+            }
+        }
+
         if (has_capability('plagiarism/urkund:enable', $context)) {
             urkund_get_form_elements($mform);
             if ($mform->elementExists('urkund_draft_submit') && $mform->elementExists('submissiondrafts')) {
                 $mform->hideif('urkund_draft_submit', 'submissiondrafts', 'eq', 0);
             }
+        
+        if (!has_capability('plagiarism/urkund:resubmitonclose', $context)) {
+            $mform->removeElement('urkund_resubmit_on_close');
+        }
             // Disable all plagiarism elements if use_plagiarism eg 0.
             foreach ($plagiarismelements as $element) {
                 if ($element <> 'use_urkund') { // Ignore this var.

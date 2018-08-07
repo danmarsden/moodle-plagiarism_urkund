@@ -152,3 +152,4 @@ $string['resubmitclose'] = 'Resubmit after close date';
 $string['resubmittourkund'] = 'Regenerate all URKUND reports';
 $string['regenerationrequested'] = 'All reports have been flagged for regeneration, it may take some time before updated reports are available.';
 $string['urkund:resubmitallfiles'] = 'Allow the teacher to resubmit ALL files to URKUND';
+$string['urkund:resubmitonclose'] = 'Allow the teacher to resubmit files on close/due date to URKUND';
