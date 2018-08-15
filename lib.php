@@ -57,7 +57,7 @@ define('URKUND_FILETYPE_URL_UPDATE', '168'); // How often to check for updated f
 
 define('PLAGIARISM_URKUND_SHOW_NEVER', 0);
 define('PLAGIARISM_URKUND_SHOW_ALWAYS', 1);
-define('PLAGIARISM_URKUND_SHOW_CLOSED', 2);
+define('PLAGIARISM_URKUND_SHOW_WHENDUE', 2);
 
 define('PLAGIARISM_URKUND_DRAFTSUBMIT_IMMEDIATE', 0);
 define('PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL', 1);
@@ -315,11 +315,20 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         // Determine if the activity is closed.
         // If report is closed, this can make the report available to more users.
         $assignclosed = false;
-        $time = time();
-        if (!empty($module->preventlate) && !empty($module->timedue)) {
-            $assignclosed = ($module->timeavailable <= $time && $time <= $module->timedue);
-        } else if (!empty($module->timeavailable)) {
-            $assignclosed = ($module->timeavailable <= $time);
+        if ($moduledetail->name == 'assign') {
+            $time = time();
+            if (!empty($module->duedate)) {
+                $assignclosed = ($module->duedate <= $time);
+            }
+            if ($assignclosed && $USER->id == $userid) {
+                // Check to make sure this user doesn't have an extension to the duedate.
+                list($course, $cm) = get_course_and_cm_from_cmid($cmid, 'assign');
+                $assignment = new assign($modulecontext, $cm, $course);
+                $flags = $assignment->get_user_flags($userid, false);
+                if (!empty($flags->extensionduedate) && $flags->extensionduedate > $time) {
+                    $assignclosed = false;
+                }
+            }
         }
 
         // Under certain circumstances, users are allowed to see plagiarism info
@@ -333,12 +342,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $selfreport = true;
             if (isset($plagiarismvalues['urkund_show_student_report']) &&
                     ($plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_ALWAYS ||
-                     $plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_CLOSED && $assignclosed)) {
+                     $plagiarismvalues['urkund_show_student_report'] == PLAGIARISM_URKUND_SHOW_WHENDUE && $assignclosed)) {
                 $viewreport = true;
             }
             if (isset($plagiarismvalues['urkund_show_student_score']) &&
                     ($plagiarismvalues['urkund_show_student_score'] == PLAGIARISM_URKUND_SHOW_ALWAYS) ||
-                    ($plagiarismvalues['urkund_show_student_score'] == PLAGIARISM_URKUND_SHOW_CLOSED && $assignclosed)) {
+                    ($plagiarismvalues['urkund_show_student_score'] == PLAGIARISM_URKUND_SHOW_WHENDUE && $assignclosed)) {
                 $viewscore = true;
             }
         } else {
@@ -877,8 +886,10 @@ function plagiarism_urkund_format_temp_content($content, $strippretag = false) {
  */
 function urkund_get_form_elements($mform) {
     $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
-    $tiioptions = array(0 => get_string("never"), 1 => get_string("always"),
-                        2 => get_string("showwhenclosed", "plagiarism_urkund"));
+    $tiioptions = array(0 => get_string("never"), 1 => get_string("always"));
+    if ($mform->elementExists('submissiondrafts')) { // Just show this on assignment submission page for now.
+        $tiioptions[2] = get_string("showwhendue", "plagiarism_urkund");
+    }
     $urkunddraftoptions = array(
             PLAGIARISM_URKUND_DRAFTSUBMIT_IMMEDIATE => get_string("submitondraft", "plagiarism_urkund"),
             PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL => get_string("submitonfinal", "plagiarism_urkund")
