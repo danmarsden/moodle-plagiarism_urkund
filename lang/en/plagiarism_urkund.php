@@ -75,6 +75,7 @@ $string['scoreavailable'] = 'This file has been processed by URKUND and a report
 $string['scorenotavailableyet'] = 'This file has not been processed by URKUND yet.';
 $string['sendfiles'] = 'Send queued files';
 $string['showall'] = 'Show all errors';
+$string['showwhencutoff'] = 'After activity cut off date';
 $string['showwhendue'] = 'After activity due date';
 $string['similarity'] = 'URKUND';
 $string['status'] = 'Status';
