@@ -82,6 +82,12 @@ class plagiarism_urkund_setup_form extends moodleform {
         $mform->addRule('urkund_wordcount', null, 'required', null, 'client');
         $mform->setDefault('urkund_wordcount', '50');
 
+        $mform->addElement('text', 'urkund_charcount', get_string('charcount', 'plagiarism_urkund'));
+        $mform->addHelpButton('urkund_charcount', 'charcount', 'plagiarism_urkund');
+        $mform->setType('urkund_charcount', PARAM_INT);
+        $mform->addRule('urkund_charcount', null, 'required', null, 'client');
+        $mform->setDefault('urkund_charcount', '450');
+
         $mods = core_component::get_plugin_list('mod');
         foreach ($mods as $mod => $modname) {
             if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
