@@ -141,6 +141,8 @@ $string['useurkund'] = 'Enable URKUND';
 $string['waitingevents'] = 'There are {$a->countallevents} events waiting for cron and {$a->countheld} events are being held for resubmission';
 $string['wordcount'] = 'Minimum word count';
 $string['wordcount_help'] = 'This sets a minimum limit on the number of words that are required for in-line text (forum posts and online assignment type) before the content will be sent to URKUND.';
+$string['charcount'] = 'Minimum character count';
+$string['charcount_help'] = 'This sets a minimum limit on the number of characters that are required for in-line text (forum posts and online assignment type) before the content will be sent to URKUND.';
 $string['cannotupgradeunprocesseddata'] = '';
 $string['cannotupgradeunprocesseddata'] = '<h1>Cannot upgrade to this version of the plugin due to existing unprocessed data, please revert to an earlier version of this plugin and clear old events.</h1><p>This version of the plugin relies on the new events API in Moodle but your installation contains un-processed events related to the old API.</p>
  You should revert to an older version of the URKUND plugin, put the site into maintenance mode, run the Moodle Cron process and make sure all old events are cleared. Then try upgrading to this version of the URKUND plugin again.</p>
@@ -153,3 +155,8 @@ $string['resubmittourkund'] = 'Regenerate all URKUND reports';
 $string['regenerationrequested'] = 'All reports have been flagged for regeneration, it may take some time before updated reports are available.';
 $string['urkund:resubmitallfiles'] = 'Allow the teacher to resubmit ALL files to URKUND';
 $string['urkund:resubmitonclose'] = 'Allow the teacher to resubmit files on close/due date to URKUND';
+$string['errorcode_3'] = 'Error code 3 – Less than 450 characters AND 20 words';
+$string['errorcode_4'] = 'Error code 4 – Document missed deadline (will only happen if the course feature within the Urkund web inbox is used to set a deadline)';
+$string['errorcode_5000'] = 'Error code 5000 – An unexpected error has occurred';
+$string['errorcode_5001'] = 'Error code 5001 – The analysis has timed out (this will happen if the analysis does not finish within 2 hours. If this occurs we will manually attempt a new analysis which be allowed more time to finish)';
+$string['errorcode_7001'] = 'Error code 7001 – The document could not be indexed (means that an error occurred when we tried to extract the text from the document. This will mainly happen if there are non Unicode compatible characters in the document)';
