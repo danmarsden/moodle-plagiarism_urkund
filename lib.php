@@ -1838,7 +1838,7 @@ function plagiarism_urkund_send_files() {
                           ORDER BY a.id DESC";
                     $moodletextsubmissions = $DB->get_records_sql($sql, array($pf->userid, $cm->instance), 0, 1);
                     $moodletextsubmission = end($moodletextsubmissions);
-                    $tempfile = urkund_create_temp_file($cm->id, $cm->course, $pf->userid, $moodletextsubmission);
+                    $tempfile = urkund_create_temp_file($cm->id, $cm->course, $pf->userid, $moodletextsubmission->onlinetext);
 
                     $pf->identifier = $tempfile;
                     $DB->update_record('plagiarism_urkund_files', $pf);
