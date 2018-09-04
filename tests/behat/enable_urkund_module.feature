@@ -15,18 +15,18 @@ Feature: Enable URKUND for modules
       | user | course | role |
       | teacher1 | C1 | editingteacher |
     And I log in as "admin"
-    And I navigate to "Advanced features" node in "Site administration"
+    And I navigate to "Advanced features" in site administration
     And I set the field "Enable plagiarism plugins" to "1"
     And I press "Save changes"
-    Given I navigate to "URKUND plagiarism plugin" node in "Site administration>Plugins>Plagiarism"
-    When I set the field "Enable URKUND" to "1"
+    And I navigate to "Plugins > Plagiarism > URKUND plagiarism plugin" in site administration
+    And I set the field "Enable URKUND" to "1"
     And I set the field "Username" to "1"
     And I set the field "Password" to "1"
     And I set the field "Enable URKUND for assign" to "1"
     And I set the field "Enable URKUND for forum" to "1"
     And I set the field "Enable URKUND for workshop" to "1"
     And I press "Save changes"
-    When I follow "URKUND defaults"
+    And I follow "URKUND defaults"
     And I set the field "Show similarity score to student" to "Always"
     And I set the field "Show similarity report to student" to "Always"
     And I press "Save changes"

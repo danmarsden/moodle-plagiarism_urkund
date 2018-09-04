@@ -6,13 +6,13 @@ Feature: Enable Urkund
 
   Background:
     Given I log in as "admin"
-    And I navigate to "Advanced features" node in "Site administration"
+    And I navigate to "Advanced features" in site administration
     And I set the field "Enable plagiarism plugins" to "1"
     And I press "Save changes"
 
   @javascript
   Scenario: Enable Urkund
-    Given I navigate to "URKUND plagiarism plugin" node in "Site administration>Plugins>Plagiarism"
+    Given I navigate to "Plugins > Plagiarism > URKUND plagiarism plugin" in site administration
     When I set the field "Enable URKUND" to "1"
     And I set the field "Username" to "1"
     And I set the field "Password" to "1"
@@ -27,7 +27,7 @@ Feature: Enable Urkund
 
   @javascript
   Scenario: Disable URKUND
-    Given I navigate to "URKUND plagiarism plugin" node in "Site administration>Plugins>Plagiarism"
+    Given I navigate to "Plugins > Plagiarism > URKUND plagiarism plugin" in site administration
     When I set the field "Enable URKUND" to "0"
     And I set the field "Enable URKUND for assign" to "0"
     And I set the field "Enable URKUND for forum" to "0"
