@@ -663,7 +663,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         // Check to see if restrictcontent is in use.
         $showcontent = true;
         $showfiles = true;
-        if (!empty($plagiarismvalues[$cmid]['urkund_restrictcontent'])) {
+        if (!empty($plagiarismvalues['urkund_restrictcontent'])) {
             if ($plagiarismvalues['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTFILES) {
                 $showcontent = false;
             } else if ($plagiarismvalues['urkund_restrictcontent'] == PLAGIARISM_URKUND_RESTRICTCONTENTTEXT) {
