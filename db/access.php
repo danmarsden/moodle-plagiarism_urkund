@@ -73,5 +73,5 @@ $capabilities = array(
          'editingteacher' => CAP_ALLOW,
          'teacher' => CAP_ALLOW,
          'manager' => CAP_ALLOW)
-    ),   
+    ),
 );

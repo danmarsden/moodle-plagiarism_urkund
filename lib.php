@@ -457,8 +457,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $contextmodule = context_module::instance($data->coursemodule);
 
             foreach ($plagiarismelements as $key => $elements) {
-                if (!has_capability('plagiarism/urkund:resubmitonclose', $contextmodule)&& $elements == 'urkund_resubmit_on_close') {
-                  unset($plagiarismelements[$key]);
+                if (!has_capability('plagiarism/urkund:resubmitonclose', $contextmodule) &&
+                    $elements == 'urkund_resubmit_on_close') {
+
+                    unset($plagiarismelements[$key]);
                 }
             }
 
@@ -533,10 +535,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             if ($mform->elementExists('urkund_draft_submit') && $mform->elementExists('submissiondrafts')) {
                 $mform->hideif('urkund_draft_submit', 'submissiondrafts', 'eq', 0);
             }
-        
-        if (!has_capability('plagiarism/urkund:resubmitonclose', $context)) {
-            $mform->removeElement('urkund_resubmit_on_close');
-        }
+
+            if (!has_capability('plagiarism/urkund:resubmitonclose', $context)) {
+                $mform->removeElement('urkund_resubmit_on_close');
+            }
             // Disable all plagiarism elements if use_plagiarism eg 0.
             foreach ($plagiarismelements as $element) {
                 if ($element <> 'use_urkund') { // Ignore this var.
