@@ -76,12 +76,6 @@ class plagiarism_urkund_setup_form extends moodleform {
             '<br/>'.get_string('urkund_hidefilenamedesc', 'plagiarism_urkund'));
         $mform->setDefault('urkund_hidefilename', false);
 
-        $mform->addElement('text', 'urkund_wordcount', get_string('wordcount', 'plagiarism_urkund'));
-        $mform->addHelpButton('urkund_wordcount', 'wordcount', 'plagiarism_urkund');
-        $mform->setType('urkund_wordcount', PARAM_INT);
-        $mform->addRule('urkund_wordcount', null, 'required', null, 'client');
-        $mform->setDefault('urkund_wordcount', '50');
-
         $mform->addElement('text', 'urkund_charcount', get_string('charcount', 'plagiarism_urkund'));
         $mform->addHelpButton('urkund_charcount', 'charcount', 'plagiarism_urkund');
         $mform->setType('urkund_charcount', PARAM_INT);
