@@ -522,6 +522,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
         if (!empty($cmid)) {
             $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
+            // If this is an older assignment, it may not have a resubmit_on_close setting in place. If the site default is to turn this on
+            // we don't want to turn it on for "old" assignments without being specified.
+            if (!empty($plagiarismvalues) && !isset($plagiarismvalues['urkund_resubmit_on_close'])) {
+                $plagiarismvalues['urkund_resubmit_on_close'] = 0;
+            }
         }
         // Get Defaults - cmid(0) is the default list.
         $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => 0), '', 'name, value');
