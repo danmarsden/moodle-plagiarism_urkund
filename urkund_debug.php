@@ -95,7 +95,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
                                $file->statuscode == 'Analyzed') {
                         $response = get_string('scoreavailable', 'plagiarism_urkund');
                     } else {
-                        $response = get_string('unknownwarning', 'plagiarism_urkund');
+                        $response = get_string('unknownwarninggetscore', 'plagiarism_urkund');
                         if (debugging()) {
                             echo plagiarism_urkund_pretty_print($file);
                         }
@@ -136,7 +136,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
         } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED || $file->statuscode == 'Analyzed') {
             echo $OUTPUT->notification(get_string('scoreavailable', 'plagiarism_urkund'));
         } else {
-            echo $OUTPUT->notification(get_string('unknownwarning', 'plagiarism_urkund'));
+            echo $OUTPUT->notification(get_string('unknownwarninggetscore', 'plagiarism_urkund'));
             echo plagiarism_urkund_pretty_print($file);
         }
 
@@ -238,6 +238,11 @@ foreach ($urkundfiles as $tf) {
     } else if ($tf->statuscode == URKUND_STATUSCODE_ACCEPTED) { // Sanity Check.
         $reset = '<a href="urkund_debug.php?reset=2&id='.$tf->id.'&sesskey='.sesskey().'">'.
                  get_string('getscore', 'plagiarism_urkund').'</a> | ';
+    } else if ($tf->statuscode == 'Error') { // Show both resubmit and get score links.
+        $reset = '<a href="urkund_debug.php?reset=2&id='.$tf->id.'&sesskey='.sesskey().'">'.
+            get_string('getscore', 'plagiarism_urkund').'</a> | ';
+        $reset .= '<a href="urkund_debug.php?reset=1&id='.$tf->id.'&sesskey='.sesskey().'">'.
+            get_string('resubmit', 'plagiarism_urkund').'</a> | ';
     } else {
         $reset = '<a href="urkund_debug.php?reset=1&id='.$tf->id.'&sesskey='.sesskey().'">'.
                  get_string('resubmit', 'plagiarism_urkund').'</a> | ';
