@@ -96,6 +96,7 @@ $string['submitondraft'] = 'Submit file when first uploaded';
 $string['submitonfinal'] = 'Submit file when student sends for marking';
 $string['toolarge'] = 'This file is too large for URKUND to process';
 $string['unknownwarning'] = 'An error occurred trying to send this file to URKUND';
+$string['unknownwarninggetscore'] = 'An error occurred trying to get the score for this file from URKUND';
 $string['unsupportedfiletype'] = 'This filetype is not supported by URKUND';
 $string['updateallowedfiletypes'] = 'Update allowed file types and delete urkund records associated with deleted activities.';
 $string['urkund'] = 'URKUND plagiarism plugin';
