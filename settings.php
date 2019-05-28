@@ -49,8 +49,8 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
         $data->urkund_use = 0;
     }
 
-    $mods = core_component::get_plugin_list('mod');
-    foreach ($mods as $mod => $modname) {
+    $supportedmodules = urkund_supported_modules();
+    foreach ($supportedmodules as $mod) {
         if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
             $modstring = 'urkund_enable_mod_' . $mod;
             if (!isset($data->$modstring)) {
