@@ -85,6 +85,6 @@ class assessment_resubmitted extends \core\event\base {
      * @return array of parameters for object mapping.
      */
     public static function get_objectid_mapping() {
-        return base::NOT_MAPPED;
+        return \core\event\base::NOT_MAPPED;
     }
 }
