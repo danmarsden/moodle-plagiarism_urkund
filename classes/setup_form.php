@@ -82,6 +82,10 @@ class plagiarism_urkund_setup_form extends moodleform {
         $mform->addRule('urkund_charcount', null, 'required', null, 'client');
         $mform->setDefault('urkund_charcount', '450');
 
+        $mform->addElement('checkbox', 'urkund_userpref', get_string('urkund_userpref', 'plagiarism_urkund'),
+            '<br/>'.get_string('urkund_userprefdesc', 'plagiarism_urkund'));
+        $mform->setDefault('urkund_userpref', true);
+
         $mods = core_component::get_plugin_list('mod');
         foreach ($mods as $mod => $modname) {
             if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {

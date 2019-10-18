@@ -207,5 +207,18 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2018011700, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2019101800) {
+        if (!$DB->record_exists('plagiarism_urkund_config', array('name' => 'urkund_userpref', 'cm' => 0))) {
+            // Set appropriate defaults for new setting.
+            $newelement = new Stdclass();
+            $newelement->cm = 0;
+            $newelement->name = 'urkund_userpref';
+            $newelement->value = 1;
+            $DB->insert_record('plagiarism_urkund_config', $newelement);
+
+            upgrade_plugin_savepoint(true, 2019101800, 'plagiarism', 'urkund');
+        }
+    }
+
     return true;
 }
