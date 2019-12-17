@@ -2032,7 +2032,7 @@ function plagiarism_urkund_resubmit_on_close() {
                                                   AND uc1.value = :resubmit
          LEFT JOIN {plagiarism_urkund_config} uc2 ON uc2.cm = cm.id AND uc2.name = 'timeresubmitted'
              WHERE m.name = 'assign' AND a.duedate > 1 AND a.duedate < :now
-                   AND uc2.value IS NULL OR ". $DB->sql_cast_char2int('uc2.value'). " < a.duedate";
+                   AND (uc2.value IS NULL OR ". $DB->sql_cast_char2int('uc2.value'). " < a.duedate)";
     $assignments = $DB->get_records_sql($sql, array('resubmit' => PLAGIARISM_URKUND_RESUBMITDUEDATE, 'now' => $now));
 
     // For each Assignment with close date.
@@ -2049,7 +2049,7 @@ function plagiarism_urkund_resubmit_on_close() {
                                                      AND uc1.value = :resubmit
          LEFT JOIN {plagiarism_urkund_config} uc2 ON uc2.cm = cm.id AND uc2.name = 'timeresubmitted'
              WHERE m.name = 'assign' AND a.cutoffdate > 1 AND a.cutoffdate < :now
-                   AND uc2.value IS NULL OR ". $DB->sql_cast_char2int('uc2.value'). " < a.cutoffdate";
+                   AND (uc2.value IS NULL OR ". $DB->sql_cast_char2int('uc2.value'). " < a.cutoffdate)";
     $assignments = $DB->get_records_sql($sql, array('resubmit' => PLAGIARISM_URKUND_RESUBMITCLOSEDATE, 'now' => $now));
 
     // For each Assignment with cut off date.
