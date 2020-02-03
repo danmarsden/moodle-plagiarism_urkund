@@ -827,7 +827,12 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
     }
     $modulename = "";
     if (!empty($cm)) {
-        $modulename = "mod_" . $DB->get_field('modules', 'name', array('id' => $cm->module), MUST_EXIST);
+        $matches = array();
+        if (!preg_match('/^mod_([^_]+)_mod_form$/', get_class($formwrapper), $matches)) {
+            debugging('Rename form to mod_xx_mod_form, where xx is name of your module');
+            print_error('unknownmodulename');
+        }
+        $modulename = "mod_" . $matches[1];
         $modname = 'urkund_enable_' . $modulename;
         if (empty($plagiarismsettings[$modname])) {
             return;
