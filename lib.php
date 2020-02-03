@@ -807,6 +807,26 @@ function plagiarism_urkund_coursemodule_edit_post_actions($data, $course) {
 }
 
 /**
+ * Validate receiver address
+ *
+ * @param stdClass $data
+ * @return array $errors
+ */
+function plagiarism_urkund_coursemodule_validation($data) {
+    $data = $data->get_submitted_data();
+    if (array_key_exists('use_urkund', $data)) {
+        if ($data->use_urkund) {
+            $plugin = new plagiarism_plugin_urkund();
+            $result = $plugin->validate_receiver($data->urkund_receiver);
+            if ($result === 404) {
+                return array('urkund_receiver' => get_string('receivernotvalid', 'plagiarism_urkund'));
+            }
+        }
+    }
+    return array();
+}
+
+/**
  * Hook to add plagiarism specific settings to a module settings page
  *
  * @param moodleform $formwrapper
