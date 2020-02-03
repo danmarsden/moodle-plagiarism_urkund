@@ -825,15 +825,15 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
     if ($cm = $formwrapper->get_coursemodule()) {
         $cmid = $cm->id;
     }
-    if (empty($cm) || empty($cmid)) {
-        return;
+    $modulename = "";
+    if (!empty($cm)) {
+        $modulename = "mod_" . $DB->get_field('modules', 'name', array('id' => $cm->module), MUST_EXIST);
+        $modname = 'urkund_enable_' . $modulename;
+        if (empty($plagiarismsettings[$modname])) {
+            return;
+        }
     }
-    $modulename = "mod_" . $DB->get_field('modules', 'name', array('id' => $cm->module), MUST_EXIST);
-    $modname = 'urkund_enable_' . $modulename;
-    if (empty($plagiarismsettings[$modname])) {
-        return;
-    }
-    $context = context_module::instance($cmid);
+    $context = $formwrapper->get_context();
     if (!empty($cmid)) {
         $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
         // If this is an older assignment, it may not have a resubmit_on_close setting in place.
