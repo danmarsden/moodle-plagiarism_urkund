@@ -825,6 +825,9 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
     if ($cm = $formwrapper->get_coursemodule()) {
         $cmid = $cm->id;
     }
+    if (empty($cm) || empty($cmid)) {
+        return;
+    }
     $modulename = "mod_" . $DB->get_field('modules', 'name', array('id' => $cm->module), MUST_EXIST);
     $modname = 'urkund_enable_' . $modulename;
     if (empty($plagiarismsettings[$modname])) {
