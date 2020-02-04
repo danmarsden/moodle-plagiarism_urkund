@@ -248,10 +248,17 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             if (has_capability('plagiarism/urkund:resetfile', $modulecontext) &&
                 !empty($results['error'])) { // This is a teacher viewing the responses.
 
-                $last = end(json_decode($results['error']));
+                $json = json_decode($results['error']);
+                if (json_last_error() == JSON_ERROR_NONE) {
+                    // XML
+                    $xml = simplexml_load_string($results['error']);
+                    $errorcode = (int) $xml->SubmissionData->Status->ErrorCode;
+                } else {
+                    // JSON
+                    $errorcode = (int) $json->Status->ErrorCode;
+                }
 
-                if (!empty($last->Status->ErrorCode)) {
-                    $errorcode = $last->Status->ErrorCode;
+                if (!empty($errorcode)) {
                     if ($errorcode == 3 OR $errorcode == 4 OR $errorcode == 5001 OR $errorcode == 7001) {
                         // We have custom error messages for these response codes.
                         $errormessage = get_string('errorcode_' . $errorcode, 'plagiarism_urkund');
