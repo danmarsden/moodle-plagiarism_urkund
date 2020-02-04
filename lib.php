@@ -248,10 +248,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             if (has_capability('plagiarism/urkund:resetfile', $modulecontext) &&
                 !empty($results['error'])) { // This is a teacher viewing the responses.
 
-                $xml = simplexml_load_string($results['error']);
+                $last = end(json_decode($results['error']));
 
-                if (!empty($xml->SubmissionData->Status->ErrorCode)) {
-                    $errorcode = $xml->SubmissionData->Status->ErrorCode;
+                if (!empty($last->Status->ErrorCode)) {
+                    $errorcode = $last->Status->ErrorCode;
                     if ($errorcode == 3 OR $errorcode == 4 OR $errorcode == 5001 OR $errorcode == 7001) {
                         // We have custom error messages for these response codes.
                         $errormessage = get_string('errorcode_' . $errorcode, 'plagiarism_urkund');
@@ -1397,18 +1397,17 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
     if (!empty($httpstatus)) {
         if (in_array($httpstatus, $allowedstatus)) {
             if ($httpstatus == URKUND_STATUSCODE_PROCESSED) {
-                // Get similarity score from xml.
-                $xml = new SimpleXMLElement($response);
+                // Get similarity score from JSON.
                 // When multiple results returned, the last one is the important one.
-                $last = count($xml->SubmissionData) - 1;
-                $status = (string)$xml->SubmissionData[$last]->Status[0]->State[0];
+                $last = end(json_decode($response));
+                $status = (string) $last->Status->State;
                 if (!empty($status) && in_array($status, $successfulstates)) {
                     $plagiarismfile->statuscode = $status;
                 }
                 if (!empty($status) && $status == 'Analyzed') {
-                    $plagiarismfile->reporturl = (string)$xml->SubmissionData[$last]->Report[0]->ReportUrl[0];
-                    $plagiarismfile->similarityscore = (int)$xml->SubmissionData[$last]->Report[0]->Significance[0];
-                    $plagiarismfile->optout = (string)$xml->SubmissionData[$last]->Document[0]->OptOutInfo[0]->Url[0];
+                    $plagiarismfile->reporturl = (string) $last->Report->ReportUrl;
+                    $plagiarismfile->similarityscore = (int) $last->Report->Significance;
+                    $plagiarismfile->optout = (string) $last->Document->OptOutInfo->Url;
                     // Now send e-mail to user.
                     $emailstudents = $DB->get_field('plagiarism_urkund_config', 'value',
                                                     array('cm' => $plagiarismfile->cm, 'name' => 'urkund_studentemail'));
