@@ -1381,7 +1381,7 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return '';
     }
-    $headers = array('Accept-Language: '.$plagiarismsettings['urkund_lang']);
+    $headers = array('Accept: application/json', 'Accept-Language: '.$plagiarismsettings['urkund_lang']);
 
     // Use Moodle curl wrapper to send file.
     $c = new curl(array('proxy' => true));
