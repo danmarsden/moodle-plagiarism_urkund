@@ -1406,7 +1406,8 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
             if ($httpstatus == URKUND_STATUSCODE_PROCESSED) {
                 // Get similarity score from JSON.
                 // When multiple results returned, the last one is the important one.
-                $last = end(json_decode($response));
+                $json = json_decode($response);
+                $last = end(&$json);
                 $status = (string) $last->Status->State;
                 if (!empty($status) && in_array($status, $successfulstates)) {
                     $plagiarismfile->statuscode = $status;
