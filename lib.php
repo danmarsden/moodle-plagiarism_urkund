@@ -845,18 +845,14 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
     if ($cm = $formwrapper->get_coursemodule()) {
         $cmid = $cm->id;
     }
-    $modulename = "";
-    if (!empty($cm)) {
-        $matches = array();
-        if (!preg_match('/^mod_([^_]+)_mod_form$/', get_class($formwrapper), $matches)) {
-            debugging('Rename form to mod_xx_mod_form, where xx is name of your module');
-            print_error('unknownmodulename');
-        }
-        $modulename = "mod_" . $matches[1];
-        $modname = 'urkund_enable_' . $modulename;
-        if (empty($plagiarismsettings[$modname])) {
-            return;
-        }
+    $matches = array();
+    if (!preg_match('/^mod_([^_]+)_mod_form$/', get_class($formwrapper), $matches)) {
+        return;
+    }
+    $modulename = "mod_" . $matches[1];
+    $modname = 'urkund_enable_' . $modulename;
+    if (empty($plagiarismsettings[$modname])) {
+        return;
     }
     $context = $formwrapper->get_context();
     if (!empty($cmid)) {
