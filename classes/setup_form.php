@@ -38,58 +38,58 @@ class plagiarism_urkund_setup_form extends moodleform {
     public function definition () {
         $mform =& $this->_form;
         $mform->addElement('html', get_string('urkundexplain', 'plagiarism_urkund'));
-        $mform->addElement('checkbox', 'urkund_use', get_string('useurkund', 'plagiarism_urkund'));
+        $mform->addElement('checkbox', 'enabled', get_string('useurkund', 'plagiarism_urkund'));
 
-        $mform->addElement('text', 'urkund_api', get_string('urkund_api', 'plagiarism_urkund'));
-        $mform->addHelpButton('urkund_api', 'urkund_api', 'plagiarism_urkund');
-        $mform->addRule('urkund_api', null, 'required', null, 'client');
-        $mform->setDefault('urkund_api', 'https://secure.urkund.com/api/submissions');
-        $mform->setType('urkund_api', PARAM_URL);
+        $mform->addElement('text', 'api', get_string('urkund_api', 'plagiarism_urkund'));
+        $mform->addHelpButton('api', 'urkund_api', 'plagiarism_urkund');
+        $mform->addRule('api', null, 'required', null, 'client');
+        $mform->setDefault('api', 'https://secure.urkund.com/api/submissions');
+        $mform->setType('api', PARAM_URL);
 
-        $mform->addElement('text', 'urkund_username', get_string('urkund_username', 'plagiarism_urkund'));
-        $mform->addHelpButton('urkund_username', 'urkund_username', 'plagiarism_urkund');
-        $mform->addRule('urkund_username', null, 'required', null, 'client');
-        $mform->setType('urkund_username', PARAM_TEXT);
+        $mform->addElement('text', 'username', get_string('urkund_username', 'plagiarism_urkund'));
+        $mform->addHelpButton('username', 'urkund_username', 'plagiarism_urkund');
+        $mform->addRule('username', null, 'required', null, 'client');
+        $mform->setType('username', PARAM_TEXT);
 
-        $mform->addElement('passwordunmask', 'urkund_password', get_string('urkund_password', 'plagiarism_urkund'));
-        $mform->addHelpButton('urkund_password', 'urkund_password', 'plagiarism_urkund');
-        $mform->addRule('urkund_password', null, 'required', null, 'client');
-        $mform->setType('urkund_password', PARAM_TEXT);
+        $mform->addElement('passwordunmask', 'password', get_string('urkund_password', 'plagiarism_urkund'));
+        $mform->addHelpButton('password', 'urkund_password', 'plagiarism_urkund');
+        $mform->addRule('password', null, 'required', null, 'client');
+        $mform->setType('password', PARAM_TEXT);
 
-        $mform->addElement('text', 'urkund_lang', get_string('urkund_lang', 'plagiarism_urkund'));
-        $mform->addHelpButton('urkund_lang', 'urkund_lang', 'plagiarism_urkund');
-        $mform->addRule('urkund_lang', null, 'required', null, 'client');
-        $mform->setDefault('urkund_lang', 'en-US');
-        $mform->setType('urkund_lang', PARAM_TEXT);
+        $mform->addElement('text', 'lang', get_string('urkund_lang', 'plagiarism_urkund'));
+        $mform->addHelpButton('lang', 'urkund_lang', 'plagiarism_urkund');
+        $mform->addRule('lang', null, 'required', null, 'client');
+        $mform->setDefault('lang', 'en-US');
+        $mform->setType('lang', PARAM_TEXT);
 
-        $mform->addElement('textarea', 'urkund_student_disclosure', get_string('studentdisclosure', 'plagiarism_urkund'),
+        $mform->addElement('textarea', 'student_disclosure', get_string('studentdisclosure', 'plagiarism_urkund'),
             'wrap="virtual" rows="6" cols="50"');
-        $mform->addHelpButton('urkund_student_disclosure', 'studentdisclosure', 'plagiarism_urkund');
-        $mform->setDefault('urkund_student_disclosure', get_string('studentdisclosuredefault', 'plagiarism_urkund'));
-        $mform->setType('urkund_student_disclosure', PARAM_TEXT);
+        $mform->addHelpButton('student_disclosure', 'studentdisclosure', 'plagiarism_urkund');
+        $mform->setDefault('student_disclosure', get_string('studentdisclosuredefault', 'plagiarism_urkund'));
+        $mform->setType('student_disclosure', PARAM_TEXT);
 
-        $mform->addElement('checkbox', 'urkund_optout', get_string('urkund_enableoptout', 'plagiarism_urkund'),
+        $mform->addElement('checkbox', 'optout', get_string('urkund_enableoptout', 'plagiarism_urkund'),
             '<br/>'.get_string('urkund_enableoptoutdesc', 'plagiarism_urkund'));
-        $mform->setDefault('urkund_optout', true);
+        $mform->setDefault('optout', true);
 
-        $mform->addElement('checkbox', 'urkund_hidefilename', get_string('urkund_hidefilename', 'plagiarism_urkund'),
+        $mform->addElement('checkbox', 'hidefilename', get_string('urkund_hidefilename', 'plagiarism_urkund'),
             '<br/>'.get_string('urkund_hidefilenamedesc', 'plagiarism_urkund'));
-        $mform->setDefault('urkund_hidefilename', false);
+        $mform->setDefault('hidefilename', false);
 
-        $mform->addElement('text', 'urkund_charcount', get_string('charcount', 'plagiarism_urkund'));
-        $mform->addHelpButton('urkund_charcount', 'charcount', 'plagiarism_urkund');
-        $mform->setType('urkund_charcount', PARAM_INT);
-        $mform->addRule('urkund_charcount', null, 'required', null, 'client');
-        $mform->setDefault('urkund_charcount', '450');
+        $mform->addElement('text', 'charcount', get_string('charcount', 'plagiarism_urkund'));
+        $mform->addHelpButton('charcount', 'charcount', 'plagiarism_urkund');
+        $mform->setType('charcount', PARAM_INT);
+        $mform->addRule('charcount', null, 'required', null, 'client');
+        $mform->setDefault('charcount', '450');
 
-        $mform->addElement('checkbox', 'urkund_userpref', get_string('urkund_userpref', 'plagiarism_urkund'),
+        $mform->addElement('checkbox', 'userpref', get_string('urkund_userpref', 'plagiarism_urkund'),
             '<br/>'.get_string('urkund_userprefdesc', 'plagiarism_urkund'));
-        $mform->setDefault('urkund_userpref', true);
+        $mform->setDefault('userpref', true);
 
         $mods = core_component::get_plugin_list('mod');
         foreach ($mods as $mod => $modname) {
             if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
-                $modstring = 'urkund_enable_mod_' . $mod;
+                $modstring = 'enable_mod_' . $mod;
                 $mform->addElement('checkbox', $modstring, get_string('urkund_enableplugin', 'plagiarism_urkund', $mod));
                 if ($modname == 'assign') {
                     $mform->setDefault($modstring, 1);

@@ -45,69 +45,55 @@ echo $OUTPUT->header();
 $currenttab = 'urkundsettings';
 require_once('urkund_tabs.php');
 if (($data = $mform->get_data()) && confirm_sesskey()) {
-    if (!isset($data->urkund_use)) {
-        $data->urkund_use = 0;
+    if (!isset($data->enabled)) {
+        $data->enabled = 0;
     }
 
     $supportedmodules = urkund_supported_modules();
     foreach ($supportedmodules as $mod) {
         if (plugin_supports('mod', $mod, FEATURE_PLAGIARISM)) {
-            $modstring = 'urkund_enable_mod_' . $mod;
+            $modstring = 'enable_mod_' . $mod;
             if (!isset($data->$modstring)) {
                 $data->$modstring = 0;
             }
         }
     }
 
-    if (!isset($data->urkund_optout)) {
-        $data->urkund_optout = 0;
+    if (!isset($data->optout)) {
+        $data->optout = 0;
     }
-    if (!isset($data->urkund_hidefilename)) {
-        $data->urkund_hidefilename = 0;
+    if (!isset($data->hidefilename)) {
+        $data->hidefilename = 0;
     }
-    if (!isset($data->urkund_userpref)) {
-        $data->urkund_userpref = 0;
+    if (!isset($data->userpref)) {
+        $data->userpref = 0;
     }
     foreach ($data as $field => $value) {
-        if (strpos($field, 'urkund') === 0) {
+        if ($field != 'submitbutton') { // Ignore the button.
             $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with uasername/password
-            if ($field == 'urkund_api') { // Strip trailing slash from api.
+            if ($field == 'api') { // Strip trailing slash from api.
                 $value = rtrim($value, '/');
             }
-            if ($configfield = $DB->get_record('config_plugins', array('name' => $field, 'plugin' => 'plagiarism'))) {
-                $configfield->value = $value;
-                if (! $DB->update_record('config_plugins', $configfield)) {
-                    error("errorupdating");
-                }
-            } else {
-                $configfield = new stdClass();
-                $configfield->value = $value;
-                $configfield->plugin = 'plagiarism';
-                $configfield->name = $field;
-                if (! $DB->insert_record('config_plugins', $configfield)) {
-                    error("errorinserting");
-                }
-            }
+            set_config($field, $value, 'plagiarism_urkund');
         }
     }
-    cache_helper::invalidate_by_definition('core', 'config', array(), 'plagiarism');
+    set_config('urkund_use', $data->enabled, 'plagiarism'); // TODO: remove when MDL-67872 is integrated.
+
     $c = new curl(array('proxy' => true));
-    $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD' => $data->urkund_username.":".$data->urkund_password));
-    $html = $c->post($data->urkund_api);
+    $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD' => $data->username.":".$data->password));
+    $html = $c->post($data->api);
     $response = $c->getResponse();
     // Now check to see if username/password is correct. - this check could probably be improved further.
     if ($c->info['http_code'] == '401') {
         // Disable urkund as this config isn't correct.
-        $rec = $DB->get_record('config_plugins', array('name' => 'urkund_use', 'plugin' => 'plagiarism'));
-        $rec->value = 0;
-        $DB->update_record('config_plugins', $rec);
-        echo $OUTPUT->notification(get_string('savedconfigfailed', 'plagiarism_urkund'));
+        set_config('enabled', 0, 'plagiarism_urkund');
+        set_config('urkund_use', 0, 'plagiarism'); // TODO: remove when MDL-67872 is integrated.
     } else {
         echo $OUTPUT->notification(get_string('savedconfigsuccess', 'plagiarism_urkund'), 'notifysuccess');
     }
 }
 
-$plagiarismsettings = (array)get_config('plagiarism');
+$plagiarismsettings = (array)get_config('plagiarism_urkund');
 $mform->set_data($plagiarismsettings);
 
 echo $OUTPUT->box_start('generalbox boxaligncenter', 'intro');

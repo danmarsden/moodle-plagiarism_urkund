@@ -93,11 +93,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if (!empty($plagiarismsettings) || $plagiarismsettings === false) {
             return $plagiarismsettings;
         }
-        $plagiarismsettings = (array)get_config('plagiarism');
+        $plagiarismsettings = (array)get_config('plagiarism_urkund');
         // Check if enabled.
-        if (isset($plagiarismsettings['urkund_use']) && $plagiarismsettings['urkund_use']) {
+        if (isset($plagiarismsettings['enabled']) && $plagiarismsettings['enabled']) {
             // Now check to make sure required settings are set!
-            if (empty($plagiarismsettings['urkund_api'])) {
+            if (empty($plagiarismsettings['api'])) {
                 debugging("URKUND API URL not set!");
                 return false;
             }
@@ -442,7 +442,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             if ($viewreport) {
                 $results['reporturl'] = $plagiarismfile->reporturl;
             }
-            if (!empty($plagiarismsettings['urkund_optout']) && !empty($plagiarismfile->optout) && $selfreport) {
+            if (!empty($plagiarismsettings['optout']) && !empty($plagiarismfile->optout) && $selfreport) {
                 $results['optoutlink'] = $plagiarismfile->optout;
             }
             $results['renamed'] = $previouslysubmitted;
@@ -462,12 +462,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         $urkunduse = urkund_cm_use($cmid);
         $plagiarismsettings = $this->get_settings();
-        if (!empty($plagiarismsettings['urkund_student_disclosure']) &&
+        if (!empty($plagiarismsettings['student_disclosure']) &&
             !empty($urkunduse)) {
                 $outputhtml .= $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
                 $formatoptions = new stdClass;
                 $formatoptions->noclean = true;
-                $outputhtml .= format_text($plagiarismsettings['urkund_student_disclosure'], FORMAT_MOODLE, $formatoptions);
+                $outputhtml .= format_text($plagiarismsettings['student_disclosure'], FORMAT_MOODLE, $formatoptions);
                 $outputhtml .= $OUTPUT->box_end();
         }
         return $outputhtml;
@@ -516,8 +516,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             }
         }
 
-        if (!empty($plagiarismsettings['urkund_charcount'])) {
-            $charcount = $plagiarismsettings['urkund_charcount'];
+        if (!empty($plagiarismsettings['charcount'])) {
+            $charcount = $plagiarismsettings['charcount'];
         } else {
             // Set a sensible default if we can't find one.
             $charcount = 450;
@@ -617,7 +617,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $a->modulelink = $CFG->wwwroot.'/mod/'.$cm->modname.'/view.php?id='.$cm->id;
         $a->coursename = format_string($DB->get_field('course', 'fullname', array('id' => $cm->course)));
         $plagiarismsettings = $this->get_settings();
-        if (!empty($plagiarismsettings['urkund_optout'])) {
+        if (!empty($plagiarismsettings['optout'])) {
             $a->optoutlink = $plagiarismfile->optout;
             $emailcontent = get_string('studentemailcontent', 'plagiarism_urkund', $a);
         } else {
@@ -638,7 +638,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $plagiarismsettings = $this->get_settings();
         $url = URKUND_INTEGRATION_SERVICE .'/receivers'.'/'. trim($receiver);;
 
-        $headers = array('Accept-Language: '.$plagiarismsettings['urkund_lang']);
+        $headers = array('Accept-Language: '.$plagiarismsettings['lang']);
 
         $allowedstatus = array(URKUND_STATUSCODE_PROCESSED,
                                URKUND_STATUSCODE_NOT_FOUND,
@@ -651,7 +651,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
                          'CURLOPT_TIMEOUT' => 60, // Set to 60seconds just in case.
                          'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
-                         'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
+                         'CURLOPT_USERPWD' => $plagiarismsettings['username'].":".$plagiarismsettings['password']));
 
         $c->setHeader($headers);
         $response = $c->get($url);
@@ -857,7 +857,7 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
         return;
     }
     $modulename = "mod_" . $matches[1];
-    $modname = 'urkund_enable_' . $modulename;
+    $modname = 'enable_' . $modulename;
     if (empty($plagiarismsettings[$modname])) {
         return;
     }
@@ -917,7 +917,7 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
         $defaultelement = $element.'_'.str_replace('mod_', '', $modulename);
         if (isset($plagiarismvalues[$element])) {
             $mform->setDefault($element, $plagiarismvalues[$element]);
-        } else if ($element == 'urkund_receiver' && !empty($plagiarismsettings['urkund_userpref'])) {
+        } else if ($element == 'urkund_receiver' && !empty($plagiarismsettings['userpref'])) {
             // If this is the reciever address, and user preference handling is enabled.
             $def = get_user_preferences($element);
             if (!empty($def)) {
@@ -1247,7 +1247,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     }
 
     // Get url of api.
-    $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarismfile);
+    $url = urkund_get_url($plagiarismsettings['api'], $plagiarismfile);
     if (empty($url)) {
         mtrace('ERROR: no receiver address found for this cm: '.$plagiarismfile->cm. ' Skipping file');
         $plagiarismfile->statuscode = URKUND_STATUSCODE_NORECEIVER;
@@ -1255,7 +1255,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return true;
     }
-    if (!empty(get_config('plagiarism', 'urkund_hidefilename'))) {
+    if (!empty(get_config('plagiarism_urkund', 'hidefilename'))) {
         $pathinfo = pathinfo($filename);
         $filenametopass = base64_encode("submission.".$pathinfo['extension']);
     } else {
@@ -1263,7 +1263,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     }
 
     $headers = array('x-urkund-submitter: '.$useremail,
-                    'Accept-Language: '.$plagiarismsettings['urkund_lang'],
+                    'Accept-Language: '.$plagiarismsettings['lang'],
                     'x-urkund-filename: '.$filenametopass,
                     'Content-Type: '.$mimetype);
 
@@ -1273,7 +1273,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
                      'CURLOPT_TIMEOUT' => 1800, // Set to 30min just in case.
                      'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
-                     'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
+                     'CURLOPT_USERPWD' => $plagiarismsettings['username'].":".$plagiarismsettings['password']));
 
     $c->setHeader($headers);
     $filecontents = (!empty($file->filepath)) ? file_get_contents($file->filepath) : $file->get_content();
@@ -1412,9 +1412,9 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
                            URKUND_STATUSCODE_BAD_REQUEST);
     $successfulstates = array('Analyzed', 'Rejected', 'Error');
     if ($plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED_OLD) {
-        $url = old_urkund_get_url($plagiarismsettings['urkund_api'], $plagiarismfile);
+        $url = old_urkund_get_url($plagiarismsettings['api'], $plagiarismfile);
     } else {
-        $url = urkund_get_url($plagiarismsettings['urkund_api'], $plagiarismfile);
+        $url = urkund_get_url($plagiarismsettings['api'], $plagiarismfile);
     }
 
     if (empty($url)) {
@@ -1424,7 +1424,7 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
         $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
         return '';
     }
-    $headers = array('Accept: application/json', 'Accept-Language: '.$plagiarismsettings['urkund_lang']);
+    $headers = array('Accept: application/json', 'Accept-Language: '.$plagiarismsettings['lang']);
 
     // Use Moodle curl wrapper to send file.
     $c = new curl(array('proxy' => true));
@@ -1432,7 +1432,7 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
     $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
         'CURLOPT_TIMEOUT' => 300, // Set to 5min just in case.
         'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
-        'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
+        'CURLOPT_USERPWD' => $plagiarismsettings['username'].":".$plagiarismsettings['password']));
 
     $c->setHeader($headers);
     $response = $c->get($url);

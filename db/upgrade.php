@@ -220,5 +220,28 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         }
     }
 
+    if ($oldversion < 2020020700) {
+        // Conversion of old config_plugin settings.
+        $oldsettings = get_config('plagiarism');
+        foreach ($oldsettings as $setting => $value) {
+            if (strpos($setting, 'urkund_') !== false) {
+                if ($setting == 'urkund_use') { // Not deprecated yet - see MDL-67872.
+                    // Not deprecated yet, so don't delete.
+                    // Internal plugin code now checks plugin->enabled setting so we need to set both.
+                    set_config('enabled', $value, 'plagiarism_urkund');
+                } else {
+                    $newsetting = substr($setting, 7); // Strip urkund from the start of this setting.
+                    // Set new setting.
+                    set_config($newsetting, $value, 'plagiarism_urkund');
+
+                    // Remove old settings.
+                    set_config($setting, null, 'plagiarism');
+                }
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2020020700, 'plagiarism', 'urkund');
+    }
+
     return true;
 }
