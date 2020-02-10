@@ -694,6 +694,55 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             }
         }
     }
+
+    /**
+     * Executes a call to URKUND's API to see if a receiver address exists for the logged in user.
+     * If so we store that receiver address in the user preferences.
+     * Otherwise we attempt to create a receiver address.
+     */
+    public function load_receiver() {
+        global $USER;
+        $plagiarismsettings = \plagiarism_plugin_urkund::get_settings();
+        $headers = array('Accept: application/json');
+
+        $c = new curl(array('proxy' => true));
+        $c->setopt(array());
+        $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
+            'CURLOPT_TIMEOUT' => 60, // Set to 60seconds just in case.
+            'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
+            'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
+
+        $c->setHeader($headers);
+
+        $email = $USER->email;
+        $name = "Alex Morris";
+        $email = "alex.morris+testing@catalyst.net.nz";
+        //$email = "ITSL.a11.loc_210734_63@itslreceiver.com";
+        $response = $c->get("https://secure.urkund.com/api/receivers?emailAddress=$email");
+        $status = $c->info['http_code'];
+        if (!empty($status)) {
+            $json = json_decode($response);
+            if (count($json) > 0) {
+                set_user_preference('urkund_receiver', trim($json[0]->AnalysisAddress));
+                return array('receiver' => trim($json[0]->AnalysisAddress));
+            } else {
+                $data = array(
+                    'receiverData' => array(
+                        'UnitId' => 5,
+                        'FullName' => $name,
+                        'EmailAddress' => $email
+                    )
+                );
+                $response = $c->post("https://secure.urkund.com/api/receivers", json_encode($data));
+                $status = $c->info['http_code'];
+                if (!empty($status)) {
+                    return $response;
+                }
+                return $response;
+            }
+        }
+        return array('error' => true, 'msg' => "You must manually enter an analysis address.");
+    }
 }
 
 /**
@@ -840,7 +889,7 @@ function plagiarism_urkund_coursemodule_validation($data) {
  * @param MoodleQuickForm $mform
  */
 function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) {
-    global $DB, $PAGE, $CFG;
+    global $DB, $PAGE, $CFG, $USER;
 
     $plugin = new plagiarism_plugin_urkund();
     $plagiarismsettings = $plugin->get_settings();

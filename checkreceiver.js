@@ -75,12 +75,38 @@ M.plagiarism_urkund.init = function(Y, contextid) {
         Y.io(url, config);
     };
 
+    var loadReceiver = function(Y, contextid) {
+        var url = M.cfg.wwwroot + '/plagiarism/urkund/loadreceiver.php';
+        var config = {
+            method: 'get',
+            context: this,
+            sync: false,
+            data: {
+                'sesskey': M.cfg.sesskey,
+                'c': contextid
+            },
+            on: {
+                success: function(tid, response) {
+                    var jsondata = Y.JSON.parse(response.responseText);
+                    console.log(jsondata);
+                },
+                failure: function() {
+
+                }
+            }
+        };
+        Y.io(url, config);
+    };
+
     var receiver = Y.one('#id_urkund_receiver');
     if (null === receiver) {
         // There is nothing to check.
         // for cases where receiver setting is advanced and
         // hidden to users via capabilities.
         return;
+    }
+    if (receiver.get('value') === "") {
+        loadReceiver(Y, contextid);
     }
     // Validate existing content.
     checkUrkundReceiver(Y, receiver, contextid);
@@ -89,4 +115,5 @@ M.plagiarism_urkund.init = function(Y, contextid) {
     receiver.on('change', function() {
         checkUrkundReceiver(Y, receiver, contextid);
     });
+
 };
