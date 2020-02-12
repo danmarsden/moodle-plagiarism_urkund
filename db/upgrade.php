@@ -246,7 +246,7 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
     if ($oldversion < 2020021300) {
         $DB->delete_records('user_preferences', array('name' => 'urkund_receiver'));
 
-        upgrade_plugin_savepoint(true, 2019121900, 'plagiarism', 'urkund');
+        upgrade_plugin_savepoint(true, 2020021300, 'plagiarism', 'urkund');
     }
 
     return true;

@@ -76,6 +76,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
     };
 
     var loadReceiver = function(Y, contextid) {
+        var invalid = '<span id="receivervalid" class="patherror">&#x2718;</span>';
         var url = M.cfg.wwwroot + '/plagiarism/urkund/loadreceiver.php';
         var config = {
             method: 'get',
@@ -89,11 +90,16 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                 success: function(tid, response) {
                     var jsondata = Y.JSON.parse(response.responseText);
                     var form = Y.one('#id_urkund_receiver');
-                    form.set('value', jsondata.receiver);
-                    form.simulate("change");
+                    if (jsondata.error == true) {
+                        form.insert(invalid, 'after');
+                    } else {
+                        form.set('value', jsondata.receiver);
+                        form.simulate("change");
+                    }
                 },
                 failure: function() {
-
+                    var form = Y.one('#id_urkund_receiver');
+                    form.insert(invalid, 'after');
                 }
             }
         };

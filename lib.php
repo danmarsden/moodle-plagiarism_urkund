@@ -710,7 +710,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
             'CURLOPT_TIMEOUT' => 60, // Set to 60seconds just in case.
             'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
-            'CURLOPT_USERPWD' => $plagiarismsettings['urkund_username'].":".$plagiarismsettings['urkund_password']));
+            'CURLOPT_USERPWD' => $plagiarismsettings['username'].":".$plagiarismsettings['password']));
 
         $c->setHeader($headers);
 
@@ -724,9 +724,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 set_user_preference('urkund_receiver', trim($json[0]->AnalysisAddress));
                 return array('receiver' => trim($json[0]->AnalysisAddress));
             } else {
-                if (get_config('plagiarism', 'urkund_unitid') != 0) {
+                if (get_config('plagiarism_urkund', 'unitid') != 0) {
                     $data = array(
-                        'UnitId' => get_config('plagiarism_urkund', 'urkund_unitid'),
+                        'UnitId' => get_config('plagiarism_urkund', 'unitid'),
                         'Fullname' => $name,
                         'EmailAddress' => $email,
                     );
@@ -892,7 +892,7 @@ function plagiarism_urkund_coursemodule_validation($data) {
  * @param MoodleQuickForm $mform
  */
 function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) {
-    global $DB, $PAGE, $CFG, $USER;
+    global $DB, $PAGE, $CFG;
 
     $plugin = new plagiarism_plugin_urkund();
     $plagiarismsettings = $plugin->get_settings();
