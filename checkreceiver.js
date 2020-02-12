@@ -88,7 +88,9 @@ M.plagiarism_urkund.init = function(Y, contextid) {
             on: {
                 success: function(tid, response) {
                     var jsondata = Y.JSON.parse(response.responseText);
-                    console.log(jsondata);
+                    var form = Y.one('#id_urkund_receiver');
+                    form.set('value', jsondata.receiver);
+                    form.simulate("change");
                 },
                 failure: function() {
 
@@ -105,15 +107,15 @@ M.plagiarism_urkund.init = function(Y, contextid) {
         // hidden to users via capabilities.
         return;
     }
-    if (receiver.get('value') === "") {
+    if (receiver.get('value') == "") {
         loadReceiver(Y, contextid);
+    } else {
+        // Validate existing content.
+        checkUrkundReceiver(Y, receiver, contextid);
     }
-    // Validate existing content.
-    checkUrkundReceiver(Y, receiver, contextid);
     // Validate on change.
     /* jshint unused: vars */
-    receiver.on('change', function() {
+    receiver.on('change', function () {
         checkUrkundReceiver(Y, receiver, contextid);
     });
-
 };

@@ -703,7 +703,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public function load_receiver() {
         global $USER;
         $plagiarismsettings = \plagiarism_plugin_urkund::get_settings();
-        $headers = array('Accept: application/json');
+        $headers = array('Accept: application/json', 'Content-Type: application/json');
 
         $c = new curl(array('proxy' => true));
         $c->setopt(array());
@@ -715,9 +715,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $c->setHeader($headers);
 
         $email = $USER->email;
-        $name = "Alex Morris";
-        $email = "alex.morris+testing@catalyst.net.nz";
-        //$email = "ITSL.a11.loc_210734_63@itslreceiver.com";
+        $name = $USER->firstname . " " . $USER->lastname;
         $response = $c->get("https://secure.urkund.com/api/receivers?emailAddress=$email");
         $status = $c->info['http_code'];
         if (!empty($status)) {
@@ -726,19 +724,24 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 set_user_preference('urkund_receiver', trim($json[0]->AnalysisAddress));
                 return array('receiver' => trim($json[0]->AnalysisAddress));
             } else {
-                $data = array(
-                    'receiverData' => array(
-                        'UnitId' => 5,
-                        'FullName' => $name,
-                        'EmailAddress' => $email
-                    )
-                );
-                $response = $c->post("https://secure.urkund.com/api/receivers", json_encode($data));
-                $status = $c->info['http_code'];
-                if (!empty($status)) {
-                    return $response;
+                if (get_config('plagiarism', 'urkund_unitid') != 0) {
+                    $data = array(
+                        'UnitId' => get_config('plagiarism_urkund', 'urkund_unitid'),
+                        'Fullname' => $name,
+                        'EmailAddress' => $email,
+                    );
+                    $response = $c->post("http://secure.urkund.com/api/receivers", json_encode($data));
+                    $status = $c->info['http_code'];
+                    if (!empty($status)) {
+                        $json = json_decode($response);
+                        if (count($json) > 0) {
+                            if (!empty($json[0]->AnalysisAddress)) {
+                                set_user_preference('urkund_receiver', trim($json[0]->AnalysisAddress));
+                                return array('receiver' => trim($json[0]->AnalysisAddress));
+                            }
+                        }
+                    }
                 }
-                return $response;
             }
         }
         return array('error' => true, 'msg' => "You must manually enter an analysis address.");
