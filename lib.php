@@ -702,7 +702,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      */
     public function load_receiver() {
         global $USER;
-        $plagiarismsettings = \plagiarism_plugin_urkund::get_settings();
+        $plagiarismsettings = self::get_settings();
         $headers = array('Accept: application/json', 'Content-Type: application/json');
 
         $c = new curl(array('proxy' => true));

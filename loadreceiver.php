@@ -15,8 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * loadreceiver.php - If the receiver field is empty it will make a lookup against URKUND's API to see if a receiver exists.
- * If no receiver exists we should attempt to create one.
+ * loadreceiver.php - Checks if a receiver address exists and returns that, otherwise will attempt to create one
  *
  * @package    plagiarism_urkund
  * @subpackage plagiarism
