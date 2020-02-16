@@ -1,15 +1,14 @@
 language: php
 
-sudo: true
-
 dist: trusty
 
 addons:
-  firefox: "47.0.1"
+  chrome: stable
   postgresql: "9.4"
   apt:
     packages:
       - openjdk-8-jre-headless
+      - chromium-chromedriver
 
 cache:
   directories:
@@ -57,4 +56,4 @@ script:
   - moodle-plugin-ci grunt
   - moodle-plugin-ci phpdoc
   - moodle-plugin-ci phpunit
-  - moodle-plugin-ci behat
+  - moodle-plugin-ci behat --profile chrome
