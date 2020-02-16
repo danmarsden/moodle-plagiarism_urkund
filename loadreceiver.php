@@ -19,8 +19,8 @@
  *
  * @package    plagiarism_urkund
  * @subpackage plagiarism
- * @author     Dan Marsden <dan@danmarsden.com>
- * @copyright  2014 Dan Marsden http://danmarsden.com
+ * @author     Alex Morris <alex.morris@catalyst.net.nz>
+ * @copyright  Catalyst IT
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
