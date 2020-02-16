@@ -76,10 +76,14 @@ class plagiarism_urkund_defaults_form extends moodleform {
                 get_string('restrictcontent', 'plagiarism_urkund'), $contentoptions);
             $mform->addHelpButton('urkund_restrictcontent_'.$sm, 'restrictcontent', 'plagiarism_urkund');
             $mform->setType('urkund_restrictcontent_'.$sm, PARAM_INT);
-            $mform->addElement('text', 'urkund_receiver_'.$sm,
-                get_string("urkund_receiver", "plagiarism_urkund"), array('size' => 40));
-            $mform->addHelpButton('urkund_receiver_'.$sm, 'urkund_receiver', 'plagiarism_urkund');
-            $mform->setType('urkund_receiver_'.$sm, PARAM_EMAIL);
+
+            if (!get_config('plagiarism_urkund', 'unitid') != 0) {
+                $mform->addElement('text', 'urkund_receiver_' . $sm,
+                    get_string("urkund_receiver", "plagiarism_urkund"), array('size' => 40));
+                $mform->addHelpButton('urkund_receiver_' . $sm, 'urkund_receiver', 'plagiarism_urkund');
+                $mform->setType('urkund_receiver_' . $sm, PARAM_EMAIL);
+            }
+
             $mform->addElement('select', 'urkund_studentemail_'.$sm,
                 get_string("urkund_studentemail", "plagiarism_urkund"), $ynoptions);
             $mform->addHelpButton('urkund_studentemail_'.$sm, 'urkund_studentemail', 'plagiarism_urkund');

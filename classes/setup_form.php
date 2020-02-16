@@ -56,6 +56,10 @@ class plagiarism_urkund_setup_form extends moodleform {
         $mform->addRule('password', null, 'required', null, 'client');
         $mform->setType('password', PARAM_TEXT);
 
+        $mform->addElement('text', 'unitid', get_string('urkund_unitid', 'plagiarism_urkund'));
+        $mform->addHelpButton('unitid', 'urkund_unitid', 'plagiarism_urkund');
+        $mform->setType('unitid', PARAM_INT);
+
         $mform->addElement('text', 'lang', get_string('urkund_lang', 'plagiarism_urkund'));
         $mform->addHelpButton('lang', 'urkund_lang', 'plagiarism_urkund');
         $mform->addRule('lang', null, 'required', null, 'client');

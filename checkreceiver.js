@@ -75,6 +75,37 @@ M.plagiarism_urkund.init = function(Y, contextid) {
         Y.io(url, config);
     };
 
+    var loadReceiver = function(Y, contextid) {
+        var invalid = '<span id="receivervalid" class="patherror">&#x2718;</span>';
+        var url = M.cfg.wwwroot + '/plagiarism/urkund/loadreceiver.php';
+        var config = {
+            method: 'get',
+            context: this,
+            sync: false,
+            data: {
+                'sesskey': M.cfg.sesskey,
+                'c': contextid
+            },
+            on: {
+                success: function(tid, response) {
+                    var jsondata = Y.JSON.parse(response.responseText);
+                    var form = Y.one('#id_urkund_receiver');
+                    if (jsondata.error == true) {
+                        form.insert(invalid, 'after');
+                    } else {
+                        form.set('value', jsondata.receiver);
+                        form.simulate("change");
+                    }
+                },
+                failure: function() {
+                    var form = Y.one('#id_urkund_receiver');
+                    form.insert(invalid, 'after');
+                }
+            }
+        };
+        Y.io(url, config);
+    };
+
     var receiver = Y.one('#id_urkund_receiver');
     if (null === receiver) {
         // There is nothing to check.
@@ -82,11 +113,15 @@ M.plagiarism_urkund.init = function(Y, contextid) {
         // hidden to users via capabilities.
         return;
     }
-    // Validate existing content.
-    checkUrkundReceiver(Y, receiver, contextid);
+    if (receiver.get('value') == "") {
+        loadReceiver(Y, contextid);
+    } else {
+        // Validate existing content.
+        checkUrkundReceiver(Y, receiver, contextid);
+    }
     // Validate on change.
     /* jshint unused: vars */
-    receiver.on('change', function() {
+    receiver.on('change', function () {
         checkUrkundReceiver(Y, receiver, contextid);
     });
 };
