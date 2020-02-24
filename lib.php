@@ -938,7 +938,8 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
             $mform->hideif('urkund_draft_submit', 'submissiondrafts', 'eq', 0);
         }
 
-        if (!has_capability('plagiarism/urkund:resubmitonclose', $context)) {
+        if (!has_capability('plagiarism/urkund:resubmitonclose', $context) &&
+            $mform->elementExists('urkund_resubmit_on_close')) {
             $mform->removeElement('urkund_resubmit_on_close');
         }
         // Disable all plagiarism elements if use_plagiarism eg 0.
