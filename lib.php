@@ -913,7 +913,7 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
     if (empty($plagiarismsettings[$modname])) {
         return;
     }
-    $context = $formwrapper->get_context();
+    $context = context_course::instance($formwrapper->get_course()->id);
     if (!empty($cmid)) {
         $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
         // If this is an older assignment, it may not have a resubmit_on_close setting in place.
@@ -993,7 +993,7 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
             'fullpath' => '/plagiarism/urkund/checkreceiver.js',
             'requires' => array('json'),
         );
-        $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($context->instanceid), true, $jsmodule);
+        $PAGE->requires->js_init_call('M.plagiarism_urkund.init', array($formwrapper->get_course()->id), true, $jsmodule);
     }
 
     // Show advanced elements only if allowed.

@@ -90,7 +90,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                 success: function(tid, response) {
                     var jsondata = Y.JSON.parse(response.responseText);
                     var form = Y.one('#id_urkund_receiver');
-                    if (jsondata.error == true) {
+                    if (typeof jsondata.error != 'undefined') {
                         form.insert(invalid, 'after');
                     } else {
                         form.set('value', jsondata.receiver);
