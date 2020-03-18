@@ -51,6 +51,9 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
         foreach ($plagiarismelements as $element) {
             $element .= "_".$sm;
             if (isset($data->$element)) {
+                if ($element == 'urkund_receiver' && get_config('plagiarism_urkund', 'unitid') != 0) {
+                    $data->$element = '';
+                }
                 $newelement = new Stdclass();
                 $newelement->cm = 0;
                 $newelement->name = $element;

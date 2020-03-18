@@ -74,6 +74,28 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             if ($field == 'api') { // Strip trailing slash from api.
                 $value = rtrim($value, '/');
             }
+            if ($field == 'unitid') {
+                // Unset receiver address defaults
+                $plagiarismelements = $plagiarismplugin->config_options(true);
+                $supportedmodules = urkund_supported_modules();
+                foreach ($supportedmodules as $sm) {
+                    foreach ($plagiarismelements as $element) {
+                        if ($element == 'urkund_receiver' && get_config('plagiarism_urkund', 'unitid') != 0) {
+                            $element .= "_" . $sm;
+                            $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config',
+                                array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
+                            $newelement = new Stdclass();
+                            $newelement->cm = 0;
+                            $newelement->name = $element;
+                            $newelement->value = '';
+                            if (isset($plagiarismdefaults[$element])) {
+                                $newelement->id = $DB->get_field('plagiarism_urkund_config', 'id', (array('cm' => 0, 'name' => $element)));
+                                $DB->update_record('plagiarism_urkund_config', $newelement);
+                            }
+                        }
+                    }
+                }
+            }
             set_config($field, $value, 'plagiarism_urkund');
         }
     }
