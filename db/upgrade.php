@@ -249,5 +249,27 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020021300, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2020031900) {
+        if (get_config('plagiarism_urkund', 'unitid') != 0) {
+            $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config',
+                array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
+            $supportedmodules = urkund_supported_modules();
+            foreach ($supportedmodules as $sm) {
+                $element = 'urkund_receiver';
+                $element .= "_" . $sm;
+                $newelement = new Stdclass();
+                $newelement->cm = 0;
+                $newelement->name = $element;
+                $newelement->value = '';
+                if (isset($plagiarismdefaults[$element])) {
+                    $newelement->id = $DB->get_field('plagiarism_urkund_config', 'id', (array('cm' => 0, 'name' => $element)));
+                    $DB->update_record('plagiarism_urkund_config', $newelement);
+                }
+            }
+
+            upgrade_plugin_savepoint(true, 2020031900, 'plagiarism', 'urkund');
+        }
+    }
+
     return true;
 }
