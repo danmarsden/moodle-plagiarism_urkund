@@ -271,5 +271,12 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         }
     }
 
+    if ($oldversion < 2020033000) {
+        // Delete old urkund_use setting.
+        set_config('urkund_use', null, 'plagiarism');
+
+        upgrade_plugin_savepoint(true, 2020033000, 'plagiarism', 'urkund');
+    }
+
     return true;
 }

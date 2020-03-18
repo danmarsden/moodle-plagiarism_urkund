@@ -95,7 +95,6 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             set_config($field, $value, 'plagiarism_urkund');
         }
     }
-    set_config('urkund_use', $data->enabled, 'plagiarism'); // TODO: remove when MDL-67872 is integrated.
 
     $c = new curl(array('proxy' => true));
     $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD' => $data->username.":".$data->password));
@@ -105,7 +104,6 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if ($c->info['http_code'] == '401') {
         // Disable urkund as this config isn't correct.
         set_config('enabled', 0, 'plagiarism_urkund');
-        set_config('urkund_use', 0, 'plagiarism'); // TODO: remove when MDL-67872 is integrated.
     } else {
         echo $OUTPUT->notification(get_string('savedconfigsuccess', 'plagiarism_urkund'), 'notifysuccess');
     }
