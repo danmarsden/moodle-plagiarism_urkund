@@ -80,16 +80,15 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
                     array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
                 $supportedmodules = urkund_supported_modules();
                 foreach ($supportedmodules as $sm) {
-                        $element = 'urkund_receiver';
-                        $element .= "_" . $sm;
-                        $newelement = new Stdclass();
-                        $newelement->cm = 0;
-                        $newelement->name = $element;
-                        $newelement->value = '';
-                        if (isset($plagiarismdefaults[$element])) {
-                            $newelement->id = $DB->get_field('plagiarism_urkund_config', 'id', (array('cm' => 0, 'name' => $element)));
-                            $DB->update_record('plagiarism_urkund_config', $newelement);
-                        }
+                    $element = 'urkund_receiver';
+                    $element .= "_" . $sm;
+                    $newelement = new Stdclass();
+                    $newelement->cm = 0;
+                    $newelement->name = $element;
+                    $newelement->value = '';
+                    if (isset($plagiarismdefaults[$element])) {
+                        $newelement->id = $DB->get_field('plagiarism_urkund_config', 'id', (array('cm' => 0, 'name' => $element)));
+                        $DB->update_record('plagiarism_urkund_config', $newelement);
                     }
                 }
             }
