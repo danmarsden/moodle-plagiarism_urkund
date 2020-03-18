@@ -75,7 +75,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
                 $value = rtrim($value, '/');
             }
             if ($field == 'unitid' && $value != 0) {
-                // Unset receiver address defaults
+                // Unset receiver address defaults.
                 $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config',
                     array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
                 $supportedmodules = urkund_supported_modules();
