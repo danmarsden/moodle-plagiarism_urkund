@@ -266,6 +266,8 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
                     $DB->update_record('plagiarism_urkund_config', $newelement);
                 }
             }
+            
+            upgrade_plugin_savepoint(true, 2020031900, 'plagiarism', 'urkund');
         }
     }
 
