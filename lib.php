@@ -716,13 +716,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         $email = $USER->email;
         $name = $USER->firstname . " " . $USER->lastname;
-        $response = $c->get("https://secure.urkund.com/api/receivers?emailAddress=$email");
+        $response = $c->get("https://secure.urkund.com/api/receivers?emailAddress=" . urlencode($email));
         $status = $c->info['http_code'];
         if (!empty($status)) {
             $json = json_decode($response);
             if (count($json) > 0) {
                 set_user_preference('urkund_receiver', trim($json[0]->AnalysisAddress));
-                return array('receiver' => trim($json[0]->AnalysisAddress));
+                return array('receiver' => trim($json[0]->AnalysisAddress), 'retrieved' => true);
             } else {
                 if (get_config('plagiarism_urkund', 'unitid') != 0) {
                     $data = array(
@@ -730,14 +730,15 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                         'Fullname' => $name,
                         'EmailAddress' => $email,
                     );
-                    $response = $c->post("http://secure.urkund.com/api/receivers", json_encode($data));
+                    $response = $c->post("https://secure.urkund.com/api/receivers", json_encode($data));
                     $status = $c->info['http_code'];
+
                     if (!empty($status)) {
                         $json = json_decode($response);
                         if (count($json) > 0) {
-                            if (!empty($json[0]->AnalysisAddress)) {
+                            if (!empty($json->AnalysisAddress)) {
                                 set_user_preference('urkund_receiver', trim($json[0]->AnalysisAddress));
-                                return array('receiver' => trim($json[0]->AnalysisAddress));
+                                return array('receiver' => trim($json->AnalysisAddress), 'created' => true);
                             }
                         }
                     }
