@@ -737,7 +737,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                         $json = json_decode($response);
                         if (count($json) > 0) {
                             if (!empty($json->AnalysisAddress)) {
-                                set_user_preference('urkund_receiver', trim($json[0]->AnalysisAddress));
+                                set_user_preference('urkund_receiver', trim($json->AnalysisAddress));
                                 return array('receiver' => trim($json->AnalysisAddress), 'created' => true);
                             }
                         }
