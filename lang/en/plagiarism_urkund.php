@@ -163,6 +163,9 @@ $string['errorcode_4'] = 'Error code 4 – Document missed deadline (will only h
 $string['errorcode_5001'] = 'Error code 5001 – The analysis has timed out (this will happen if the analysis does not finish within 2 hours. If this occurs we will manually attempt a new analysis which be allowed more time to finish)';
 $string['errorcode_7001'] = 'Error code 7001 – The document could not be indexed (means that an error occurred when we tried to extract the text from the document. This will mainly happen if there are non Unicode compatible characters in the document)';
 $string['errorcode_unknown'] = 'Error {$a} – An unexpected error has occurred';
+$string['errorcode_403'] = 'Failed to create receiver address for your account, you must enter one manually.';
+$string['errorcode_409'] = 'Your receiver address has been deleted and needs to be restored, please contact Urkund to restore this account';
+$string['errorcreate'] = 'You must manually enter an analysis address.';
 
 $string['privacy:metadata:core_files'] = 'Files and text attached to activity modules where the Urkund plugin is enabled.';
 $string['privacy:metadata:plagiarism_urkund_files:userid'] = 'The Moodle userid';
@@ -171,5 +174,5 @@ $string['privacy:metadata:plagiarism_urkund_files:lastmodified'] = 'Time when th
 $string['privacy:metadata:plagiarism_urkund_files'] = 'Stores information on the submitted files.';
 $string['privacy:metadata:plagiarism_urkund_client:email'] = 'User email';
 $string['privacy:metadata:plagiarism_urkund_client:filename'] = 'Filename of submitted file.';
-$string['privacy:metadata:plagiarism_urkund_client:file'] = 'Physcial copy of text or file content sent to Urkund';
+$string['privacy:metadata:plagiarism_urkund_client:file'] = 'Physical copy of text or file content sent to Urkund';
 $string['privacy:metadata:plagiarism_urkund_client'] = 'User information sent to external Urkund API';
