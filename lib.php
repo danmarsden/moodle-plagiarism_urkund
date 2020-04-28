@@ -734,6 +734,11 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     $status = $c->info['http_code'];
 
                     if (!empty($status)) {
+                        if ($status == '403') {
+                            return array('error' => true, 'msg' => get_string('errorcode_403', 'plagiarism_urkund'));
+                        } else if ($status == '409') {
+                            return array('error' => true, 'msg' => get_string('errorcode_409', 'plagiarism_urkund'));
+                        }
                         $json = json_decode($response);
                         if (count($json) > 0) {
                             if (!empty($json->AnalysisAddress)) {
@@ -745,7 +750,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 }
             }
         }
-        return array('error' => true, 'msg' => "You must manually enter an analysis address.");
+        return array('error' => true, 'msg' => get_string('errorcreate', 'plagiarism_urkund'));
     }
 }
 
@@ -877,6 +882,14 @@ function plagiarism_urkund_coursemodule_validation($data) {
     if (array_key_exists('use_urkund', $data)) {
         if ($data->use_urkund) {
             $plugin = new plagiarism_plugin_urkund();
+            if (empty($data->urkund_receiver)) {
+                $result = $plugin->load_receiver();
+                if (!empty($result['error']) && !empty($result['msg'])) {
+                    return array('urkund_receiver' => $result['msg']);
+                }
+                return array('urkund_receiver' => get_string('receivernotvalid', 'plagiarism_urkund'));
+            }
+
             $result = $plugin->validate_receiver($data->urkund_receiver);
             if ($result === 404) {
                 return array('urkund_receiver' => get_string('receivernotvalid', 'plagiarism_urkund'));
