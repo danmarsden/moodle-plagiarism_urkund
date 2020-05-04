@@ -130,6 +130,49 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public function get_links($linkarray) {
         global $COURSE, $OUTPUT, $CFG, $DB;
         static $plagiarismvalues = array();
+        if (!empty($linkarray['component']) && strpos($linkarray['component'], 'qtype_') === 0) {
+            // This is a question report.
+
+            $qtype = str_replace('qtype_', '', $linkarray['component']);
+            // We only support a limited number of qtypes at the moment - exit early.
+            if (!in_array($qtype, plagiarism_urkund_supported_qtypes())) {
+                return '';
+            }
+            // We only support the use of questions in the quiz activity - should be extended to support other activity types.
+            if (empty(get_config('plagiarism_urkund', 'enable_mod_quiz'))) {
+                // Urkund not configured to run on mod_quiz, exit early.
+                return '';
+            }
+            if (empty($linkarray['cmid']) || empty($linkarray['content'])) {
+                $quba = question_engine::load_questions_usage_by_activity($linkarray['area']);
+
+                if (empty($linkarray['cmid'])) {
+                    // Try to get cm using the questions owning context.
+                    $context = $quba->get_owning_context();
+                    if ($context->contextlevel == CONTEXT_MODULE) {
+                        $cm = get_coursemodule_from_id(false, $context->instanceid);
+                    }
+                    $linkarray['cmid'] = $cm->id;
+                }
+                // If still empty, we couldn't find cmid, so return early.
+                // We only support coursemodule things at the moment.
+                if (empty($linkarray['cmid'])) {
+                    return '';
+                }
+                if (empty($linkarray['userid']) || (empty($linkarray['content'])) && empty($linkarray['file'])) {
+                    // Try to get userid from attempt step.
+                    $attempt = $quba->get_question_attempt($linkarray['itemid']);
+                    if (empty($linkarray['userid'])) {
+                        $linkarray['userid'] = $attempt->get_step(0)->get_user_id();
+                    }
+                    // If content and file not submitted, try to get the content.
+                    if (empty($linkarray['content']) && empty($linkarray['file'])) {
+                        $linkarray['content'] = $attempt->get_response_summary();
+                    }
+                }
+            }
+
+        }
 
         $cmid = $linkarray['cmid'];
         $userid = $linkarray['userid'];
@@ -517,12 +560,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             }
         }
 
-        if (!empty($plagiarismsettings['charcount'])) {
-            $charcount = $plagiarismsettings['charcount'];
-        } else {
-            // Set a sensible default if we can't find one.
-            $charcount = 450;
-        }
+        $charcount = plagiarism_urkund_charcount();
 
         if ($eventdata['eventtype'] == 'assignsubmission_submitted' && empty($eventdata['other']['submission_editable'])) {
             // Assignment-specific functionality:
@@ -558,6 +596,13 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     }
                 }
             }
+            return $result;
+        }
+        if ($eventdata['eventtype'] == 'quiz_submitted') {
+            $result = true;
+
+            $attemptid = $eventdata['objectid'];
+            plagiarism_urkund_quiz_queue_attempt($attemptid, true);
             return $result;
         }
 
@@ -2196,9 +2241,64 @@ function plagiarism_urkund_resubmit_cm($cmid) {
  */
 function urkund_supported_modules() {
     global $CFG;
-    $supportedmodules = array('assign', 'forum', 'workshop');
+    $supportedmodules = array('assign', 'forum', 'workshop', 'quiz');
     if (file_exists($CFG->dirroot.'/mod/hsuforum/version.php')) {
         $supportedmodules[] = 'hsuforum';
     }
     return $supportedmodules;
+}
+
+/**
+ * Function to list question types that urkund supports.
+ * @return array
+ *
+ */
+function plagiarism_urkund_supported_qtypes() {
+    return array('essay');
+}
+
+/**
+ * Helper function to deal with Quiz attempts.
+ *
+ * @param int $attemptid - quiz_attempt id
+ * @param bool $queueattachments - queue and process quiz file attachements.
+ * @throws dml_exception
+ */
+function plagiarism_urkund_quiz_queue_attempt($attemptid, $queueattachments = false) {
+    global $CFG;
+    require_once($CFG->dirroot . '/mod/quiz/locallib.php');
+
+    $attemptobj = \quiz_attempt::create($attemptid);
+    foreach ($attemptobj->get_slots() as $slot) {
+        $qa = $attemptobj->get_question_attempt($slot);
+        if (in_array($qa->get_question()->get_type_name(), plagiarism_urkund_supported_qtypes())) {
+            // First check if content is large enough to send.
+            if (strlen(utf8_decode(strip_tags($qa->get_response_summary()))) >= plagiarism_urkund_charcount()) {
+                $file = urkund_create_temp_file($attemptobj->get_cmid(), $attemptobj->get_courseid(),
+                    $attemptobj->get_userid(), $qa->get_response_summary());
+                urkund_queue_file($attemptobj->get_cmid(), $attemptobj->get_userid(), $file);
+            }
+            if ($queueattachments) {
+                // Now check if there are any files to send.
+                $context = context_module::instance($attemptobj->get_cmid());
+                $files = $qa->get_last_qt_files('attachments', $context->id);
+                foreach ($files as $file) {
+                    urkund_queue_file($attemptobj->get_cmid(), $attemptobj->get_userid(), $file);
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Helper function to get allowed char count.
+ * @return int - number of allowed chars.
+ */
+function plagiarism_urkund_charcount() {
+    $charcount = get_config('plagiarism_urkund', 'charcount');
+    if (empty($charcount)) {
+        // Set a sensible default if we can't find one.
+        $charcount = 450;
+    }
+    return $charcount;
 }
