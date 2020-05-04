@@ -41,8 +41,22 @@ class regenerate extends \core\task\adhoc_task {
      */
     public function execute() {
         global $DB, $CFG;
+        if (empty($CFG->enableplagiarism)) {
+            return;
+        }
         require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
         $data = $this->get_custom_data();
+
+        $cm = get_coursemodule_from_id('', $data->cmid);
+        if ($cm->modname == 'quiz') {
+            // Run through all quiz essay question text responses and make new temp-files for them.
+            // Get all attempts.
+            $attempts = $DB->get_records('quiz_attempts', array('quiz' => $cm->instance, 'preview' => 0));
+            foreach ($attempts as $attempt) {
+                // We don't need to re-process attachments, just regenerate the content for resubmission of the content files.
+                plagiarism_urkund_quiz_queue_attempt($attempt->id);
+            }
+        }
 
         $now = time();
 

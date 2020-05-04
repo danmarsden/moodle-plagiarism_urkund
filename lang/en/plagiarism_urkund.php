@@ -140,6 +140,7 @@ $string['urkunddefaults_assign'] = 'Default assign settings';
 $string['urkunddefaults_forum'] = 'Default forum settings';
 $string['urkunddefaults_workshop'] = 'Default workshop settings';
 $string['urkunddefaults_hsuforum'] = 'Default hsuforum settings';
+$string['urkunddefaults_quiz'] = 'Default quiz settings';
 $string['urkundexplain'] = 'For more information on this plugin see: <a href="http://www.urkund.com/en" target="_blank">http://www.urkund.com/int/en/</a>';
 $string['urkundfiles'] = 'Urkund Files';
 $string['useurkund'] = 'Enable URKUND';

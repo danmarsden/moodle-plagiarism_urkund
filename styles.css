@@ -58,3 +58,7 @@ span.plagiarismreport span.rank10 {
 span.plagiarismreport img {
     vertical-align: bottom;
 }
+
+#page-mod-quiz-report .plagiarismreport {
+    display: block;
+}

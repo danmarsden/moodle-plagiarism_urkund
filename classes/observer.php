@@ -110,6 +110,21 @@ class plagiarism_urkund_observer {
     }
 
     /**
+     * Observer function to handle the assessable_submitted event in mod_assign.
+     * @param \mod_quiz\event\attempt_submitted $event
+     */
+    public static function quiz_submitted(\mod_quiz\event\attempt_submitted $event) {
+        global $CFG;
+        if (!empty(get_config('plagiarism_urkund', 'enable_mod_quiz'))) {
+            require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+            $eventdata = $event->get_data();
+            $eventdata['eventtype'] = 'quiz_submitted';
+            $urkund = new plagiarism_plugin_urkund();
+            $urkund->event_handler($eventdata);
+        }
+    }
+
+    /**
      * Observer function to handle the assessable_uploaded event in mod_hsuforum.
      * @param \mod_forum\event\assessable_uploaded $event
      */
