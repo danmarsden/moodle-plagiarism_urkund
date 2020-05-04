@@ -40,11 +40,13 @@ class plagiarism_urkund_observer {
     public static function assignsubmission_file_uploaded(
         \assignsubmission_file\event\assessable_uploaded $event) {
         global $CFG;
-        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
-        $eventdata = $event->get_data();
-        $eventdata['eventtype'] = 'assignsubmission_file_uploaded';
-        $urkund = new plagiarism_plugin_urkund();
-        $urkund->event_handler($eventdata);
+        if (!empty(get_config('plagiarism_urkund', 'enable_mod_assign'))) {
+            require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+            $eventdata = $event->get_data();
+            $eventdata['eventtype'] = 'assignsubmission_file_uploaded';
+            $urkund = new plagiarism_plugin_urkund();
+            $urkund->event_handler($eventdata);
+        }
     }
     /**
      * Observer function to handle the assessable_uploaded event in mod_forum.
@@ -53,11 +55,13 @@ class plagiarism_urkund_observer {
     public static function forum_file_uploaded(
         \mod_forum\event\assessable_uploaded $event) {
         global $CFG;
-        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
-        $eventdata = $event->get_data();
-        $eventdata['eventtype'] = 'forum_file_uploaded';
-        $urkund = new plagiarism_plugin_urkund();
-        $urkund->event_handler($eventdata);
+        if (!empty(get_config('plagiarism_urkund', 'enable_mod_forum'))) {
+            require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+            $eventdata = $event->get_data();
+            $eventdata['eventtype'] = 'forum_file_uploaded';
+            $urkund = new plagiarism_plugin_urkund();
+            $urkund->event_handler($eventdata);
+        }
     }
     /**
      * Observer function to handle the assessable_uploaded event in mod_workshop.
@@ -66,11 +70,13 @@ class plagiarism_urkund_observer {
     public static function workshop_file_uploaded(
         \mod_workshop\event\assessable_uploaded $event) {
         global $CFG;
-        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
-        $eventdata = $event->get_data();
-        $eventdata['eventtype'] = 'workshop_file_uploaded';
-        $urkund = new plagiarism_plugin_urkund();
-        $urkund->event_handler($eventdata);
+        if (!empty(get_config('plagiarism_urkund', 'enable_mod_workshop'))) {
+            require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+            $eventdata = $event->get_data();
+            $eventdata['eventtype'] = 'workshop_file_uploaded';
+            $urkund = new plagiarism_plugin_urkund();
+            $urkund->event_handler($eventdata);
+        }
     }
     /**
      * Observer function to handle the assessable_uploaded event in mod_assign onlinetext.
@@ -78,12 +84,14 @@ class plagiarism_urkund_observer {
      */
     public static function assignsubmission_onlinetext_uploaded(
         \assignsubmission_onlinetext\event\assessable_uploaded $event) {
-        global $CFG;
-        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
-        $eventdata = $event->get_data();
-        $eventdata['eventtype'] = 'assignsubmission_onlinetext_uploaded';
-        $urkund = new plagiarism_plugin_urkund();
-        $urkund->event_handler($eventdata);
+        if (!empty(get_config('plagiarism_urkund', 'enable_mod_assign'))) {
+            global $CFG;
+            require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+            $eventdata = $event->get_data();
+            $eventdata['eventtype'] = 'assignsubmission_onlinetext_uploaded';
+            $urkund = new plagiarism_plugin_urkund();
+            $urkund->event_handler($eventdata);
+        }
     }
     /**
      * Observer function to handle the assessable_submitted event in mod_assign.
@@ -92,11 +100,13 @@ class plagiarism_urkund_observer {
     public static function assignsubmission_submitted(
         \mod_assign\event\assessable_submitted $event) {
         global $CFG;
-        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
-        $eventdata = $event->get_data();
-        $eventdata['eventtype'] = 'assignsubmission_submitted';
-        $urkund = new plagiarism_plugin_urkund();
-        $urkund->event_handler($eventdata);
+        if (!empty(get_config('plagiarism_urkund', 'enable_mod_assign'))) {
+            require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+            $eventdata = $event->get_data();
+            $eventdata['eventtype'] = 'assignsubmission_submitted';
+            $urkund = new plagiarism_plugin_urkund();
+            $urkund->event_handler($eventdata);
+        }
     }
 
     /**
@@ -106,10 +116,12 @@ class plagiarism_urkund_observer {
     public static function hsuforum_file_uploaded(
         \mod_hsuforum\event\assessable_uploaded $event) {
         global $CFG;
-        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
-        $eventdata = $event->get_data();
-        $eventdata['eventtype'] = 'hsuforum_file_uploaded';
-        $urkund = new plagiarism_plugin_urkund();
-        $urkund->event_handler($eventdata);
+        if (!empty(get_config('plagiarism_urkund', 'enable_mod_hsuforum'))) {
+            require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
+            $eventdata = $event->get_data();
+            $eventdata['eventtype'] = 'hsuforum_file_uploaded';
+            $urkund = new plagiarism_plugin_urkund();
+            $urkund->event_handler($eventdata);
+        }
     }
 }
