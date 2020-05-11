@@ -52,6 +52,8 @@ if (!empty($pf)) {
 
 if ($cm->modname == 'assign') {
     $redirect = new moodle_url('/mod/assign/view.php', array('id' => $cmid, 'action' => 'grading'));
+} else if ($cm->modname == 'quiz') {
+    $redirect = new moodle_url('/mod/quiz/report.php', array('id' => $cmid, 'mode' => 'overview'));
 } else {
     // TODO: add correct locations for workshop and forum.
     $redirect = $CFG->wwwroot;

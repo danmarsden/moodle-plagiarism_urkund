@@ -2145,39 +2145,16 @@ function plagiarism_urkund_resubmit_on_close() {
 }
 
 /**
- * Function used to trigger resubmission for all files in a cm.
+ * Function used to queue resubmission for all files in a cm.
  *
  * @param int $cmid
  */
 function plagiarism_urkund_resubmit_cm($cmid) {
-    global $DB;
+    // Send this to an ad-hoc task.
+    $task = new \plagiarism_urkund\task\regenerate();
+    $task->set_custom_data(array('cmid' => $cmid));
+    \core\task\manager::queue_adhoc_task($task, true);
 
-    $now = time();
-
-    // Get plagiarism settings for module.
-    $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
-
-    // Rests all plagiarism files that match cmid, have not exceeded their max attempts and not already in the queue.
-    $sql = "UPDATE {plagiarism_urkund_files}
-               SET statuscode = :newstatus, revision = revision + 1
-             WHERE cm = :cmid AND attempt <= :maxa AND statuscode <> :pending AND statuscode <> :waiting";
-    $params = array('newstatus' => URKUND_STATUSCODE_PENDING,
-                    'cmid' => $cmid,
-                    'maxa' => PLAGIARISM_URKUND_MAXATTEMPTS,
-                    'pending' => URKUND_STATUSCODE_PENDING,
-                    'waiting' => URKUND_STATUSCODE_ACCEPTED);
-    $DB->execute($sql, $params);
-
-    if (isset($plagiarismvalues['timeresubmitted'])) {
-        $DB->set_field('plagiarism_urkund_config', 'value', $now,
-            array('name' => 'timeresubmitted', 'cm' => $cmid));
-    } else {
-        $newvalue = new stdClass();
-        $newvalue->cm = $cmid;
-        $newvalue->name = 'timeresubmitted';
-        $newvalue->value = $now;
-        $DB->insert_record('plagiarism_urkund_config', $newvalue);
-    }
     // Trigger event to say this has been called.
     $context = context_module::instance($cmid);
     $event = \plagiarism_urkund\event\assessment_resubmitted::create(array(
