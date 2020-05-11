@@ -43,7 +43,7 @@ class plagiarism_urkund_setup_form extends moodleform {
         $mform->addElement('text', 'api', get_string('urkund_api', 'plagiarism_urkund'));
         $mform->addHelpButton('api', 'urkund_api', 'plagiarism_urkund');
         $mform->addRule('api', null, 'required', null, 'client');
-        $mform->setDefault('api', 'https://secure.urkund.com/api/submissions');
+        $mform->setDefault('api', 'https://secure.urkund.com');
         $mform->setType('api', PARAM_URL);
 
         $mform->addElement('text', 'username', get_string('urkund_username', 'plagiarism_urkund'));
