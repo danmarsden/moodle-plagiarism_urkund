@@ -676,7 +676,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public function update_status($course, $cm) {
         global $OUTPUT, $DB;
         // Check if this is an assignment.
-        if (!empty($cm->modname) && $cm->modname == 'assign') {
+        if (!empty($cm->modname)) {
+            if (empty(get_config('plagiarism_urkund', 'enable_mod_'.$cm->modname))) {
+                // This plugin type disabled at site level.
+                return;
+            }
+
             // Check to see if the user can reset files.
             $modulecontext = context_module::instance($cm->id);
             if (!has_capability('plagiarism/urkund:resetfile', $modulecontext)) {
