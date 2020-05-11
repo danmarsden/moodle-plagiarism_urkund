@@ -278,5 +278,15 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020033000, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2020051100) {
+        // Check for old API address and update if required.
+        $apiaddress = get_config('plagiarism_urkund', 'api');
+        if ($apiaddress == 'https://secure.urkund.com/api/submissions') {
+            set_config('api', 'https://secure.urkund.com', 'plagiarism_urkund');
+        }
+
+        upgrade_plugin_savepoint(true, 2020051100, 'plagiarism', 'urkund');
+    }
+
     return true;
 }

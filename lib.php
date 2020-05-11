@@ -36,7 +36,6 @@ require_once($CFG->dirroot . '/lib/filelib.php');
 
 // There is a new URKUND API - The Integration Service - we only currently use this to verify the receiver address.
 // If we convert the existing calls to send file/get score we should move this to a config setting.
-define('URKUND_INTEGRATION_SERVICE', 'https://secure.urkund.com/api');
 
 define('URKUND_STATUSCODE_PROCESSED', '200');
 define('URKUND_STATUSCODE_ACCEPTED', '202');
@@ -636,7 +635,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      */
     public function validate_receiver($receiver) {
         $plagiarismsettings = $this->get_settings();
-        $url = URKUND_INTEGRATION_SERVICE .'/receivers'.'/'. trim($receiver);;
+        $url = get_config('plagiarism_urkund', 'api') .'/api/receivers'.'/'. trim($receiver);;
 
         $headers = array('Accept-Language: '.$plagiarismsettings['lang']);
 
@@ -716,7 +715,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         $email = $USER->email;
         $name = $USER->firstname . " " . $USER->lastname;
-        $response = $c->get(URKUND_INTEGRATION_SERVICE . "/receivers?emailAddress=" . urlencode($email));
+        $response = $c->get(get_config('plagiarism_urkund', 'api') . "/api/receivers?emailAddress=" . urlencode($email));
         $status = $c->info['http_code'];
         if (!empty($status)) {
             $json = json_decode($response);
@@ -730,7 +729,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                         'Fullname' => $name,
                         'EmailAddress' => $email,
                     );
-                    $response = $c->post(URKUND_INTEGRATION_SERVICE . "/receivers", json_encode($data));
+                    $response = $c->post(get_config('plagiarism_urkund', 'api') . "/api/receivers", json_encode($data));
                     $status = $c->info['http_code'];
 
                     if (!empty($status)) {
@@ -1314,7 +1313,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     }
 
     // Get url of api.
-    $url = urkund_get_url($plagiarismsettings['api'], $plagiarismfile);
+    $url = urkund_get_url($plagiarismfile);
     if (empty($url)) {
         mtrace('ERROR: no receiver address found for this cm: '.$plagiarismfile->cm. ' Skipping file');
         $plagiarismfile->statuscode = URKUND_STATUSCODE_NORECEIVER;
@@ -1479,9 +1478,9 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
                            URKUND_STATUSCODE_BAD_REQUEST);
     $successfulstates = array('Analyzed', 'Rejected', 'Error');
     if ($plagiarismfile->statuscode == URKUND_STATUSCODE_ACCEPTED_OLD) {
-        $url = old_urkund_get_url($plagiarismsettings['api'], $plagiarismfile);
+        $url = old_urkund_get_url($plagiarismfile);
     } else {
-        $url = urkund_get_url($plagiarismsettings['api'], $plagiarismfile);
+        $url = urkund_get_url($plagiarismfile);
     }
 
     if (empty($url)) {
@@ -1542,14 +1541,15 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
 /**
  * Get url of api.
  *
- * @param string $baseurl
  * @param stdClass $plagiarismfile
  *
  * @return string
  */
-function urkund_get_url($baseurl, $plagiarismfile) {
+function urkund_get_url($plagiarismfile) {
     // Get url of api.
     global $DB, $CFG;
+    $baseurl = get_config('plagiarism_urkund', 'api') . '/api/submissions';
+
     $receiver = $DB->get_field('plagiarism_urkund_config', 'value', array('cm' => $plagiarismfile->cm,
                                                                           'name' => 'urkund_receiver'));
     if (empty($receiver)) {
@@ -1710,16 +1710,17 @@ function plagiarism_urkund_delete_old_records() {
  * Old function to get url using old method of generating an indentifier.
  * This function should only be used if the file is known to have been generated using old code.
  *
- * @param string $baseurl
  * @param stdClass $plagiarismfile
  *
  * @return string
  */
-function old_urkund_get_url($baseurl, $plagiarismfile) {
+function old_urkund_get_url($plagiarismfile) {
     // Get url of api.
     global $DB;
     $receiver = $DB->get_field('plagiarism_urkund_config', 'value', array('cm' => $plagiarismfile->cm,
                                                                           'name' => 'urkund_receiver'));
+
+    $baseurl = get_config('plagiarism_urkund', 'api').'/api/submissions';
     if (empty($receiver)) {
         return '';
     }
