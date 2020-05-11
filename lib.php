@@ -1835,9 +1835,6 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
         $modulecontext = context_module::instance($plagiarismfile->cm);
         $fs = get_file_storage();
         if ($cm->modname == 'assign') {
-            if (debugging()) {
-                mtrace("URKUND fileid:" . $plagiarismfile->id . " assignment found");
-            }
             require_once($CFG->dirroot . '/mod/assign/locallib.php');
             $assign = new assign($modulecontext, null, null);
 
@@ -1866,24 +1863,14 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                     );
 
                     foreach ($files as $file) {
-                        if (debugging()) {
-                            mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
-                        }
                         if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                            if (debugging()) {
-                                mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
-                            }
                             return $file;
                         }
                     }
                 }
             }
         } else if ($cm->modname == 'workshop') {
-            if (debugging()) {
-                mtrace("URKUND fileid:" . $plagiarismfile->id . " workshop found");
-            }
             require_once($CFG->dirroot . '/mod/workshop/locallib.php');
-            $cm = get_coursemodule_from_id('workshop', $plagiarismfile->cm, 0, false, MUST_EXIST);
             $workshop = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
             $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
             $workshop = new workshop($workshop, $cm, $course);
@@ -1891,55 +1878,36 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
             foreach ($submissions as $submission) {
                 $files = $fs->get_area_files($workshop->context->id, 'mod_workshop', 'submission_attachment', $submission->id);
                 foreach ($files as $file) {
-                    if (debugging()) {
-                        mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
-                    }
                     if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                        if (debugging()) {
-                            mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
-                        }
                         return $file;
                     }
                 }
             }
         } else if ($cm->modname == 'forum') {
-            if (debugging()) {
-                mtrace("URKUND fileid:" . $plagiarismfile->id . " forum found");
-            }
             require_once($CFG->dirroot . '/mod/forum/lib.php');
-            $cm = get_coursemodule_from_id('forum', $plagiarismfile->cm, 0, false, MUST_EXIST);
             $posts = forum_get_user_posts($cm->instance, $userid);
             foreach ($posts as $post) {
                 $files = $fs->get_area_files($modulecontext->id, 'mod_forum', 'attachment', $post->id, "timemodified", false);
                 foreach ($files as $file) {
-                    if (debugging()) {
-                        mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
-                    }
                     if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                        if (debugging()) {
-                            mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
-                        }
                         return $file;
                     }
                 }
             }
-        } else if ($cm->modname == 'hsuforum') {
-            if (debugging()) {
-                mtrace("URKUND fileid:" . $plagiarismfile->id . " hsuforum found");
+        } else if ($cm->modname == 'quiz') {
+            $files = $fs->get_area_files($modulecontext->id, 'question', 'response_attachments');
+            foreach ($files as $file) {
+                if ($file->get_contenthash() == $plagiarismfile->identifier) {
+                    return $file;
+                }
             }
+        } else if ($cm->modname == 'hsuforum') {
             require_once($CFG->dirroot . '/mod/hsuforum/lib.php');
-            $cm = get_coursemodule_from_id('hsuforum', $plagiarismfile->cm, 0, false, MUST_EXIST);
             $posts = hsuforum_get_user_posts($cm->instance, $userid);
             foreach ($posts as $post) {
                 $files = $fs->get_area_files($modulecontext->id, 'mod_hsuforum', 'attachment', $post->id, "timemodified", false);
                 foreach ($files as $file) {
-                    if (debugging()) {
-                        mtrace("URKUND fileid:" . $plagiarismfile->id . " check fileid:" . $file->get_id());
-                    }
                     if ($file->get_contenthash() == $plagiarismfile->identifier) {
-                        if (debugging()) {
-                            mtrace("URKUND fileid:" . $plagiarismfile->id . " found fileid:" . $file->get_id());
-                        }
                         return $file;
                     }
                 }
