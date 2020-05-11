@@ -423,7 +423,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
         // Now check for differing filename and display info related to it.
         $previouslysubmitted = '';
-        if ($file->filename !== $plagiarismfile->filename) {
+        if ($file->filename !== $plagiarismfile->filename &&
+            strpos($plagiarismfile->filename, 'content-') !== 0) {
+            // Check if this is content-courseid-cmid - if so, ignore the name difference.
             $previouslysubmitted = '('.get_string('previouslysubmitted', 'plagiarism_urkund').': '.$plagiarismfile->filename.')';
         }
 
