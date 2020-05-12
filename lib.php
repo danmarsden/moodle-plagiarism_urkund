@@ -1145,6 +1145,23 @@ function urkund_get_plagiarism_file($cmid, $userid, $file, $relateduserid = null
     if (!empty($plagiarismfile)) {
             return $plagiarismfile;
     } else {
+        // Check if record exists for this and we just need to update identifier with path for resubmission.
+        if (strpos($filename, 'content-') === 0 && is_string($file) && file_exists($file)) {
+            // Get file hash.
+            $identifier = sha1(file_get_contents($file));
+            $plagiarismfile = $DB->get_record_sql(
+                "SELECT * FROM {plagiarism_urkund_files}
+                                 WHERE cm = ? AND userid = ? AND " .
+                "identifier = ?",
+                array($cmid, $userid, $identifier));
+            if (!empty($plagiarismfile)) {
+                $plagiarismfile->identifier = $filehash;
+                $plagiarismfile->filename = $filename;
+                $plagiarismfile->statuscode = 'pending';
+                $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
+                return $plagiarismfile;
+            }
+        }
         $plagiarismfile = new stdClass();
         $plagiarismfile->cm = $cmid;
         $plagiarismfile->userid = $userid;
