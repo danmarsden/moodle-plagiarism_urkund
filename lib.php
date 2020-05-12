@@ -1869,6 +1869,30 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                     }
                 }
             }
+            // Could not find the file using hash - check if this is a content file and recreate it
+            if (strpos($plagiarismfile->filename, 'content-') === 0) {
+                // This is probably an online file submission - check and regenerate the file if required.
+                $sql = "SELECT a.id, o.onlinetext
+                              FROM {assignsubmission_onlinetext} o
+                              JOIN {assign_submission} a ON a.id = o.submission
+                             WHERE a.userid = ? AND o.assignment = ?
+                          ORDER BY a.id DESC";
+                $moodletextsubmissions = $DB->get_records_sql($sql, array($plagiarismfile->userid, $cm->instance), 0, 1);
+                $moodletextsubmission = end($moodletextsubmissions);
+                $tempfile = urkund_create_temp_file($cm->id, $cm->course, $plagiarismfile->userid, $moodletextsubmission->onlinetext);
+
+                $plagiarismfile->identifier = $tempfile;
+                $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
+
+                $file = new stdclass();
+                $file->type = "tempurkund";
+                $file->filename = basename($plagiarismfile->identifier);
+                $file->timestamp = time();
+                $file->identifier = sha1(file_get_contents($plagiarismfile->identifier));
+                $file->filepath = $plagiarismfile->identifier;
+                return $file;
+            }
+
         } else if ($cm->modname == 'workshop') {
             require_once($CFG->dirroot . '/mod/workshop/locallib.php');
             $workshop = $DB->get_record('workshop', array('id' => $cm->instance), '*', MUST_EXIST);
@@ -1946,26 +1970,7 @@ function plagiarism_urkund_send_files() {
             $file = plagiarism_urkund_get_file_object($pf);
             if (empty($file)) {
                 // If file has previously generated a report and it is an active assignment - we don't want to delete it.
-                if ($modulename == "assign" && strpos($pf->filename, 'content-') === 0) {
-                    $cm = get_coursemodule_from_id('assign', $pf->cm);
-                    // This is probably an online file submission - check and regenerate the file if required.
-                    $sql = "SELECT a.id, o.onlinetext
-                              FROM {assignsubmission_onlinetext} o
-                              JOIN {assign_submission} a ON a.id = o.submission
-                             WHERE a.userid = ? AND o.assignment = ?
-                          ORDER BY a.id DESC";
-                    $moodletextsubmissions = $DB->get_records_sql($sql, array($pf->userid, $cm->instance), 0, 1);
-                    $moodletextsubmission = end($moodletextsubmissions);
-                    $tempfile = urkund_create_temp_file($cm->id, $cm->course, $pf->userid, $moodletextsubmission->onlinetext);
-
-                    $pf->identifier = $tempfile;
-                    $DB->update_record('plagiarism_urkund_files', $pf);
-                    $file = plagiarism_urkund_get_file_object($pf);
-                    if (empty($file)) {
-                        mtrace("URKUND fileid:$pf->id online submission found, but unable to create new temp file");
-                        continue;
-                    }
-                } else if (empty($pf->reporturl)) { // File not found and no existing report, so delete record.
+                if (empty($pf->reporturl)) { // File not found and no existing report, so delete record.
                     mtrace("URKUND fileid:$pf->id File not found, this may have been replaced by a newer file - deleting record");
                     if (debugging()) {
                         mtrace(plagiarism_urkund_pretty_print($pf));
