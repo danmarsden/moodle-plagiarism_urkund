@@ -822,7 +822,7 @@ function plagiarism_urkund_coursemodule_edit_post_actions($data, $course) {
 
     $plugin = new plagiarism_plugin_urkund();
     if (!$plugin->get_settings()) {
-        return;
+        return $data;
     }
 
     if (isset($data->use_urkund)) {
@@ -845,7 +845,7 @@ function plagiarism_urkund_coursemodule_edit_post_actions($data, $course) {
         // First get existing values.
         if (empty($data->coursemodule)) {
             debugging("URKUND settings failure - no coursemodule set in form data, URKUND could not be enabled.");
-            return;
+            return $data;
         }
         $existingelements = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $data->coursemodule),
             '', 'name, id');
@@ -875,6 +875,7 @@ function plagiarism_urkund_coursemodule_edit_post_actions($data, $course) {
             set_user_preference('urkund_receiver', trim($data->urkund_receiver));
         }
     }
+    return $data;
 }
 
 /**
