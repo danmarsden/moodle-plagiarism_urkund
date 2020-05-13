@@ -1887,7 +1887,7 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                     }
                 }
             }
-            // Could not find the file using hash - check if this is a content file and recreate it
+            // Could not find the file using hash - check if this is a content file and recreate it.
             if (strpos($plagiarismfile->filename, 'content-') === 0) {
                 // This is probably an online file submission - check and regenerate the file if required.
                 $sql = "SELECT a.id, o.onlinetext
@@ -1897,7 +1897,8 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
                           ORDER BY a.id DESC";
                 $moodletextsubmissions = $DB->get_records_sql($sql, array($plagiarismfile->userid, $cm->instance), 0, 1);
                 $moodletextsubmission = end($moodletextsubmissions);
-                $tempfile = urkund_create_temp_file($cm->id, $cm->course, $plagiarismfile->userid, $moodletextsubmission->onlinetext);
+                $tempfile = urkund_create_temp_file($cm->id, $cm->course, $plagiarismfile->userid,
+                    $moodletextsubmission->onlinetext);
 
                 $plagiarismfile->identifier = $tempfile;
                 $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
