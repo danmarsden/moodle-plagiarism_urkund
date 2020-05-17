@@ -771,16 +771,20 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $status = $c->info['http_code'];
         if (!empty($status)) {
             $json = json_decode($response);
-            if (count($json) > 0) {
+            if (count($json) > 0 && !empty($json[0]->AnalysisAddress)) {
+                // Receiver linked to this user found.
                 set_user_preference('urkund_receiver', trim($json[0]->AnalysisAddress));
                 return array('receiver' => trim($json[0]->AnalysisAddress), 'retrieved' => true);
             } else {
-                if (get_config('plagiarism_urkund', 'unitid') != 0) {
+                // No receiver found that matches this user.
+                if (!empty(get_config('plagiarism_urkund', 'unitid'))) {
+                    // If Unit id is set, we can try to create a receiver address for this user.
                     $data = array(
                         'UnitId' => get_config('plagiarism_urkund', 'unitid'),
                         'Fullname' => $name,
                         'EmailAddress' => $email,
                     );
+                    // Create a receiver for this user.
                     $response = $c->post(get_config('plagiarism_urkund', 'api') . "/api/receivers", json_encode($data));
                     $status = $c->info['http_code'];
 
@@ -791,11 +795,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                             return array('error' => true, 'msg' => get_string('errorcode_409', 'plagiarism_urkund'));
                         }
                         $json = json_decode($response);
-                        if (count($json) > 0) {
-                            if (!empty($json->AnalysisAddress)) {
-                                set_user_preference('urkund_receiver', trim($json->AnalysisAddress));
-                                return array('receiver' => trim($json->AnalysisAddress), 'created' => true);
-                            }
+                        if (count($json) > 0 && !empty($json->AnalysisAddress)) {
+                            // Receiver address was found :-)
+                            set_user_preference('urkund_receiver', trim($json->AnalysisAddress));
+                            return array('receiver' => trim($json->AnalysisAddress), 'created' => true);
                         }
                     }
                 }
