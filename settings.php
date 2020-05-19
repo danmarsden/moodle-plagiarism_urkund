@@ -95,17 +95,26 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             set_config($field, $value, 'plagiarism_urkund');
         }
     }
+
     set_config('urkund_use', $data->enabled, 'plagiarism'); // TODO: remove when MDL-67872 is integrated.
+    $headers = array('Accept: application/json', 'Content-Type: application/json');
 
     $c = new curl(array('proxy' => true));
-    $c->setopt(array('CURLOPT_HTTPAUTH' => CURLAUTH_BASIC, 'CURLOPT_USERPWD' => $data->username.":".$data->password));
-    $html = $c->post($data->api);
+    $c->setopt(array());
+    $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
+        'CURLOPT_TIMEOUT' => 60, // Set to 60seconds just in case.
+        'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
+        'CURLOPT_USERPWD' =>  $data->username.":".$data->password));
+
+    $html = $c->get($data->api.'/api/receivers');
     $response = $c->getResponse();
     // Now check to see if username/password is correct. - this check could probably be improved further.
-    if ($c->info['http_code'] == '401') {
+    if ($c->info['http_code'] != '200') {
         // Disable urkund as this config isn't correct.
         set_config('enabled', 0, 'plagiarism_urkund');
         set_config('urkund_use', 0, 'plagiarism'); // TODO: remove when MDL-67872 is integrated.
+        echo $OUTPUT->notification(get_string('savedconfigfailed', 'plagiarism_urkund'), 'notifyproblem');
+        debugging("invalid httpstatuscode returned: ".$c->info['http_code']);
     } else {
         echo $OUTPUT->notification(get_string('savedconfigsuccess', 'plagiarism_urkund'), 'notifysuccess');
     }
