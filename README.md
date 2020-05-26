@@ -20,7 +20,7 @@ The git branches here support the following versions.
 The latest version of this plugin provides support for essay questions within the quiz activity, however Moodle doesn't
 provide a way for you to view the score/report. To allow the report to be viewed you must add a patch to the core Moodle code-base.
 More information on this is in the Moodle tracker: [MDL-32226](https://tracker.moodle.org/browse/MDL-32226)
-For a direct link to the patch required see: https://github.com/moodle/moodle/commit/7a8e3ec4b13408d18734ab46bdb03b2da55f317d
+For a direct link to the patch required see: https://github.com/moodle/moodle/commit/dfe73fadfcf0bae603aa58707e48182a221eea5a
 
 If you are unfamiliar with using a git patch, you may need to wait unti Moodle includes this in the core release.
 ## QUICK INSTALL
