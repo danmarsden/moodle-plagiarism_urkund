@@ -28,7 +28,8 @@ $string['allowallsupportedfiles_help'] = 'This allows the teacher to restrict wh
 $string['assessmentresubmitted'] = 'Assessment resubmitted';
 $string['attempts'] = 'Attempts made';
 $string['confirmresetall'] = 'This will reset all files in the state: {$a}';
-$string['cronwarning'] = 'The <a href="../../admin/cron.php">cron.php</a> maintenance script has not been run for at least 30 min - Cron must be configured to allow URKUND to function correctly.';
+$string['cronwarningscores'] = 'The urkund get scores task has not been run for at least 30 min - Cron must be configured to allow URKUND to function correctly.';
+$string['cronwarningsendfiles'] = 'The urkund send files task has not been run for at least 30 min - Cron must be configured to allow URKUND to function correctly.';
 $string['debugfilter'] = 'Filter files by';
 $string['defaultsdesc'] = 'The following settings are the defaults set when enabling URKUND within an Activity Module';
 $string['defaultupdated'] = 'Default values updated';

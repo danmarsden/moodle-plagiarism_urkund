@@ -114,11 +114,14 @@ if (!$table->is_downloading($download, $exportfilename)) {
             }
         }
     }
+    $taskscores = $DB->get_record('task_scheduled', array('component' => 'plagiarism_urkund', 'classname' => '\plagiarism_urkund\task\get_scores'));
+    if (empty($taskscores) || $taskscores->lastruntime < time() - 3600 * 0.5) { // Check if run in last 30min.
+        echo $OUTPUT->box(get_string('cronwarningscores', 'plagiarism_urkund'), 'generalbox admin warning');
+    }
 
-
-    $lastcron = $DB->get_field_sql('SELECT MAX(lastcron) FROM {modules}');
-    if ($lastcron < time() - 3600 * 0.5) { // Check if run in last 30min.
-        echo $OUTPUT->box(get_string('cronwarning', 'plagiarism_urkund'), 'generalbox admin warning');
+    $taskscores = $DB->get_record('task_scheduled', array('component' => 'plagiarism_urkund', 'classname' => '\plagiarism_urkund\task\send_files'));
+    if (empty($taskscores) || $taskscores->lastruntime < time() - 3600 * 0.5) { // Check if run in last 30min.
+        echo $OUTPUT->box(get_string('cronwarningsendfiles', 'plagiarism_urkund'), 'generalbox admin warning');
     }
 
     if ($resetuser == 1 && $id && confirm_sesskey()) {
