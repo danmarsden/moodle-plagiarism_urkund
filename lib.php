@@ -210,8 +210,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
     /**
      *  Helper function to get links for a specific item.
-     * @param $plagiarismvalues
-     * @param $linkarray
+     * @param array $plagiarismvalues
+     * @param array $linkarray
      * @return string
      * @throws coding_exception
      * @throws dml_exception
