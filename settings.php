@@ -102,7 +102,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
         'CURLOPT_TIMEOUT' => 60, // Set to 60seconds just in case.
         'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
-        'CURLOPT_USERPWD' =>  $data->username.":".$data->password));
+        'CURLOPT_USERPWD' => $data->username.":".$data->password));
 
     $html = $c->get($data->api.'/api/receivers');
     $response = $c->getResponse();

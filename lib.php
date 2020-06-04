@@ -181,7 +181,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         }
 
         if (empty($plagiarismvalues[$linkarray['cmid']])) {
-            $plagiarismvalues[$linkarray['cmid']] = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $linkarray['cmid']), '', 'name,value');
+            $plagiarismvalues[$linkarray['cmid']] = $DB->get_records_menu('plagiarism_urkund_config',
+                array('cm' => $linkarray['cmid']), '', 'name,value');
         }
         $output = $this->get_links_helper($plagiarismvalues[$linkarray['cmid']], $linkarray);
 
@@ -838,7 +839,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                         }
                         $json = json_decode($response);
                         if (count($json) > 0 && !empty($json->AnalysisAddress)) {
-                            // Receiver address was found :-)
+                            // Receiver address was found.
                             set_user_preference('urkund_receiver', trim($json->AnalysisAddress));
                             return array('receiver' => trim($json->AnalysisAddress), 'created' => true);
                         }
