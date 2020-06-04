@@ -1,12 +1,13 @@
 language: php
 
+sudo: true
+
 services:
   - mysql
-  - docker
 
 addons:
-  chrome: stable
   postgresql: "9.5"
+  chrome: stable
   apt:
     packages:
       - openjdk-8-jre-headless
@@ -17,13 +18,16 @@ cache:
     - $HOME/.composer/cache
     - $HOME/.npm
 
-# Alternate tests - 3.5 -> master on mysql/postgres and php.
-matrix:
-  include:
-    - php: 7.2
-      env: DB=mysqli MOODLE_BRANCH=master
-    - php: 7.2
-      env: DB=pgsql  MOODLE_BRANCH=master
+php:
+  - 7.2
+
+env:
+  global:
+    - MOODLE_BRANCH=master
+    - MUSTACHE_IGNORE_NAMES=mobile_teacher_form.mustache
+  matrix:
+    - DB=pgsql
+    - DB=mysqli
 
 before_install:
   - phpenv config-rm xdebug.ini
@@ -32,7 +36,8 @@ before_install:
   - cd ../..
   - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
-  - docker run -d -p 127.0.0.1:4444:4444 --net=host -v /dev/shm:/dev/shm selenium/standalone-firefox:3
+  - PATH=$(echo "$PATH" | sed -e 's/:\/usr\/local\/lib\/jvm\/openjdk11\/bin//') JAVA_HOME=/usr/lib/jvm/java-1.8.0-openjdk-amd64
+
 
 install:
   - moodle-plugin-ci install
