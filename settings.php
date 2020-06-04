@@ -97,17 +97,21 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     }
 
     set_config('urkund_use', $data->enabled, 'plagiarism'); // TODO: remove when MDL-67872 is integrated.
-    $headers = array('Accept: application/json', 'Content-Type: application/json');
+    if (!defined('BEHAT_SITE_RUNNING')) {
+        $c = new curl(array('proxy' => true));
+        $c->setopt(array());
+        $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
+            'CURLOPT_TIMEOUT' => 60, // Set to 60seconds just in case.
+            'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
+            'CURLOPT_USERPWD' => $data->username . ":" . $data->password));
 
-    $c = new curl(array('proxy' => true));
-    $c->setopt(array());
-    $c->setopt(array('CURLOPT_RETURNTRANSFER' => 1,
-        'CURLOPT_TIMEOUT' => 60, // Set to 60seconds just in case.
-        'CURLOPT_HTTPAUTH' => CURLAUTH_BASIC,
-        'CURLOPT_USERPWD' => $data->username.":".$data->password));
-
-    $html = $c->get($data->api.'/api/receivers');
-    $response = $c->getResponse();
+        $html = $c->get($data->api . '/api/receivers');
+        $response = $c->getResponse();
+    } else {
+        // Fake a success for unit tests.
+        $c = new stdClass();
+        $c->info['http_code'] = '200';
+    }
     // Now check to see if username/password is correct. - this check could probably be improved further.
     if ($c->info['http_code'] != '200') {
         // Disable urkund as this config isn't correct.
