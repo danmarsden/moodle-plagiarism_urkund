@@ -334,12 +334,12 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
                 $json = json_decode($results['error']);
                 if (json_last_error() == JSON_ERROR_NONE) {
-                    // XML.
-                    $xml = simplexml_load_string($results['error']);
-                    $errorcode = (int)$xml->SubmissionData->Status->ErrorCode;
-                } else {
                     // JSON.
                     $errorcode = (int)$json->Status->ErrorCode;
+                } else {
+                    // This is an old error - might be stored in XML.
+                    $xml = simplexml_load_string($results['error']);
+                    $errorcode = (int)$xml->SubmissionData->Status->ErrorCode;
                 }
 
                 if (!empty($errorcode)) {
