@@ -1,4 +1,4 @@
-# URKUND Plagiarism plugin for Moodle [![Build Status](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund.svg?branch=master)](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund)
+# URKUND Plagiarism plugin for Moodle [![Build Status](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund.svg?branch=main)](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund)
 
 * Author: Dan Marsden <dan@danmarsden.com>
 * Copyright: Prioinfo AB, http://www.urkund.com, http://www.prioinfo.se
@@ -14,7 +14,7 @@ The git branches here support the following versions.
 | Mooodle 3.3   | MOODLE_33_STABLE | 5.6+ |
 | Mooodle 3.4   | MOODLE_34_STABLE | 7.0+ |
 | Moodle 3.5 to 3.8 | MOODLE_38_STABLE | 7.0+ |
-| Moodle 3.9+ | master | 7.2+ |
+| Moodle 3.9+ | main | 7.2+ |
 
 ## Quiz - Essay question support.
 The latest version of this plugin provides support for essay questions within the quiz activity, however Moodle doesn't
