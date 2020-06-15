@@ -631,7 +631,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
                 if ($showcontent) { // If we should be handling in-line text.
                     $submission = $DB->get_record('assignsubmission_onlinetext', array('submission' => $eventdata['objectid']));
-                    if (!empty($submission) && strlen(utf8_decode(strip_tags($eventdata['other']['content']))) >= $charcount) {
+                    if (!empty($submission) && strlen(utf8_decode(strip_tags($submission->onlinetext))) >= $charcount) {
                         $content = trim(format_text($submission->onlinetext, $submission->onlineformat,
                             array('context' => $modulecontext)));
                         $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $userid, $content);
