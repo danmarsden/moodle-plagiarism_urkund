@@ -115,7 +115,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public static function config_options($adminsettings = false) {
         $options = array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
                      'urkund_draft_submit', 'urkund_resubmit_on_close', 'urkund_receiver', 'urkund_studentemail',
-                     'urkund_allowallfile', 'urkund_selectfiletypes', 'urkund_restrictcontent');
+                     'urkund_allowallfile', 'urkund_selectfiletypes', 'urkund_restrictcontent', 'urkund_storedocuments');
         if ($adminsettings) {
             $options[] = 'urkund_advanceditems';
         }
@@ -1204,6 +1204,10 @@ function urkund_get_form_elements($mform) {
     $mform->addElement('select', 'urkund_selectfiletypes', get_string('restrictfiles', 'plagiarism_urkund'),
                        $supportedfiles, array('multiple' => true));
     $mform->setType('urkund_selectfiletypes', PARAM_TAGLIST);
+
+    $mform->addElement('select', 'urkund_storedocuments', get_string('storedocuments', 'plagiarism_urkund'), $ynoptions);
+    $mform->addHelpButton('urkund_storedocuments', 'storedocuments', 'plagiarism_urkund');
+    $mform->setType('urkund_storedocuments', PARAM_INT);
 }
 
 /**
@@ -1446,6 +1450,12 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
                     'Accept-Language: '.$plagiarismsettings['lang'],
                     'x-urkund-filename: '.$filenametopass,
                     'Content-Type: '.$mimetype);
+    // Check if storedocuments is set to No.
+    // It would be nice if we could get this value without a db call.
+    $storedoc = $DB->get_record('plagiarism_urkund_config', array('name' => 'urkund_storedocuments', 'cm' => $plagiarismfile->cm));
+    if (!empty($storedoc) && empty($storedoc->value)) {
+        $headers[] = 'x-urkund-auto-delete-document';
+    }
 
     // Use Moodle curl wrapper to send file.
     $c = new curl(array('proxy' => true));

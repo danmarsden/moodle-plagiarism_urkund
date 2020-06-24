@@ -281,5 +281,46 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020031903, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2020031908) {
+        // New setting storeddocuments - find all existing coursemodules and set these to "yes".
+        if (!$DB->record_exists('plagiarism_urkund_config', array('name' => 'urkund_storedocuments'))) {
+            // If we don't have any existing activities with this setting it has just been added to the site.
+            $sql = "SELECT distinct cm
+                FROM {plagiarism_urkund_config}
+                WHERE cm <> 0";
+            $cms = $DB->get_records_sql($sql);
+            $records = array();
+            foreach ($cms as $cm) {
+                $con = new stdClass();
+                $con->cm = $cm->cm;
+                $con->name = 'urkund_storedocuments';
+                $con->value = 1;
+                $records[] = $con;
+            }
+            if (!empty($records)) {
+                $DB->insert_records('plagiarism_urkund_config', $records);
+            }
+        }
+
+        // Now set overall default for all supported modules to Yes.
+        $supportedmodules = urkund_supported_modules();
+        $plagiarismdefaults = $DB->get_records_menu('plagiarism_urkund_config',
+            array('cm' => 0), '', 'name, value'); // The cmid(0) is the default list.
+        foreach ($supportedmodules as $sm) {
+            $element = 'urkund_storedocuments';
+            $element .= "_" . $sm;
+            // Check if new setting is set to something.
+            if (!isset($plagiarismdefaults[$element])) {
+                $newelement = new stdclass();
+                $newelement->cm = 0;
+                $newelement->name = $element;
+                $newelement->value = 1;
+                $DB->insert_record('plagiarism_urkund_config', $newelement);
+            }
+        }
+
+        upgrade_plugin_savepoint(true, 2020031908, 'plagiarism', 'urkund');
+    }
+
     return true;
 }
