@@ -103,12 +103,18 @@ class plagiarism_urkund_defaults_form extends moodleform {
                 $supportedfiles, array('multiple' => true));
             $mform->setType('urkund_selectfiletypes_'.$sm, PARAM_TAGLIST);
 
+            $mform->addElement('select', 'urkund_storedocuments_'.$sm,
+                get_string('storedocuments', 'plagiarism_urkund'), $ynoptions);
+            $mform->addHelpButton('urkund_storedocuments_'.$sm, 'storedocuments', 'plagiarism_urkund');
+            $mform->setType('urkund_storedocuments_'.$sm, PARAM_INT);
+
             $items = array();
             $aliases = array(
                 'use_urkund' => 'useurkund',
                 'urkund_allowallfile' => 'allowallsupportedfiles',
                 'urkund_selectfiletypes' => 'restrictfiles',
                 'urkund_restrictcontent' => 'restrictcontent',
+                'urkund_storedocuments' => 'storedocuments'
             );
             foreach (plagiarism_plugin_urkund::config_options() as $setting) {
                 $key = isset($aliases[$setting]) ? $aliases[$setting] : $setting;
