@@ -282,6 +282,7 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
     }
 
     if ($oldversion < 2020031908) {
+        require_once($CFG->dirroot . '/plagiarism/urkund/lib.php');
         // New setting storeddocuments - find all existing coursemodules and set these to "yes".
         if (!$DB->record_exists('plagiarism_urkund_config', array('name' => 'urkund_storedocuments'))) {
             // If we don't have any existing activities with this setting it has just been added to the site.
