@@ -821,7 +821,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 if (!empty(get_config('plagiarism_urkund', 'unitid'))) {
                     // If Unit id is set, we can try to create a receiver address for this user.
                     $data = array(
-                        'UnitId' => get_config('plagiarism_urkund', 'unitid'),
+                        'UnitId' => (int)get_config('plagiarism_urkund', 'unitid'),
                         'Fullname' => $name,
                         'EmailAddress' => $email,
                     );
