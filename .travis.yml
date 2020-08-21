@@ -1,21 +1,19 @@
 language: php
 
-dist: trusty
-
 addons:
-  chrome: stable
-  postgresql: "9.4"
-  apt:
-    packages:
-      - openjdk-8-jre-headless
-      - chromium-chromedriver
+  postgresql: "9.5"
+
+services:
+  - mysql
+  - postgresql
+  - docker
 
 cache:
   directories:
     - $HOME/.composer/cache
     - $HOME/.npm
 
-# Alternate tests - 3.5 -> master on mysql/postgres and php.
+# Alternate tests with MySQL and PostgreSQL
 matrix:
   include:
     - php: 7.0
@@ -26,16 +24,9 @@ matrix:
       env: DB=pgsql MOODLE_BRANCH=MOODLE_38_STABLE
 
 before_install:
-  - export MOODLE_VERSION=$(echo "$MOODLE_BRANCH" | cut -d'_' -f 2)
-  - if [ ${TRAVIS_PHP_VERSION:0:3} == "7.2" ] && [ $DB == "pgsql" ] && [[ "$MOODLE_VERSION" -gt 38 || "$MOODLE_VERSION" == "master" ]] ; then
-    sudo /etc/init.d/postgresql stop;
-    sudo /etc/init.d/postgresql start 9.5;
-    fi
   - phpenv config-rm xdebug.ini
-  - nvm install 14.0
-  - nvm use 14.0
   - cd ../..
-  - composer create-project -n --no-dev --prefer-dist blackboard-open-source/moodle-plugin-ci ci ^2
+  - composer create-project -n --no-dev --prefer-dist moodlehq/moodle-plugin-ci ci ^3
   - export PATH="$(cd ci/bin; pwd):$(cd ci/vendor/bin; pwd):$PATH"
 
 install:
@@ -52,4 +43,4 @@ script:
   - moodle-plugin-ci grunt
   - moodle-plugin-ci phpdoc
   - moodle-plugin-ci phpunit
-  - moodle-plugin-ci behat --profile chrome
+  - moodle-plugin-ci behat
