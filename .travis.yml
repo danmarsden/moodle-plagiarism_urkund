@@ -13,17 +13,19 @@ cache:
     - $HOME/.composer/cache
     - $HOME/.npm
 
-php:
-  - 7.2
-  - 7.4
-
-env:
-  global:
-    - MOODLE_BRANCH=master
-    - MUSTACHE_IGNORE_NAMES=mobile_teacher_form.mustache
-  matrix:
-    - DB=pgsql
-    - DB=mysqli
+# Alternate tests with MySQL and PostgreSQL
+matrix:
+  include:
+    # PHP 7.4
+    - php: 7.4
+      env: DB=pgsql  MOODLE_BRANCH=master
+    - php: 7.4
+      env: DB=mysqli MOODLE_BRANCH=master
+    # PHP 7.2
+    - php: 7.2
+      env: DB=pgsql MOODLE_BRANCH=MOODLE_39_STABLE
+    - php: 7.2
+      env: DB=mysqli  MOODLE_BRANCH=MOODLE_39_STABLE
 
 before_install:
   - phpenv config-rm xdebug.ini
