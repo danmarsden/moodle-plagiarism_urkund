@@ -41,6 +41,9 @@ class plagiarism_urkund_defaults_form extends moodleform {
         $supportedmodules = urkund_supported_modules();
 
         foreach ($supportedmodules as $sm) {
+            if (!plugin_supports('mod', $sm, FEATURE_PLAGIARISM)) {
+                continue;
+            }
             $ynoptions = array( 0 => get_string('no'), 1 => get_string('yes'));
             $tiioptions = array(0 => get_string("never"), 1 => get_string("always"),
                 2 => get_string("showwhendue", "plagiarism_urkund"),
