@@ -1454,7 +1454,7 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     // It would be nice if we could get this value without a db call.
     $storedoc = $DB->get_record('plagiarism_urkund_config', array('name' => 'urkund_storedocuments', 'cm' => $plagiarismfile->cm));
     if (!empty($storedoc) && empty($storedoc->value)) {
-        $headers[] = 'x-urkund-auto-delete-document';
+        $headers[] = 'x-urkund-auto-delete-document: true';
     }
 
     // Use Moodle curl wrapper to send file.
