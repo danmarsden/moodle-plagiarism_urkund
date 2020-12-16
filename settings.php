@@ -68,6 +68,9 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->userpref)) {
         $data->userpref = 0;
     }
+    if (!isset($data->assignforcesubmissionstatement)) {
+        $data->assignforcesubmissionstatement = 0;
+    }
     foreach ($data as $field => $value) {
         if ($field != 'submitbutton') { // Ignore the button.
             $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with uasername/password
@@ -91,6 +94,22 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
                         $DB->update_record('plagiarism_urkund_config', $newelement);
                     }
                 }
+            }
+            // If previous value of assignforcesubmissionstatement was empty and it's being set now, update the existing records.
+            if ($field == 'assignforcesubmissionstatement' && $value == 1
+                && empty(get_config('plagiarism_urkund', 'assignforcesubmissionstatement'))) {
+                // SQL for all assign activities that have urkund enabled:
+                $allassign = "SELECT a.id
+                                FROM {assign} a
+                                JOIN {course_modules} cm ON cm.instance = a.id
+                                JOIN {modules} m ON m.id = cm.module
+                                JOIN {plagiarism_urkund_config} uc ON uc.cm = cm.id AND uc.name = 'use_urkund' AND uc.value = '1'
+                                WHERE a.requiresubmissionstatement = 0";
+                $sql = "UPDATE {assign} SET requiresubmissionstatement = 1 WHERE id IN ($allassign)";
+                $DB->execute($sql);
+
+                // Clear course cache due to new assign settings.
+                rebuild_course_cache(0, true);
             }
             set_config($field, $value, 'plagiarism_urkund');
         }

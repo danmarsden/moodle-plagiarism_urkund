@@ -100,6 +100,11 @@ class plagiarism_urkund_setup_form extends moodleform {
                 }
             }
         }
+        if (!empty($mods['assign'])) {
+            $mform->addElement('header', 'plagiarismdesc_assign', get_string('assignsettings', 'plagiarism_urkund'));
+            $mform->addElement('checkbox', 'assignforcesubmissionstatement', get_string('assignforcesubmissionstatement', 'plagiarism_urkund').
+                '<br/>'.get_string('assignforcesubmissionstatement_desc', 'plagiarism_urkund'));
+        }
 
         $this->add_action_buttons(true);
     }
