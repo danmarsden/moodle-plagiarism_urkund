@@ -98,7 +98,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             // If previous value of assignforcesubmissionstatement was empty and it's being set now, update the existing records.
             if ($field == 'assignforcesubmissionstatement' && $value == 1
                 && empty(get_config('plagiarism_urkund', 'assignforcesubmissionstatement'))) {
-                // SQL for all assign activities that have urkund enabled:
+                // SQL for all assign activities that have urkund enabled.
                 $allassign = "SELECT a.id
                                 FROM {assign} a
                                 JOIN {course_modules} cm ON cm.instance = a.id

@@ -1136,7 +1136,7 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
     }
     // If we are forcing requiresubmissionstatement setting, hide the var from teaching staff when urkund is enabled.
     if (!empty($plagiarismsettings['assignforcesubmissionstatement']) && $mform->elementExists("requiresubmissionstatement")) {
-        $mform->hideIf('requiresubmissionstatement', 'use_urkund','eq', 1);
+        $mform->hideIf('requiresubmissionstatement', 'use_urkund', 'eq', 1);
     }
     // Now handle content restriction settings.
     if ($modulename == 'mod_assign' && $mform->elementExists("submissionplugins")) { // This should be mod_assign
