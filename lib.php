@@ -963,6 +963,14 @@ function plagiarism_urkund_coursemodule_edit_post_actions($data, $course) {
         if (!empty($data->urkund_receiver) && !empty($data->use_urkund)) {
             set_user_preference('urkund_receiver', trim($data->urkund_receiver));
         }
+
+        // If we are forcing requiresubmissionstatement setting, check that it is set correctly.
+        if ($data->modulename == 'assign' && !empty(get_config('plagiarism_urkund', 'assignforcesubmissionstatement'))
+            && empty($data->requiresubmissionstatement) && !empty($data->instance)) {
+            // We need to update the requiresubmissionstatement for this assignment.
+            $sql = "UPDATE {assign} set requiresubmissionstatement = 1 WHERE id = ?";
+            $DB->execute($sql, array($data->instance));
+        }
     }
     return $data;
 }
@@ -1126,7 +1134,10 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
             }
         }
     }
-
+    // If we are forcing requiresubmissionstatement setting, hide the var from teaching staff when urkund is enabled.
+    if (!empty($plagiarismsettings['assignforcesubmissionstatement']) && $mform->elementExists("requiresubmissionstatement")) {
+        $mform->hideIf('requiresubmissionstatement', 'use_urkund','eq', 1);
+    }
     // Now handle content restriction settings.
     if ($modulename == 'mod_assign' && $mform->elementExists("submissionplugins")) { // This should be mod_assign
         // I can't see a way to check if a particular checkbox exists

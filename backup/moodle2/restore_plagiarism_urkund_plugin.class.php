@@ -52,8 +52,9 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
      */
     public function process_urkundconfig($data) {
         $data = (object)$data;
-
-        set_config($this->task->get_courseid(), $data->value, $data->plugin);
+        if (!empty($this->task->get_courseid())) {
+            set_config($this->task->get_courseid(), $data->value, $data->plugin);
+        }
     }
 
     /**
@@ -83,6 +84,9 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
         global $DB;
 
         $data = (object)$data;
+        if (empty($this->task->get_moduleid())) {
+            return;
+        }
         $data->cm = $this->task->get_moduleid();
 
         $DB->insert_record('plagiarism_urkund_config', $data);
@@ -100,5 +104,27 @@ class restore_plagiarism_urkund_plugin extends restore_plagiarism_plugin {
         $data->userid = $this->get_mappingid('user', $data->userid);
 
         $DB->insert_record('plagiarism_urkund_files', $data);
+    }
+
+    /**
+     * After restoring the course, make sure the requiresubmission statement setting is correct.
+     *
+     * @throws dml_exception
+     */
+    public function after_restore_course() {
+        global $DB;
+        if (!empty(get_config('plagiarism_urkund', 'assignforcesubmissionstatement'))) {
+            $courseid = $this->task->get_courseid();
+            if (!empty($courseid) && $courseid !== SITEID) {
+                $allassign = "SELECT a.id
+                                FROM {assign} a
+                                JOIN {course_modules} cm ON cm.instance = a.id
+                                JOIN {modules} m ON m.id = cm.module
+                                JOIN {plagiarism_urkund_config} uc ON uc.cm = cm.id AND uc.name = 'use_urkund' AND uc.value = '1'
+                                WHERE a.requiresubmissionstatement = 0 AND a.course = ?";
+                $sql = "UPDATE {assign} SET requiresubmissionstatement = 1 WHERE id IN ($allassign)";
+                $DB->execute($sql, array($courseid));
+            }
+        }
     }
 }

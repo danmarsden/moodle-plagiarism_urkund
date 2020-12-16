@@ -26,6 +26,10 @@
 $string['allowallsupportedfiles'] = 'Allow all supported file types';
 $string['allowallsupportedfiles_help'] = 'This allows the teacher to restrict which file types will be sent to URKUND for processing. It does not prevent students from uploading different file types to the assignment.';
 $string['assessmentresubmitted'] = 'Assessment resubmitted';
+$string['assignforcesubmissionstatement'] = 'Force assignment submission statement';
+$string['assignforcesubmissionstatement_desc'] = 'If enabled, this will force the assignment submission statement to be enabled when URKUND is enabled in an assignment activity.<br/>
+<strong>NOTE: ticking this box will find all existing assignments in your site with URKUND enabled and will turn the submission statement on.</strong>';
+$string['assignsettings'] = 'Assign settings';
 $string['attempts'] = 'Attempts made';
 $string['confirmresetall'] = 'This will reset all files in the state: {$a}';
 $string['cronwarningscores'] = 'The urkund get scores task has not been run for at least 30 min - Cron must be configured to allow URKUND to function correctly.';
