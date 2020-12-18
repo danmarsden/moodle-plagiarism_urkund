@@ -313,8 +313,12 @@ foreach ($urkundfiles as $tf) {
     $reset .= '<a href="urkund_debug.php?delete=1&id='.$tf->id.'&sesskey='.sesskey().'">'.get_string('delete').'</a>';
     $cmurl = new moodle_url($CFG->wwwroot.'/mod/'.$tf->moduletype.'/view.php', array('id' => $tf->cm));
     $cmlink = html_writer::link($cmurl, shorten_text($coursemodule->name, 40, true), array('title' => $coursemodule->name));
+    $statuscodestring = '';
+    if (!empty($tf->statuscode) && get_string_manager()->string_exists('status_'.$tf->statuscode, 'plagiarism_urkund')) {
+        $statuscodestring = get_string('status_'.$tf->statuscode, 'plagiarism_urkund');
+    }
     if ($table->is_downloading()) {
-        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode,
+        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode. ': ' .$statuscodestring,
                      $tf->attempt, userdate($tf->timesubmitted), $tf->errorresponse);
     } else {
         $options = [
@@ -323,7 +327,8 @@ foreach ($urkundfiles as $tf) {
             'value' => $tf->id,
         ];
         $itemcheckbox = new \core\output\checkbox_toggleall('items', false, $options);
-        $row = array($OUTPUT->render($itemcheckbox), $tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, userdate($tf->timesubmitted), $reset);
+        $statuscode = empty($statuscodestring) ? $tf->statuscode : $statuscodestring;
+        $row = array($OUTPUT->render($itemcheckbox), $tf->id, $user, $cmlink, $tf->identifier, $statuscode, $tf->attempt, userdate($tf->timesubmitted), $reset);
     }
 
     $table->add_data($row);

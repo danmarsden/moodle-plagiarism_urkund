@@ -187,3 +187,10 @@ $string['privacy:metadata:plagiarism_urkund_client:email'] = 'User email';
 $string['privacy:metadata:plagiarism_urkund_client:filename'] = 'Filename of submitted file.';
 $string['privacy:metadata:plagiarism_urkund_client:file'] = 'Physical copy of text or file content sent to Urkund';
 $string['privacy:metadata:plagiarism_urkund_client'] = 'User information sent to external Urkund API';
+
+$string['status_404'] = "Analysis address doesn't exist";
+$string['status_202'] = 'Received, waiting for report';
+$string['status_444'] = 'No analysis address added';
+$string['status_415'] = 'File format not supported';
+$string['status_413'] = 'File to large';
+$string['status_pending'] = 'Waiting to be sent';
