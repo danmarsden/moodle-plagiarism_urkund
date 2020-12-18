@@ -2367,3 +2367,25 @@ function plagiarism_urkund_charcount() {
     }
     return $charcount;
 }
+
+/**
+ * Helper function to warn admin if Cron not running correctly.
+ *
+ * @throws coding_exception
+ * @throws dml_exception
+ *
+ */
+function plagiarism_urkund_checkcronhealth() {
+    global $DB;
+    $taskscores = $DB->get_record('task_scheduled', array('component' => 'plagiarism_urkund',
+        'classname' => '\plagiarism_urkund\task\get_scores'));
+    if (empty($taskscores) || $taskscores->lastruntime < time() - 3600 * 0.5) { // Check if run in last 30min.
+        \core\notification::add(get_string('cronwarningscores', 'plagiarism_urkund'), \core\notification::ERROR);
+    }
+
+    $taskscores = $DB->get_record('task_scheduled', array('component' => 'plagiarism_urkund',
+        'classname' => '\plagiarism_urkund\task\send_files'));
+    if (empty($taskscores) || $taskscores->lastruntime < time() - 3600 * 0.5) { // Check if run in last 30min.
+        \core\notification::add(get_string('cronwarningsendfiles', 'plagiarism_urkund'), \core\notification::ERROR);
+    }
+}
