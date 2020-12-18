@@ -25,6 +25,7 @@
 
 $string['allowallsupportedfiles'] = 'Allow all supported file types';
 $string['allowallsupportedfiles_help'] = 'This allows the teacher to restrict which file types will be sent to URKUND for processing. It does not prevent students from uploading different file types to the assignment.';
+$string['areyousurebulk'] = 'Are you sure you want to delete the {$a} file(s) selected?';
 $string['assessmentresubmitted'] = 'Assessment resubmitted';
 $string['assignforcesubmissionstatement'] = 'Force assignment submission statement';
 $string['assignforcesubmissionstatement_desc'] = 'If enabled, this will force the assignment submission statement to be enabled when URKUND is enabled in an assignment activity.<br/>
@@ -38,6 +39,7 @@ $string['debugfilter'] = 'Filter files by';
 $string['defaultsdesc'] = 'The following settings are the defaults set when enabling URKUND within an Activity Module';
 $string['defaultupdated'] = 'Default values updated';
 $string['deletedwarning'] = 'This file could not be found - it may have been deleted by the user';
+$string['deleteselectedfiles'] = 'Delete selected';
 $string['explainerrors'] = 'This page lists any files that are currently in an error state. <br/>When files are deleted on this page they will not be able to be resubmitted and errors will no longer display to teachers or students';
 $string['file'] = 'File';
 $string['filedeleted'] = 'File deleted from queue';
@@ -65,6 +67,7 @@ $string['pluginname'] = 'URKUND plagiarism plugin';
 $string['previouslysubmitted'] = 'Previously submitted as';
 $string['processing'] = 'This file has been submitted to URKUND, now waiting for the analysis to be available';
 $string['receivernotvalid'] = 'This is not a valid receiver address.';
+$string['recordsdeleted'] = '{$a} error(s) were deleted';
 $string['report'] = 'report';
 $string['restrictcontent'] = 'Submit attached files and in-line text';
 $string['restrictcontent_help'] = 'URKUND can process uploaded files but can also process in-line text from forum posts and text from the online text assignment submission type. You can decide which components to send to URKUND.';
