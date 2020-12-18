@@ -31,6 +31,8 @@ require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 require_login();
 admin_externalpage_setup('plagiarismurkund');
 
+plagiarism_urkund_checkcronhealth();
+
 $context = context_system::instance();
 require_capability('moodle/site:config', $context, $USER->id, true, "nopermissions");
 

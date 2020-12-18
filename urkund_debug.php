@@ -157,17 +157,8 @@ if (!$table->is_downloading($download, $exportfilename)) {
             }
         }
     }
-    $taskscores = $DB->get_record('task_scheduled', array('component' => 'plagiarism_urkund',
-        'classname' => '\plagiarism_urkund\task\get_scores'));
-    if (empty($taskscores) || $taskscores->lastruntime < time() - 3600 * 0.5) { // Check if run in last 30min.
-        echo $OUTPUT->box(get_string('cronwarningscores', 'plagiarism_urkund'), 'generalbox admin warning');
-    }
 
-    $taskscores = $DB->get_record('task_scheduled', array('component' => 'plagiarism_urkund',
-        'classname' => '\plagiarism_urkund\task\send_files'));
-    if (empty($taskscores) || $taskscores->lastruntime < time() - 3600 * 0.5) { // Check if run in last 30min.
-        echo $OUTPUT->box(get_string('cronwarningsendfiles', 'plagiarism_urkund'), 'generalbox admin warning');
-    }
+    plagiarism_urkund_checkcronhealth();
 
     if ($resetuser == 1 && $id && confirm_sesskey()) {
         if (urkund_reset_file($id, $plagiarismsettings)) {
