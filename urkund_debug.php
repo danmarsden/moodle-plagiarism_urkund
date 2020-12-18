@@ -71,7 +71,7 @@ if (!$table->is_downloading($download, $exportfilename)) {
             // Show confirmation message.
             $confirmurl = $baseurl;
             $confirmurl->params(array('resetall' => $resetall, 'confirm' => 1));
-            echo $OUTPUT->confirm(get_string('confirmresetall', 'plagiarism_urkund', $resetall), $baseurl, $confirmurl);
+            echo $OUTPUT->confirm(get_string('confirmresetall', 'plagiarism_urkund', $resetall), $confirmurl, $PAGE->url);
             echo $OUTPUT->footer();
             exit;
 
