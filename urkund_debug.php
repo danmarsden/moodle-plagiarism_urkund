@@ -40,6 +40,8 @@ $showall = optional_param('showall', 0, PARAM_INT);
 $resetall = optional_param('resetall', '', PARAM_ALPHANUMEXT);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 $filterdays = optional_param('filterdays', 0, PARAM_INT);
+$deleteselected = optional_param('deleteselectedfiles', 0, PARAM_TEXT);
+$fileids = optional_param('fileids', '', PARAM_TEXT);
 
 require_login();
 
@@ -54,7 +56,6 @@ $limit = 30;
 
 $baseurl = new moodle_url('urkund_debug.php', array('page' => $page, 'sort' => $sort, 'filterdays' => $filterdays));
 
-
 $table = new flexible_table('urkundfiles');
 
 if (!$table->is_downloading($download, $exportfilename)) {
@@ -64,7 +65,49 @@ if (!$table->is_downloading($download, $exportfilename)) {
     require_once('urkund_tabs.php');
 
     $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+    if (!empty($deleteselected)) {
+        if (empty($fileids)) {
+            $fileids = array();
+            // First time form submit - get list of ids from checkboxes or from single delete action.
+            if (!empty($delete)) {
+                // This is a single delete action.
+                $fileids[] = $delete;
+            } else {
+                // Get list of ids from checkboxes.
+                $post = data_submitted();
+                if ($currenttab == "autobackup") {
+                    foreach ($post as $k => $v) {
+                        if (preg_match('/^item(.*)/', $k, $m)) {
+                            $fileids[] = $v; // Use value (filename) in array.
+                        }
+                    }
+                } else {
+                    foreach ($post as $k => $v) {
+                        if (preg_match('/^item(\d+)$/', $k, $m)) {
+                            $fileids[] = $m[1];
+                        }
+                    }
+                }
+            }
+            // Display confirmation box.
+            $params = array('deleteselectedfiles' => 1, 'confirm' => 1, 'fileids' => implode(',', $fileids), 'tab' => $currenttab);
+            $deleteurl = new moodle_url($PAGE->url, $params);
+            $numfiles = count($fileids);
+            echo $OUTPUT->confirm(get_string('areyousurebulk', 'plagiarism_urkund', $numfiles),
+                $deleteurl, $CFG->wwwroot . '/plagiarism/urkund/urkund_debug.php');
 
+            echo $OUTPUT->footer();
+            exit;
+        } else if ($confirm && confirm_sesskey()) {
+            $count = 0;
+            $fileids = explode(',', $fileids);
+            foreach ($fileids as $id) {
+                $DB->delete_records('plagiarism_urkund_files', array('id' => $id));
+                $count++;
+            }
+            \core\notification::add(get_string('recordsdeleted', 'plagiarism_urkund', $count), \core\notification::SUCCESS);
+        }
+    }
     if (!empty($resetall) && confirm_sesskey()) {
         // Check to see if there are any files in this state.
         if (!$confirm) {
@@ -174,15 +217,40 @@ if (!$showall && !$table->is_downloading()) {
     $table->pagesize($limit, $count);
 }
 
-$table->define_columns(array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'timesubmitted', 'action'));
+// Define the list of columns to show.
+$columns = array();
+$headers = array();
 
-$table->define_headers(array(get_string('id', 'plagiarism_urkund'),
-                       get_string('user'),
-                       get_string('module', 'plagiarism_urkund'),
-                       get_string('identifier', 'plagiarism_urkund'),
-                       get_string('status', 'plagiarism_urkund'),
-                       get_string('attempts', 'plagiarism_urkund'),
-                       get_string('timesubmitted', 'plagiarism_urkund'), ''));
+if (!$table->is_downloading()) {
+    // Add selector column to report.
+    $columns[] = 'selector';
+
+    $options = [
+        'id' => 'check-items',
+        'name' => 'check-items',
+        'value' => 1,
+    ];
+    $mastercheckbox = new \core\output\checkbox_toggleall('items', true, $options);
+
+    $headers[] = $OUTPUT->render($mastercheckbox);
+
+    echo html_writer::start_div();
+    echo '<form action="urkund_debug.php" method="post" id="allerrors">';
+    echo html_writer::tag('input', '', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
+    echo html_writer::tag('input', '', array('type' => 'hidden', 'name' => 'returnto', 'value' => s($PAGE->url->out(false))));
+}
+$columns = array_merge($columns, array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'timesubmitted', 'action'));
+$headers = array_merge($headers, array(get_string('id', 'plagiarism_urkund'),
+    get_string('user'),
+    get_string('module', 'plagiarism_urkund'),
+    get_string('identifier', 'plagiarism_urkund'),
+    get_string('status', 'plagiarism_urkund'),
+    get_string('attempts', 'plagiarism_urkund'),
+    get_string('timesubmitted', 'plagiarism_urkund'), ''));
+
+$table->define_columns($columns);
+$table->define_headers($headers);
+
 $table->define_baseurl('urkund_debug.php?filterdays=' . $filterdays);
 $table->sortable(true);
 $table->no_sorting('file', 'action');
@@ -221,7 +289,6 @@ if (!empty($sort)) {
     }
 }
 
-
 if ($showall or $table->is_downloading()) {
     $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null);
 } else {
@@ -259,7 +326,13 @@ foreach ($urkundfiles as $tf) {
         $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode,
                      $tf->attempt, userdate($tf->timesubmitted), $tf->errorresponse);
     } else {
-        $row = array($tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, userdate($tf->timesubmitted), $reset);
+        $options = [
+            'id' => 'item'.$tf->id,
+            'name' => 'item'.$tf->id,
+            'value' => $tf->id,
+        ];
+        $itemcheckbox = new \core\output\checkbox_toggleall('items', false, $options);
+        $row = array($OUTPUT->render($itemcheckbox), $tf->id, $user, $cmlink, $tf->identifier, $tf->statuscode, $tf->attempt, userdate($tf->timesubmitted), $reset);
     }
 
     $table->add_data($row);
@@ -311,6 +384,13 @@ if (!$table->is_downloading()) {
 }
 $table->finish_output();
 if (!$table->is_downloading()) {
+    echo html_writer::tag('input', "", array('name' => 'deleteselectedfiles', 'type' => 'submit',
+        'id' => 'deleteallselected', 'class' => 'btn btn-secondary',
+        'value' => get_string('deleteselectedfiles', 'plagiarism_urkund')));
+    echo html_writer::end_tag('form');
+    echo html_writer::end_div();
+    echo html_writer::empty_tag('hr');
+
     if (!$showall && $count >= $limit) {
         $url = $PAGE->url;
         $url->param('showall', 1);
@@ -334,4 +414,3 @@ if (!$table->is_downloading()) {
     echo "</div>";
     echo $OUTPUT->footer();
 }
-
