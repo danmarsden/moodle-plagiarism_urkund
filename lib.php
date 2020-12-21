@@ -52,8 +52,6 @@ define('URKUND_STATUSCODE_PENDING', 'pending');
 // Url to external xml that states URKUNDS allowed file type list.
 define('URKUND_FILETYPE_URL', 'https://secure.urkund.com/ws/integration/accepted-formats.xml');
 
-define('URKUND_FILETYPE_URL_UPDATE', '168'); // How often to check for updated file types (defined in hours).
-
 define('PLAGIARISM_URKUND_SHOW_NEVER', 0);
 define('PLAGIARISM_URKUND_SHOW_ALWAYS', 1);
 define('PLAGIARISM_URKUND_SHOW_WHENDUE', 2);
@@ -1549,7 +1547,12 @@ function urkund_default_allowed_file_types($checkdb = false) {
         'html' => 'text/html',
         'htm'  => 'text/html',
         'wps'  => 'application/vnd.ms-works',
-        'odt'  => 'application/vnd.oasis.opendocument.text');
+        'odt'  => 'application/vnd.oasis.opendocument.text',
+        'pages' => 'application/x-iwork-pages-sffpages',
+        'xls' => 'application/vnd.ms-excel',
+        'xlsx' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'ps' => 'application/postscript',
+        'hwp' => 'application/x-hwp');
 
     if ($checkdb) {
         // Get all filetypes from db as well.
@@ -1777,50 +1780,37 @@ function urkund_get_css_rank ($score) {
 function plagiarism_urkund_update_allowed_filetypes() {
     global $CFG, $DB;
     $configvars = get_config('plagiarism_urkund');
-    $now = time();
-    $wait = (int)URKUND_FILETYPE_URL_UPDATE * 60 * 60;
 
-    if (!isset($configvars->lastupdatedfiletypes)) {
-        // First time this has run.
-        $configvars->lastupdatedfiletypes = 0;
+    // Need to update filetypes.
+    // Get list of existing options.
+    $existing = array();
+    foreach ($configvars as $name => $value) {
+        if (strpos($name, 'ext_') !== false) {
+            $existing[$name] = $value;
+        }
     }
 
-    $timetocheck = (int)($configvars->lastupdatedfiletypes + $wait);
+    require_once($CFG->libdir.'/filelib.php');
+    $url = URKUND_FILETYPE_URL;
+    $c = new curl(array('proxy' => true));
+    $c->setopt(array());
+    $c->setopt(array('CURLOPT_TIMEOUT' => 300));
 
-    if (empty($configvars->lastupdatedfiletypes) ||
-        $timetocheck < $now ) {
-        // Need to update filetypes.
-        // Get list of existing options.
-        $existing = array();
-        foreach ($configvars as $name => $value) {
-            if (strpos($name, 'ext_') !== false) {
-                $existing[$name] = $value;
-            }
+    $response = $c->get($url);
+    $xml = new SimpleXMLElement($response);
+    foreach ($xml->format as $format) {
+        $type = (string)$format->attributes()->type;
+        $suffix = (string)$format->attributes()->suffix;
+        unset($existing['ext_' . $suffix]);
+        if (!urkund_check_file_type('test.' . $suffix, false)) {
+            set_config('ext_' . $suffix, $type, 'plagiarism_urkund');
         }
-
-        require_once($CFG->libdir.'/filelib.php');
-        $url = URKUND_FILETYPE_URL;
-        $c = new curl(array('proxy' => true));
-        $c->setopt(array());
-        $c->setopt(array('CURLOPT_TIMEOUT' => 300));
-
-        $response = $c->get($url);
-        $xml = new SimpleXMLElement($response);
-        foreach ($xml->format as $format) {
-            $type = (string)$format->attributes()->type;
-            $suffix = (string)$format->attributes()->suffix;
-            unset($existing['ext_'.$suffix]);
-            if (!urkund_check_file_type('test.'.$suffix, false)) {
-                set_config('ext_'.$suffix, $type, 'plagiarism_urkund');
-            }
+    }
+    // Clean up old vars.
+    if (!empty($existing)) {
+        foreach ($existing as $name => $value) {
+            $DB->delete_records('config_plugins', array('plugin' => 'plagiarism_urkund', 'name' => $name));
         }
-        // Clean up old vars.
-        if (!empty($existing)) {
-            foreach ($existing as $name => $value) {
-                $DB->delete_records('config_plugins', array('plugin' => 'plagiarism_urkund', 'name' => $name));
-            }
-        }
-        set_config('lastupdatedfiletypes', $now, 'plagiarism_urkund');
     }
 }
 
