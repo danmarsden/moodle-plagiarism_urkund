@@ -192,5 +192,5 @@ $string['status_404'] = "Analysis address doesn't exist";
 $string['status_202'] = 'Received, waiting for report';
 $string['status_444'] = 'No analysis address added';
 $string['status_415'] = 'File format not supported';
-$string['status_413'] = 'File to large';
+$string['status_413'] = 'File too large';
 $string['status_pending'] = 'Waiting to be sent';
