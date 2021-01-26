@@ -19,320 +19,167 @@
  *
  * @package plagiarism_urkund
  * @author Dan Marsden <dan@danmarsden.com>
- * @copyright 1999 onwards Martin Dougiamas {@link http://moodle.com}
+ * @copyright 2021 Catalyst IT
  * @license http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
 require_once(dirname(dirname(__FILE__)) . '/../config.php');
 require_once($CFG->libdir.'/adminlib.php');
 require_once($CFG->libdir.'/tablelib.php');
-require_once($CFG->libdir.'/plagiarismlib.php');
 require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 
 $id = optional_param('id', 0, PARAM_INT);
 $resetuser = optional_param('reset', 0, PARAM_INT);
 $delete = optional_param('delete', 0, PARAM_INT);
-$page = optional_param('page', 0, PARAM_INT);
-$sort = optional_param('tsort', '', PARAM_ALPHA);
-$dir = optional_param('dir', '', PARAM_ALPHA);
-$download = optional_param('download', '', PARAM_ALPHA);
-$showall = optional_param('showall', 0, PARAM_INT);
 $resetall = optional_param('resetall', '', PARAM_ALPHANUMEXT);
 $confirm = optional_param('confirm', 0, PARAM_INT);
-$filterdays = optional_param('filterdays', 0, PARAM_INT);
 $deleteselected = optional_param('deleteselectedfiles', 0, PARAM_TEXT);
 $fileids = optional_param('fileids', '', PARAM_TEXT);
 
 require_login();
 
-$url = new moodle_url('/plagiarism/urkund/urkund_debug.php', array('showall' => $showall, 'filterdays' => $filterdays));
+$url = new moodle_url('/plagiarism/urkund/urkund_debug.php');
 admin_externalpage_setup('plagiarismurkund', '', array(), $url);
 
 $context = context_system::instance();
 
 $exportfilename = 'UrkundDebugOutput.csv';
 
-$limit = 30;
+$limit = 50;
 
-$baseurl = new moodle_url('urkund_debug.php', array('page' => $page, 'sort' => $sort, 'filterdays' => $filterdays));
-
-$table = new flexible_table('urkundfiles');
-
-if (!$table->is_downloading($download, $exportfilename)) {
-    echo $OUTPUT->header();
-    $currenttab = 'urkunddebug';
-
-    require_once('urkund_tabs.php');
-
-    $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
-    if (!empty($deleteselected)) {
-        if (empty($fileids)) {
-            $fileids = array();
-            // First time form submit - get list of ids from checkboxes or from single delete action.
-            if (!empty($delete)) {
-                // This is a single delete action.
-                $fileids[] = $delete;
-            } else {
-                // Get list of ids from checkboxes.
-                $post = data_submitted();
-                if ($currenttab == "autobackup") {
-                    foreach ($post as $k => $v) {
-                        if (preg_match('/^item(.*)/', $k, $m)) {
-                            $fileids[] = $v; // Use value (filename) in array.
-                        }
-                    }
-                } else {
-                    foreach ($post as $k => $v) {
-                        if (preg_match('/^item(\d+)$/', $k, $m)) {
-                            $fileids[] = $m[1];
-                        }
-                    }
+$plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+if (!empty($deleteselected)) {
+    if (empty($fileids)) {
+        $fileids = array();
+        // First time form submit - get list of ids from checkboxes or from single delete action.
+        if (!empty($delete)) {
+            // This is a single delete action.
+            $fileids[] = $delete;
+        } else {
+            // Get list of ids from checkboxes.
+            $post = data_submitted();
+            foreach ($post as $k => $v) {
+                if (preg_match('/^item(\d+)$/', $k, $m)) {
+                    $fileids[] = $m[1];
                 }
             }
-            // Display confirmation box.
-            $params = array('deleteselectedfiles' => 1, 'confirm' => 1, 'fileids' => implode(',', $fileids), 'tab' => $currenttab);
-            $deleteurl = new moodle_url($PAGE->url, $params);
-            $numfiles = count($fileids);
-            echo $OUTPUT->confirm(get_string('areyousurebulk', 'plagiarism_urkund', $numfiles),
-                $deleteurl, $CFG->wwwroot . '/plagiarism/urkund/urkund_debug.php');
-
-            echo $OUTPUT->footer();
-            exit;
-        } else if ($confirm && confirm_sesskey()) {
-            $count = 0;
-            $fileids = explode(',', $fileids);
-            foreach ($fileids as $id) {
-                $DB->delete_records('plagiarism_urkund_files', array('id' => $id));
-                $count++;
-            }
-            \core\notification::add(get_string('recordsdeleted', 'plagiarism_urkund', $count), \core\notification::SUCCESS);
         }
-    }
-    if (!empty($resetall) && confirm_sesskey()) {
-        // Check to see if there are any files in this state.
-        if (!$confirm) {
-            // Show confirmation message.
-            $confirmurl = $baseurl;
-            $confirmurl->params(array('resetall' => $resetall, 'confirm' => 1));
-            echo $OUTPUT->confirm(get_string('confirmresetall', 'plagiarism_urkund', $resetall), $confirmurl, $PAGE->url);
-            echo $OUTPUT->footer();
-            exit;
 
-        } else {
+        // Display confirmation box.
+        $params = array('deleteselectedfiles' => 1, 'confirm' => 1, 'fileids' => implode(',', $fileids));
+        $deleteurl = new moodle_url($PAGE->url, $params);
+        $numfiles = count($fileids);
+        echo $OUTPUT->header();
+        echo $OUTPUT->confirm(get_string('areyousurebulk', 'plagiarism_urkund', $numfiles),
+            $deleteurl, $CFG->wwwroot . '/plagiarism/urkund/urkund_debug.php');
+
+        echo $OUTPUT->footer();
+        exit;
+    } else if ($confirm && confirm_sesskey()) {
+        $count = 0;
+        $fileids = explode(',', $fileids);
+        foreach ($fileids as $id) {
+            $DB->delete_records('plagiarism_urkund_files', array('id' => $id));
+            $count++;
+        }
+        \core\notification::success(get_string('recordsdeleted', 'plagiarism_urkund', $count));
+    }
+}
+if (!empty($resetall) && confirm_sesskey()) {
+    // Check to see if there are any files in this state.
+    if (!$confirm) {
+        // Show confirmation message.
+        echo $OUTPUT->header();
+        $confirmurl = $PAGE->url;
+        $confirmurl->params(array('resetall' => $resetall, 'confirm' => 1));
+        echo $OUTPUT->confirm(get_string('confirmresetall', 'plagiarism_urkund', $resetall), $confirmurl, $PAGE->url);
+        echo $OUTPUT->footer();
+        exit;
+
+    } else {
+        if ($resetall == '202') {
+            // Reset attempt value so that we restart the attempt cycle for these records.
+            // We don't do this for file submissions because if they fail sending the file it's as likely to change.
+            $DB->set_field('plagiarism_urkund_files', 'attempt', 1, array('statuscode' => $resetall));
+        }
+        $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
+        $i = 0;
+        foreach ($files as $plagiarismfile) {
             if ($resetall == '202') {
-                // Reset attempt value so that we restart the attempt cycle for these records.
-                // We don't do this for file submissions because if they fail sending the file it's as likely to change.
-                $DB->set_field('plagiarism_urkund_files', 'attempt', 1, array('statuscode' => $resetall));
-            }
-            $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
-            $i = 0;
-            foreach ($files as $plagiarismfile) {
-                if ($resetall == '202') {
-                    $file = urkund_get_score($plagiarismsettings, $plagiarismfile, true);
-                    // Reset attempts as this was a manual check.
-                    $file->attempt = $file->attempt - 1;
-                    $DB->update_record('plagiarism_urkund_files', $file);
-                    if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
-                        $response = get_string('scorenotavailableyet', 'plagiarism_urkund');
-                    } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED ||
-                               $file->statuscode == 'Analyzed') {
-                        $response = get_string('scoreavailable', 'plagiarism_urkund');
-                    } else {
-                        $response = get_string('unknownwarninggetscore', 'plagiarism_urkund');
-                        if (debugging()) {
-                            echo plagiarism_urkund_pretty_print($file);
-                        }
-                    }
-                    echo "<p>";
-                    echo "id:".$file->id.' '. $response;
-                    echo "</p>";
+                $file = urkund_get_score($plagiarismsettings, $plagiarismfile, true);
+                // Reset attempts as this was a manual check.
+                $file->attempt = $file->attempt - 1;
+                $DB->update_record('plagiarism_urkund_files', $file);
+                if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
+                    $response = get_string('scorenotavailableyet', 'plagiarism_urkund');
+                } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED ||
+                    $file->statuscode == 'Analyzed') {
+                    $response = get_string('scoreavailable', 'plagiarism_urkund');
                 } else {
-                    urkund_reset_file($plagiarismfile, $plagiarismsettings);
+                    $response = get_string('unknownwarninggetscore', 'plagiarism_urkund');
+                    if (debugging()) {
+                        echo plagiarism_urkund_pretty_print($file);
+                    }
                 }
-
-                $i++;
+                echo "<p>";
+                echo "id:" . $file->id . ' ' . $response;
+                echo "</p>";
+            } else {
+                urkund_reset_file($plagiarismfile, $plagiarismsettings);
             }
-            if (!empty($i)) {
-                echo $OUTPUT->notification(get_string('filesresubmitted', 'plagiarism_urkund', $i), 'notifysuccess');
-            }
+
+            $i++;
         }
-    }
-
-    plagiarism_urkund_checkcronhealth();
-
-    if ($resetuser == 1 && $id && confirm_sesskey()) {
-        if (urkund_reset_file($id, $plagiarismsettings)) {
-            echo $OUTPUT->notification(get_string('fileresubmitted', 'plagiarism_urkund'));
+        if (!empty($i)) {
+            \core\notification::success(get_string('filesresubmitted', 'plagiarism_urkund', $i));
         }
-    } else if ($resetuser == 2 && $id && confirm_sesskey()) {
-        $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $id), '*', MUST_EXIST);
-        $file = urkund_get_score(plagiarism_plugin_urkund::get_settings(), $plagiarismfile, true);
-        // Reset attempts as this was a manual check.
-        $file->attempt = $file->attempt - 1;
-        $DB->update_record('plagiarism_urkund_files', $file);
-        if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
-            echo $OUTPUT->notification(get_string('scorenotavailableyet', 'plagiarism_urkund'));
-        } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED || $file->statuscode == 'Analyzed') {
-            echo $OUTPUT->notification(get_string('scoreavailable', 'plagiarism_urkund'));
-        } else {
-            echo $OUTPUT->notification(get_string('unknownwarninggetscore', 'plagiarism_urkund'));
-            echo plagiarism_urkund_pretty_print($file);
-        }
-
-    }
-
-    if (!empty($delete) && confirm_sesskey()) {
-        $DB->delete_records('plagiarism_urkund_files', array('id' => $id));
-        echo $OUTPUT->notification(get_string('filedeleted', 'plagiarism_urkund'));
-
     }
 }
-// Now show files in an error state.
+
+plagiarism_urkund_checkcronhealth();
+if ($resetuser == 1 && $id && confirm_sesskey()) {
+    if (urkund_reset_file($id, $plagiarismsettings)) {
+        \core\notification::success(get_string('fileresubmitted', 'plagiarism_urkund'));
+    }
+} else if ($resetuser == 2 && $id && confirm_sesskey()) {
+    $plagiarismfile = $DB->get_record('plagiarism_urkund_files', array('id' => $id), '*', MUST_EXIST);
+    $file = urkund_get_score(plagiarism_plugin_urkund::get_settings(), $plagiarismfile, true);
+    // Reset attempts as this was a manual check.
+    $file->attempt = $file->attempt - 1;
+    $DB->update_record('plagiarism_urkund_files', $file);
+    if ($file->statuscode == URKUND_STATUSCODE_ACCEPTED) {
+        \core\notification::warning(get_string('scorenotavailableyet', 'plagiarism_urkund'));
+    } else if ($file->statuscode == URKUND_STATUSCODE_PROCESSED || $file->statuscode == 'Analyzed') {
+        \core\notification::success(get_string('scoreavailable', 'plagiarism_urkund'));
+    } else {
+        \core\notification::error(get_string('unknownwarninggetscore', 'plagiarism_urkund'));
+        echo plagiarism_urkund_pretty_print($file);
+    }
+}
+
+if (!empty($delete) && confirm_sesskey()) {
+    $DB->delete_records('plagiarism_urkund_files', array('id' => $id));
+    \core\notification::success(get_string('filedeleted', 'plagiarism_urkund'));
+}
+
+$table = new \plagiarism_urkund\output\debug_table('debugtable');
+
+$filters = array('realname' => 0, 'timesubmitted' => 0, 'statuscode' => 0, 'course' => 0);
+$ufiltering = new \plagiarism_urkund\output\filtering($filters, $PAGE->url);
+list($extrasql, $params) = $ufiltering->get_sql_filter();
+
 $userfields = get_all_user_name_fields(true, 'u');
-$oldest = time() - $filterdays * 24 * 3600;
-$sqlallfiles = "SELECT t.*, ".$userfields.", m.name as moduletype, ".
-        "cm.course as courseid, cm.instance as cminstance FROM ".
-        "{plagiarism_urkund_files} t, {user} u, {modules} m, {course_modules} cm ".
-        "WHERE m.id=cm.module AND cm.id=t.cm AND t.userid=u.id ".
-        "AND t.statuscode <> 'Analyzed' ";
-if ($filterdays) {
-    $oldfilter = "AND t.timesubmitted > $oldest ";
-    $sqlallfiles .= $oldfilter;
-} else {
-    $oldfilter = '';
+$sqlfields = "t.*, ".$userfields.", m.name as moduletype, ".
+    "cm.course as courseid, cm.instance as cminstance, c.fullname, c.shortname";
+$sqlfrom = "{plagiarism_urkund_files} t, {user} u, {modules} m, {course_modules} cm, {course} c ";
+$sqlwhere = "m.id = cm.module AND cm.id = t.cm AND t.userid = u.id AND c.id = cm.course AND t.statuscode <> 'Analyzed'";
+
+if (!empty($extrasql)) {
+    $sqlwhere .= " and ".$extrasql;
 }
-
-$sqlcount = "SELECT COUNT(id) FROM {plagiarism_urkund_files} t WHERE t.statuscode <> 'Analyzed' $oldfilter";
-$count = $DB->count_records_sql($sqlcount);
-if (!$showall && !$table->is_downloading()) {
-    $table->pagesize($limit, $count);
-}
-
-// Define the list of columns to show.
-$columns = array();
-$headers = array();
-
-if (!$table->is_downloading()) {
-    // Add selector column to report.
-    $columns[] = 'selector';
-
-    $options = [
-        'id' => 'check-items',
-        'name' => 'check-items',
-        'value' => 1,
-    ];
-    $mastercheckbox = new \core\output\checkbox_toggleall('items', true, $options);
-
-    $headers[] = $OUTPUT->render($mastercheckbox);
-
-    echo html_writer::start_div();
-    echo '<form action="urkund_debug.php" method="post" id="allerrors">';
-    echo html_writer::tag('input', '', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
-    echo html_writer::tag('input', '', array('type' => 'hidden', 'name' => 'returnto', 'value' => s($PAGE->url->out(false))));
-}
-$columns = array_merge($columns, array('id', 'name', 'module', 'identifier', 'status', 'attempts', 'timesubmitted', 'action'));
-$headers = array_merge($headers, array(get_string('id', 'plagiarism_urkund'),
-    get_string('user'),
-    get_string('module', 'plagiarism_urkund'),
-    get_string('identifier', 'plagiarism_urkund'),
-    get_string('status', 'plagiarism_urkund'),
-    get_string('attempts', 'plagiarism_urkund'),
-    get_string('timesubmitted', 'plagiarism_urkund'), ''));
-
-$table->define_columns($columns);
-$table->define_headers($headers);
-
-$table->define_baseurl('urkund_debug.php?filterdays=' . $filterdays);
-$table->sortable(true);
-$table->no_sorting('file', 'action');
-$table->collapsible(true);
-
-$table->set_attribute('cellspacing', '0');
-$table->set_attribute('class', 'generaltable generalbox');
-
-$table->show_download_buttons_at(array(TABLE_P_BOTTOM));
-$table->setup();
-
-// Work out direction of sort required.
-$sortcolumns = $table->get_sort_columns();
-
-// Now do sorting if specified.
-$orderby = '';
-if (!empty($sort)) {
-    $direction = ' DESC';
-    if (!empty($sortcolumns[$sort]) && $sortcolumns[$sort] == SORT_ASC) {
-        $direction = ' ASC';
-    }
-
-    if ($sort == "name") {
-        $orderby = " ORDER BY u.firstname $direction, u.lastname $direction";
-    } else if ($sort == "module") {
-        $orderby = " ORDER BY cm.id $direction";
-    } else if ($sort == "status") {
-        $orderby = " ORDER BY t.statuscode $direction";
-    } else if ($sort == "id") {
-        $orderby = " ORDER BY t.id $direction";
-    } else if ($sort == "timesubmitted") {
-        $orderby = " ORDER BY t.timesubmitted $direction";
-    }
-    if (!empty($orderby) && ($dir == 'asc' || $dir == 'desc')) {
-        $orderby .= " ".$dir;
-    }
-}
-
-if ($showall or $table->is_downloading()) {
-    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null);
-} else {
-    $urkundfiles = $DB->get_records_sql($sqlallfiles.$orderby, null, $page * $limit, $limit);
-}
+$table->set_sql($sqlfields, $sqlfrom, $sqlwhere, $params);
 
 
-$fs = get_file_storage();
-foreach ($urkundfiles as $tf) {
-    $modulecontext = context_module::instance($tf->cm);
-    $coursemodule = get_coursemodule_from_id($tf->moduletype, $tf->cm);
-
-    $user = "<a href='".$CFG->wwwroot."/user/profile.php?id=".$tf->userid."'>".fullname($tf)."</a>";
-    if (!empty($tf->relateduserid)) {
-        $user .= " (On behalf userid: ".$tf->relateduserid .")";
-    }
-    if ($tf->statuscode == 'Analyzed') { // Sanity check - don't show a resubmit link.
-        $reset = '';
-    } else if ($tf->statuscode == URKUND_STATUSCODE_ACCEPTED) { // Sanity Check.
-        $reset = '<a href="urkund_debug.php?reset=2&id='.$tf->id.'&sesskey='.sesskey().'">'.
-                 get_string('getscore', 'plagiarism_urkund').'</a> | ';
-    } else if ($tf->statuscode == 'Error') { // Show both resubmit and get score links.
-        $reset = '<a href="urkund_debug.php?reset=2&id='.$tf->id.'&sesskey='.sesskey().'">'.
-            get_string('getscore', 'plagiarism_urkund').'</a> | ';
-        $reset .= '<a href="urkund_debug.php?reset=1&id='.$tf->id.'&sesskey='.sesskey().'">'.
-            get_string('resubmit', 'plagiarism_urkund').'</a> | ';
-    } else {
-        $reset = '<a href="urkund_debug.php?reset=1&id='.$tf->id.'&sesskey='.sesskey().'">'.
-                 get_string('resubmit', 'plagiarism_urkund').'</a> | ';
-    }
-    $reset .= '<a href="urkund_debug.php?delete=1&id='.$tf->id.'&sesskey='.sesskey().'">'.get_string('delete').'</a>';
-    $cmurl = new moodle_url($CFG->wwwroot.'/mod/'.$tf->moduletype.'/view.php', array('id' => $tf->cm));
-    $cmlink = html_writer::link($cmurl, shorten_text($coursemodule->name, 40, true), array('title' => $coursemodule->name));
-    $statuscodestring = '';
-    if (!empty($tf->statuscode) && get_string_manager()->string_exists('status_'.$tf->statuscode, 'plagiarism_urkund')) {
-        $statuscodestring = get_string('status_'.$tf->statuscode, 'plagiarism_urkund');
-    }
-    if ($table->is_downloading()) {
-        $row = array($tf->id, $tf->userid, $tf->cm .' '. $tf->moduletype, $tf->identifier, $tf->statuscode. ': ' .$statuscodestring,
-                     $tf->attempt, userdate($tf->timesubmitted), $tf->errorresponse);
-    } else {
-        $options = [
-            'id' => 'item'.$tf->id,
-            'name' => 'item'.$tf->id,
-            'value' => $tf->id,
-        ];
-        $itemcheckbox = new \core\output\checkbox_toggleall('items', false, $options);
-        $statuscode = empty($statuscodestring) ? $tf->statuscode : $statuscodestring;
-        $row = array($OUTPUT->render($itemcheckbox), $tf->id, $user, $cmlink, $tf->identifier, $statuscode, $tf->attempt, userdate($tf->timesubmitted), $reset);
-    }
-
-    $table->add_data($row);
-}
 
 if ($table->is_downloading()) {
     // Include some extra debugging information in the table.
@@ -364,21 +211,23 @@ if ($table->is_downloading()) {
 }
 
 if (!$table->is_downloading()) {
+    echo $OUTPUT->header();
+    $currenttab = 'urkunddebug';
+
+    require_once('urkund_tabs.php');
+
     echo $OUTPUT->heading(get_string('urkundfiles', 'plagiarism_urkund'));
     echo $OUTPUT->box(get_string('explainerrors', 'plagiarism_urkund'));
-    $filterchoices = array(
-        0 => get_string('nofilter', 'plagiarism_urkund'),
-        7 => get_string('filter7', 'plagiarism_urkund'),
-        30 => get_string('filter30', 'plagiarism_urkund'),
-        90 => get_string('filter90', 'plagiarism_urkund'),
-    );
-    echo '<form id="filterdays" action="urkund_debug.php" method="post">';
-    echo '<label>' . get_string('debugfilter', 'plagiarism_urkund') . '&nbsp;';
-    echo html_writer::select($filterchoices, 'filterdays', $filterdays, false);
-    echo '<input type="submit" class="btn btn-sm" value="' . s(get_string('filter')) . '" />';
-    echo '</label></form>';
+
+    $ufiltering->display_add();
+    $ufiltering->display_active();
+
+    echo '<form action="urkund_debug.php" method="post" id="debugform">';
+    echo html_writer::start_div();
+    echo html_writer::tag('input', '', array('type' => 'hidden', 'name' => 'sesskey', 'value' => sesskey()));
+    echo html_writer::tag('input', '', array('type' => 'hidden', 'name' => 'returnto', 'value' => s($PAGE->url->out(false))));
 }
-$table->finish_output();
+$table->out($limit, false);
 if (!$table->is_downloading()) {
     echo html_writer::tag('input', "", array('name' => 'deleteselectedfiles', 'type' => 'submit',
         'id' => 'deleteallselected', 'class' => 'btn btn-secondary',
@@ -387,22 +236,16 @@ if (!$table->is_downloading()) {
     echo html_writer::end_div();
     echo html_writer::empty_tag('hr');
 
-    if (!$showall && $count >= $limit) {
-        $url = $PAGE->url;
-        $url->param('showall', 1);
-        echo $OUTPUT->single_button($url, get_string('showall', 'plagiarism_urkund'), 'get');
-    }
-    $sql = "SELECT DISTINCT statuscode FROM {plagiarism_urkund_files} WHERE statuscode <> 'Analyzed' ORDER BY statuscode";
-    $errortypes = $DB->get_records_sql($sql);
+    $errortypes = plagiarism_urkund_errorcodes();
     // Display reset buttons.
     echo '<div class="urkundresetbuttons">';
-    foreach ($errortypes as $type) {
-        $url->param('resetall', $type->statuscode);
+    foreach ($errortypes as $code => $name) {
+        $url->param('resetall', $code);
         $url->param('sesskey', sesskey());
-        if ($type->statuscode == '202') {
+        if ($code == '202') {
             $buttonstr = get_string('getallscores', 'plagiarism_urkund');
         } else {
-            $buttonstr = get_string('resubmitall', 'plagiarism_urkund', $type->statuscode);
+            $buttonstr = get_string('resubmitall', 'plagiarism_urkund', $name);
         }
         echo $OUTPUT->single_button($url, $buttonstr, 'get');
     }

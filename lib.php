@@ -2379,3 +2379,23 @@ function plagiarism_urkund_checkcronhealth() {
         \core\notification::add(get_string('cronwarningsendfiles', 'plagiarism_urkund'), \core\notification::ERROR);
     }
 }
+
+/**
+ * Helper function to get list of current statuscodes excluding "analyzed".
+ *
+ * @throws dml_exception
+ */
+function plagiarism_urkund_errorcodes() {
+    global $DB;
+    $codes = array();
+    $sql = "SELECT DISTINCT statuscode FROM {plagiarism_urkund_files} WHERE statuscode <> 'Analyzed' ORDER BY statuscode";
+    $statuscodes = $DB->get_records_sql($sql);
+    foreach ($statuscodes as $code) {
+        if (get_string_manager()->string_exists('status_'.$code->statuscode, 'plagiarism_urkund')) {
+            $codes[$code->statuscode] = get_string('status_'.$code->statuscode, 'plagiarism_urkund');
+        } else {
+            $codes[$code->statuscode] = $code->statuscode;
+        }
+    }
+    return $codes;
+}

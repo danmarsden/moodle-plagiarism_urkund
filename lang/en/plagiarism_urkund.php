@@ -33,6 +33,7 @@ $string['assignforcesubmissionstatement_desc'] = 'If enabled, this will force th
 $string['assignsettings'] = 'Assign settings';
 $string['attempts'] = 'Attempts made';
 $string['confirmresetall'] = 'This will reset all files in the state: {$a}';
+$string['courseshortname'] = 'Course shortname';
 $string['cronwarningscores'] = 'The urkund get scores task has not been run for at least 30 min - Cron must be configured to allow URKUND to function correctly.';
 $string['cronwarningsendfiles'] = 'The urkund send files task has not been run for at least 30 min - Cron must be configured to allow URKUND to function correctly.';
 $string['debugfilter'] = 'Filter files by';
