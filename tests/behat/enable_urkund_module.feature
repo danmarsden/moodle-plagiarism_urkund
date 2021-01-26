@@ -1,4 +1,4 @@
-@plugin @plagiarism @plagiarism_urkund
+@plugin @plagiarism @plagiarism_urkund @javascript
 Feature: Enable URKUND for modules
   In order to add plagiarism checking for supported modules
   As a teacher

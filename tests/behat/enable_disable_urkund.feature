@@ -1,4 +1,4 @@
-@plugin @plagiarism @plagiarism_urkund
+@plugin @plagiarism @plagiarism_urkund @javascript
 Feature: Enable Urkund
   In order to enable/disable plagiarism features
   As an Admin
