@@ -341,12 +341,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                 }
 
                 if (!empty($errorcode)) {
-                    if ($errorcode == 3 or $errorcode == 4 or $errorcode == 5001 or $errorcode == 7001) {
-                        // We have custom error messages for these response codes.
-                        $errormessage = get_string('errorcode_' . $errorcode, 'plagiarism_urkund');
-                    } else {
-                        $errormessage = get_string('errorcode_unknown', 'plagiarism_urkund', $errorcode);
-                    }
+                    $errormessage = plagiarism_urkund_get_error_string($errorcode);
                 } else {
                     $errormessage = get_string('errorcode_unknown', 'plagiarism_urkund', '');
                 }
@@ -2398,4 +2393,26 @@ function plagiarism_urkund_errorcodes() {
         }
     }
     return $codes;
+}
+
+/**
+ * Helper function to get error string for a known error code.
+ * 
+ * @param $errorcode
+ * @throws coding_exception
+ *
+ */
+function plagiarism_urkund_get_error_string($errorcode) {
+    // There are some errorcodes that share an error code string.
+    $errorcode = $errorcode == '102' ? '101' : $errorcode;
+    $errorcode = $errorcode == '103' ? '101' : $errorcode;
+    $errorcode = $errorcode == '5001' ? '5000' : $errorcode;
+
+    if (!empty($errorcode)) {
+        if (get_string_manager()->string_exists('errorcode_'.$errorcode, 'plagiarism_urkund')) {
+            return get_string('errorcode_' . $errorcode, 'plagiarism_urkund');
+        } else {
+            return get_string('errorcode_unknown', 'plagiarism_urkund', $errorcode);
+        }
+    }
 }
