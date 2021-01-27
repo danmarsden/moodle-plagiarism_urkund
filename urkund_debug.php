@@ -34,6 +34,8 @@ $delete = optional_param('delete', 0, PARAM_INT);
 $resetall = optional_param('resetall', '', PARAM_ALPHANUMEXT);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 $deleteselected = optional_param('deleteselectedfiles', 0, PARAM_TEXT);
+$deleteallfiltered = optional_param('deleteallfiltered', 0, PARAM_TEXT);
+
 $fileids = optional_param('fileids', '', PARAM_TEXT);
 
 require_login();
@@ -46,6 +48,9 @@ $context = context_system::instance();
 $exportfilename = 'UrkundDebugOutput.csv';
 
 $limit = 50;
+$filters = array('realname' => 0, 'timesubmitted' => 0, 'statuscode' => 0, 'course' => 0);
+$ufiltering = new \plagiarism_urkund\output\filtering($filters, $PAGE->url);
+list($ufextrasql, $ufparams) = $ufiltering->get_sql_filter();
 
 $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
 if (!empty($deleteselected)) {
@@ -84,6 +89,30 @@ if (!empty($deleteselected)) {
         }
         \core\notification::success(get_string('recordsdeleted', 'plagiarism_urkund', $count));
     }
+} else if (!empty($deleteallfiltered)) {
+    $sqlfrom = "FROM {plagiarism_urkund_files} t, {user} u, {modules} m, {course_modules} cm, {course} c
+             WHERE m.id = cm.module AND cm.id = t.cm AND t.userid = u.id AND c.id = cm.course
+                   AND t.statuscode <> 'Analyzed' AND $ufextrasql";
+    $numfiles = $DB->count_records_sql("SELECT count(t.id) $sqlfrom", $ufparams);
+
+    if ($confirm && confirm_sesskey()) {
+            $sql = "DELETE FROM {plagiarism_urkund_files}
+                    WHERE id IN (SELECT t.id $sqlfrom)";
+            $DB->execute($sql, $ufparams);
+        \core\notification::success(get_string('recordsdeleted', 'plagiarism_urkund', $numfiles));
+    } else {
+
+        $params = array('deleteallfiltered' => 1, 'confirm' => 1);
+        $deleteurl = new moodle_url($PAGE->url, $params);
+        echo $OUTPUT->header();
+        echo $OUTPUT->confirm(get_string('areyousurefiltered', 'plagiarism_urkund', $numfiles),
+            $deleteurl, $CFG->wwwroot . '/plagiarism/urkund/urkund_debug.php');
+
+        echo $OUTPUT->footer();
+        exit;
+    }
+
+
 }
 if (!empty($resetall) && confirm_sesskey()) {
     // Check to see if there are any files in this state.
@@ -164,20 +193,16 @@ if (!empty($delete) && confirm_sesskey()) {
 
 $table = new \plagiarism_urkund\output\debug_table('debugtable');
 
-$filters = array('realname' => 0, 'timesubmitted' => 0, 'statuscode' => 0, 'course' => 0);
-$ufiltering = new \plagiarism_urkund\output\filtering($filters, $PAGE->url);
-list($extrasql, $params) = $ufiltering->get_sql_filter();
-
 $userfields = get_all_user_name_fields(true, 'u');
 $sqlfields = "t.*, ".$userfields.", m.name as moduletype, ".
     "cm.course as courseid, cm.instance as cminstance, c.fullname, c.shortname";
 $sqlfrom = "{plagiarism_urkund_files} t, {user} u, {modules} m, {course_modules} cm, {course} c ";
 $sqlwhere = "m.id = cm.module AND cm.id = t.cm AND t.userid = u.id AND c.id = cm.course AND t.statuscode <> 'Analyzed'";
 
-if (!empty($extrasql)) {
-    $sqlwhere .= " and ".$extrasql;
+if (!empty($ufextrasql)) {
+    $sqlwhere .= " and ".$ufextrasql;
 }
-$table->set_sql($sqlfields, $sqlfrom, $sqlwhere, $params);
+$table->set_sql($sqlfields, $sqlfrom, $sqlwhere, $ufparams);
 
 
 
@@ -232,6 +257,13 @@ if (!$table->is_downloading()) {
     echo html_writer::tag('input', "", array('name' => 'deleteselectedfiles', 'type' => 'submit',
         'id' => 'deleteallselected', 'class' => 'btn btn-secondary',
         'value' => get_string('deleteselectedfiles', 'plagiarism_urkund')));
+    if (!empty($ufextrasql)) {
+        // If a filter is in use, show a button to delete all that use this filter.
+        echo html_writer::span(' ');
+        echo html_writer::tag('input', "", array('name' => 'deleteallfiltered', 'type' => 'submit',
+            'id' => 'deleteallfiltered', 'class' => 'btn btn-secondary',
+            'value' => get_string('deleteallfiltered', 'plagiarism_urkund')));
+    }
     echo html_writer::end_tag('form');
     echo html_writer::end_div();
     echo html_writer::empty_tag('hr');

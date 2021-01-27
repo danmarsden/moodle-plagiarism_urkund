@@ -26,6 +26,7 @@
 $string['allowallsupportedfiles'] = 'Allow all supported file types';
 $string['allowallsupportedfiles_help'] = 'This allows the teacher to restrict which file types will be sent to URKUND for processing. It does not prevent students from uploading different file types to the assignment.';
 $string['areyousurebulk'] = 'Are you sure you want to delete the {$a} file(s) selected?';
+$string['areyousurefiltered'] = 'Are you sure you want to delete the {$a} file(s) that match the current filter?';
 $string['assessmentresubmitted'] = 'Assessment resubmitted';
 $string['assignforcesubmissionstatement'] = 'Force assignment submission statement';
 $string['assignforcesubmissionstatement_desc'] = 'If enabled, this will force the assignment submission statement to be enabled when URKUND is enabled in an assignment activity.<br/>
@@ -41,6 +42,7 @@ $string['defaultsdesc'] = 'The following settings are the defaults set when enab
 $string['defaultupdated'] = 'Default values updated';
 $string['deletedwarning'] = 'This file could not be found - it may have been deleted by the user';
 $string['deleteselectedfiles'] = 'Delete selected';
+$string['deleteallfiltered'] = 'Delete all files that match the current filter';
 $string['explainerrors'] = 'This page lists any files that are currently in an error state. <br/>When files are deleted on this page they will not be able to be resubmitted and errors will no longer display to teachers or students';
 $string['file'] = 'File';
 $string['filedeleted'] = 'File deleted from queue';
