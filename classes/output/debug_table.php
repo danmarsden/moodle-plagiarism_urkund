@@ -190,11 +190,14 @@ class debug_table extends \table_sql {
 
         if (strtolower($row->statuscode) == 'error' && !empty($row->errorresponse)) {
             $json = json_decode($row->errorresponse);
-            if (json_last_error() == JSON_ERROR_NONE && !empty($json->Status->ErrorCode)) {
-                $errorcode = (int)$json->Status->ErrorCode;
-                $errorstring = plagiarism_urkund_get_error_string($errorcode);
-                if (!empty($errorstring)) {
-                    return $errorstring;
+            if (json_last_error() == JSON_ERROR_NONE) {
+                $last = end($json); // When multiple results, the last one is the important one.
+                if (!empty($last->Status->ErrorCode)) {
+                    $errorcode = (int)$last->Status->ErrorCode;
+                    $errorstring = plagiarism_urkund_get_error_string($errorcode);
+                    if (!empty($errorstring)) {
+                        return $errorstring;
+                    }
                 }
             }
         }

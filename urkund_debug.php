@@ -31,11 +31,10 @@ require_once($CFG->dirroot.'/plagiarism/urkund/lib.php');
 $id = optional_param('id', 0, PARAM_INT);
 $resetuser = optional_param('reset', 0, PARAM_INT);
 $delete = optional_param('delete', 0, PARAM_INT);
-$resetall = optional_param('resetall', '', PARAM_ALPHANUMEXT);
+$resubmitallfiltered = optional_param('resubmitallfiltered', '', PARAM_TEXT);
 $confirm = optional_param('confirm', 0, PARAM_INT);
 $deleteselected = optional_param('deleteselectedfiles', 0, PARAM_TEXT);
 $deleteallfiltered = optional_param('deleteallfiltered', 0, PARAM_TEXT);
-
 $fileids = optional_param('fileids', '', PARAM_TEXT);
 
 require_login();
@@ -89,52 +88,33 @@ if (!empty($deleteselected)) {
         }
         \core\notification::success(get_string('recordsdeleted', 'plagiarism_urkund', $count));
     }
-} else if (!empty($deleteallfiltered)) {
+} else if (!empty($deleteallfiltered) || !empty($resubmitallfiltered)) {
     $sqlfrom = "FROM {plagiarism_urkund_files} t, {user} u, {modules} m, {course_modules} cm, {course} c
              WHERE m.id = cm.module AND cm.id = t.cm AND t.userid = u.id AND c.id = cm.course
                    AND t.statuscode <> 'Analyzed' AND $ufextrasql";
     $numfiles = $DB->count_records_sql("SELECT count(t.id) $sqlfrom", $ufparams);
-
-    if ($confirm && confirm_sesskey()) {
-            $sql = "DELETE FROM {plagiarism_urkund_files}
-                    WHERE id IN (SELECT t.id $sqlfrom)";
-            $DB->execute($sql, $ufparams);
-        \core\notification::success(get_string('recordsdeleted', 'plagiarism_urkund', $numfiles));
-    } else {
-
-        $params = array('deleteallfiltered' => 1, 'confirm' => 1);
+    if (!$confirm) {
+        $params = array('deleteallfiltered' => $deleteallfiltered,
+            'resubmitallfiltered' => $resubmitallfiltered, 'confirm' => 1);
         $deleteurl = new moodle_url($PAGE->url, $params);
+        $areyousure = !empty($deleteallfiltered) ? 'areyousurefiltereddelete' : 'areyousurefilteredresubmit';
         echo $OUTPUT->header();
-        echo $OUTPUT->confirm(get_string('areyousurefiltered', 'plagiarism_urkund', $numfiles),
+        echo $OUTPUT->confirm(get_string($areyousure, 'plagiarism_urkund', $numfiles),
             $deleteurl, $CFG->wwwroot . '/plagiarism/urkund/urkund_debug.php');
 
         echo $OUTPUT->footer();
         exit;
-    }
-
-
-}
-if (!empty($resetall) && confirm_sesskey()) {
-    // Check to see if there are any files in this state.
-    if (!$confirm) {
-        // Show confirmation message.
-        echo $OUTPUT->header();
-        $confirmurl = $PAGE->url;
-        $confirmurl->params(array('resetall' => $resetall, 'confirm' => 1));
-        echo $OUTPUT->confirm(get_string('confirmresetall', 'plagiarism_urkund', $resetall), $confirmurl, $PAGE->url);
-        echo $OUTPUT->footer();
-        exit;
-
-    } else {
-        if ($resetall == '202') {
-            // Reset attempt value so that we restart the attempt cycle for these records.
-            // We don't do this for file submissions because if they fail sending the file it's as likely to change.
-            $DB->set_field('plagiarism_urkund_files', 'attempt', 1, array('statuscode' => $resetall));
-        }
-        $files = $DB->get_records('plagiarism_urkund_files', array('statuscode' => $resetall));
-        $i = 0;
-        foreach ($files as $plagiarismfile) {
-            if ($resetall == '202') {
+    } else if ($confirm && confirm_sesskey()) {
+        if (!empty($deleteallfiltered)) {
+            $sql = "DELETE FROM {plagiarism_urkund_files}
+                    WHERE id IN (SELECT t.id $sqlfrom)";
+            $DB->execute($sql, $ufparams);
+            \core\notification::success(get_string('recordsdeleted', 'plagiarism_urkund', $numfiles));
+        } else {
+            // Deal with any 202 files first.
+            // Reset their attempt value
+            $pfiles = $DB->get_records_sql("SELECT t.* $sqlfrom AND t.statuscode = '202'", $ufparams);
+            foreach ($pfiles as $plagiarismfile) {
                 $file = urkund_get_score($plagiarismsettings, $plagiarismfile, true);
                 // Reset attempts as this was a manual check.
                 $file->attempt = $file->attempt - 1;
@@ -150,17 +130,13 @@ if (!empty($resetall) && confirm_sesskey()) {
                         echo plagiarism_urkund_pretty_print($file);
                     }
                 }
-                echo "<p>";
-                echo "id:" . $file->id . ' ' . $response;
-                echo "</p>";
-            } else {
+            }
+            // Now deal with the other files.
+            $pfiles = $DB->get_records_sql("SELECT t.* $sqlfrom AND t.statuscode <> '202'", $ufparams);
+            foreach ($pfiles as $plagiarismfile) {
                 urkund_reset_file($plagiarismfile, $plagiarismsettings);
             }
-
-            $i++;
-        }
-        if (!empty($i)) {
-            \core\notification::success(get_string('filesresubmitted', 'plagiarism_urkund', $i));
+            \core\notification::success(get_string('filesresubmitted', 'plagiarism_urkund', $numfiles));
         }
     }
 }
@@ -203,8 +179,6 @@ if (!empty($ufextrasql)) {
     $sqlwhere .= " and ".$ufextrasql;
 }
 $table->set_sql($sqlfields, $sqlfrom, $sqlwhere, $ufparams);
-
-
 
 if ($table->is_downloading()) {
     // Include some extra debugging information in the table.
@@ -263,24 +237,14 @@ if (!$table->is_downloading()) {
         echo html_writer::tag('input', "", array('name' => 'deleteallfiltered', 'type' => 'submit',
             'id' => 'deleteallfiltered', 'class' => 'btn btn-secondary',
             'value' => get_string('deleteallfiltered', 'plagiarism_urkund')));
+        echo html_writer::span(' ');
+        echo html_writer::tag('input', "", array('name' => 'resubmitallfiltered', 'type' => 'submit',
+            'id' => 'resubmitallfiltered', 'class' => 'btn btn-secondary',
+            'value' => get_string('resubmitallfiltered', 'plagiarism_urkund')));
     }
     echo html_writer::end_tag('form');
     echo html_writer::end_div();
     echo html_writer::empty_tag('hr');
-
-    $errortypes = plagiarism_urkund_errorcodes();
-    // Display reset buttons.
-    echo '<div class="urkundresetbuttons">';
-    foreach ($errortypes as $code => $name) {
-        $url->param('resetall', $code);
-        $url->param('sesskey', sesskey());
-        if ($code == '202') {
-            $buttonstr = get_string('getallscores', 'plagiarism_urkund');
-        } else {
-            $buttonstr = get_string('resubmitall', 'plagiarism_urkund', $name);
-        }
-        echo $OUTPUT->single_button($url, $buttonstr, 'get');
-    }
 
     echo "</div>";
     echo $OUTPUT->footer();

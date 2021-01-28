@@ -332,8 +332,8 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
 
                 $json = json_decode($results['error']);
                 if (json_last_error() == JSON_ERROR_NONE) {
-                    // JSON.
-                    $errorcode = (int)$json->Status->ErrorCode;
+                    $last = end($json); // When multiple results, the last one is the important one.
+                    $errorcode = (int)$last->Status->ErrorCode;
                 } else {
                     // This is an old error - might be stored in XML.
                     $xml = simplexml_load_string($results['error']);
@@ -976,21 +976,19 @@ function plagiarism_urkund_coursemodule_edit_post_actions($data, $course) {
  */
 function plagiarism_urkund_coursemodule_validation($data) {
     $data = $data->get_submitted_data();
-    if (array_key_exists('use_urkund', $data)) {
-        if ($data->use_urkund) {
-            $plugin = new plagiarism_plugin_urkund();
-            if (empty($data->urkund_receiver)) {
-                $result = $plugin->load_receiver();
-                if (!empty($result['error']) && !empty($result['msg'])) {
-                    return array('urkund_receiver' => $result['msg']);
-                }
-                return array('urkund_receiver' => get_string('receivernotvalid', 'plagiarism_urkund'));
+    if (!empty($data->use_urkund)) {
+        $plugin = new plagiarism_plugin_urkund();
+        if (empty($data->urkund_receiver)) {
+            $result = $plugin->load_receiver();
+            if (!empty($result['error']) && !empty($result['msg'])) {
+                return array('urkund_receiver' => $result['msg']);
             }
+            return array('urkund_receiver' => get_string('receivernotvalid', 'plagiarism_urkund'));
+        }
 
-            $result = $plugin->validate_receiver($data->urkund_receiver);
-            if ($result === 404) {
-                return array('urkund_receiver' => get_string('receivernotvalid', 'plagiarism_urkund'));
-            }
+        $result = $plugin->validate_receiver($data->urkund_receiver);
+        if ($result === 404) {
+            return array('urkund_receiver' => get_string('receivernotvalid', 'plagiarism_urkund'));
         }
     }
     return array();

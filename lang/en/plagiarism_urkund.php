@@ -26,7 +26,8 @@
 $string['allowallsupportedfiles'] = 'Allow all supported file types';
 $string['allowallsupportedfiles_help'] = 'This allows the teacher to restrict which file types will be sent to URKUND for processing. It does not prevent students from uploading different file types to the assignment.';
 $string['areyousurebulk'] = 'Are you sure you want to delete the {$a} file(s) selected?';
-$string['areyousurefiltered'] = 'Are you sure you want to delete the {$a} file(s) that match the current filter?';
+$string['areyousurefiltereddelete'] = 'Are you sure you want to delete the {$a} file(s) that match the current filter?';
+$string['areyousurefilteredresubmit'] = 'Are you sure you want to resubmit the {$a} file(s) that match the current filter?';
 $string['assessmentresubmitted'] = 'Assessment resubmitted';
 $string['assignforcesubmissionstatement'] = 'Force assignment submission statement';
 $string['assignforcesubmissionstatement_desc'] = 'If enabled, this will force the assignment submission statement to be enabled when URKUND is enabled in an assignment activity.<br/>
@@ -80,6 +81,7 @@ $string['restrictcontenttext'] = 'Only submit in-line text';
 $string['restrictfiles'] = 'File types to submit';
 $string['resubmit'] = 'Resubmit';
 $string['resubmitall'] = 'Resubmit all with status: {$a}';
+$string['resubmitallfiltered'] = 'Resubmit all files that match the current filter';
 $string['savedconfigfailed'] = 'An incorrect username/password combination or api address has been entered, URKUND has been disabled, please try again.';
 $string['savedconfigsuccess'] = 'Plagiarism Settings Saved';
 $string['scoreavailable'] = 'This file has been processed by URKUND and a report is now available.';
