@@ -112,7 +112,7 @@ if (!empty($deleteselected)) {
             \core\notification::success(get_string('recordsdeleted', 'plagiarism_urkund', $numfiles));
         } else {
             // Deal with any 202 files first.
-            // Reset their attempt value
+            // Reset their attempt value.
             $pfiles = $DB->get_records_sql("SELECT t.* $sqlfrom AND t.statuscode = '202'", $ufparams);
             foreach ($pfiles as $plagiarismfile) {
                 $file = urkund_get_score($plagiarismsettings, $plagiarismfile, true);

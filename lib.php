@@ -2395,8 +2395,8 @@ function plagiarism_urkund_errorcodes() {
 
 /**
  * Helper function to get error string for a known error code.
- * 
- * @param $errorcode
+ *
+ * @param string $errorcode - code from errorresponse.
  * @throws coding_exception
  *
  */

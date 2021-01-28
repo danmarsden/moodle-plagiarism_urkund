@@ -76,7 +76,8 @@ class debug_table extends \table_sql {
             $headers[] = $OUTPUT->render($mastercheckbox);
         }
 
-        $columns = array_merge($columns, array('id', 'fullname', 'course', 'activity', 'identifier', 'statuscode', 'attempt', 'timesubmitted'));
+        $columns = array_merge($columns, array('id', 'fullname', 'course', 'activity', 'identifier',
+                                               'statuscode', 'attempt', 'timesubmitted'));
         $headers = array_merge($headers, array(get_string('id', 'plagiarism_urkund'),
             get_string('user'),
             get_string('course'),
