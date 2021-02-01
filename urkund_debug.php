@@ -245,7 +245,5 @@ if (!$table->is_downloading()) {
     echo html_writer::end_tag('form');
     echo html_writer::end_div();
     echo html_writer::empty_tag('hr');
-
-    echo "</div>";
     echo $OUTPUT->footer();
 }
