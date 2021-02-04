@@ -227,4 +227,44 @@ class debug_table extends \table_sql {
 
         return \html_writer::link(new \moodle_url('/course/view.php', array('id' => $courseid)), $row->shortname);
     }
+
+    /**
+     * Finish output - add some extra debug output to end of table when downloading.
+     *
+     * @param bool $closeexportclassdoc
+     * @throws \dml_exception
+     */
+    public function finish_output($closeexportclassdoc = true) {
+        global $DB;
+        if ($this->is_downloading()) {
+            // Include some extra debugging information in the table.
+            // Add some extra lines first.
+            $this->add_data(array());
+            $this->add_data(array());
+            $this->add_data(array());
+            $this->add_data(array());
+            $lastcron = $DB->get_field_sql('SELECT MAX(lastcron) FROM {modules}');
+            if ($lastcron < time() - 3600 * 0.5) { // Check if run in last 30min.
+                $this->add_data(array('', 'errorcron', 'lastrun: '.userdate($lastcron), 'not run in last 30min'));;
+            }
+            $this->add_data(array());
+            $this->add_data(array());
+
+            $configrecords = $DB->get_records('plagiarism_urkund_config');
+            $this->add_data(array('id', 'cm', 'name', 'value'));
+            foreach ($configrecords as $cf) {
+                $this->add_data(array($cf->id, $cf->cm, $cf->name, $cf->value));
+            }
+            if (!empty($heldevents)) {
+                $this->add_data(array());
+                $this->add_data(array());
+                foreach ($heldevents as $e) {
+                    $e->eventdata = unserialize(base64_decode($e->eventdata));
+                    $this->add_data(array('heldevent', $e->status, $e->component, $e->eventname, var_export($e, true)));
+                }
+            }
+        }
+        // Now call finish output to end.
+        parent::finish_output($closeexportclassdoc);
+    }
 }

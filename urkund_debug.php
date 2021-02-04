@@ -180,34 +180,6 @@ if (!empty($ufextrasql)) {
 }
 $table->set_sql($sqlfields, $sqlfrom, $sqlwhere, $ufparams);
 
-if ($table->is_downloading()) {
-    // Include some extra debugging information in the table.
-    // Add some extra lines first.
-    $table->add_data(array());
-    $table->add_data(array());
-    $table->add_data(array());
-    $table->add_data(array());
-    $lastcron = $DB->get_field_sql('SELECT MAX(lastcron) FROM {modules}');
-    if ($lastcron < time() - 3600 * 0.5) { // Check if run in last 30min.
-        $table->add_data(array('', 'errorcron', 'lastrun: '.userdate($lastcron), 'not run in last 30min'));;
-    }
-    $table->add_data(array());
-    $table->add_data(array());
-
-    $configrecords = $DB->get_records('plagiarism_urkund_config');
-    $table->add_data(array('id', 'cm', 'name', 'value'));
-    foreach ($configrecords as $cf) {
-        $table->add_data(array($cf->id, $cf->cm, $cf->name, $cf->value));
-    }
-    if (!empty($heldevents)) {
-        $table->add_data(array());
-        $table->add_data(array());
-        foreach ($heldevents as $e) {
-            $e->eventdata = unserialize(base64_decode($e->eventdata));
-            $table->add_data(array('heldevent', $e->status, $e->component, $e->eventname, var_export($e, true)));
-        }
-    }
-}
 
 if (!$table->is_downloading()) {
     echo $OUTPUT->header();
