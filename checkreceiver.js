@@ -91,8 +91,8 @@ M.plagiarism_urkund.init = function(Y, contextid) {
                     var jsondata = Y.JSON.parse(response.responseText);
                     var form = Y.one('#id_urkund_receiver');
                     if (typeof jsondata.error != 'undefined') {
-                        var ertxt = '<div class="form-control-feedback invalid-feedback" id="id_error_urkund_receiver" style="display: block;">' +
-                             jsondata.msg + '</div>';
+                        var ertxt = '<div class="form-control-feedback invalid-feedback" id="id_error_urkund_receiver"' +
+                            'style="display: block;">' + jsondata.msg + '</div>';
                         form.insert(ertxt, 'after');
                         form.insert(invalid, 'after');
                     } else {
@@ -124,7 +124,7 @@ M.plagiarism_urkund.init = function(Y, contextid) {
     }
     // Validate on change.
     /* jshint unused: vars */
-    receiver.on('change', function () {
+    receiver.on('change', function() {
         checkUrkundReceiver(Y, receiver, contextid);
     });
 };
