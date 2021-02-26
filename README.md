@@ -1,20 +1,18 @@
-# URKUND Plagiarism plugin for Moodle [![Build Status](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund.svg?branch=main)](https://travis-ci.org/danmarsden/moodle-plagiarism_urkund)
+# Ouriginal Plagiarism plugin for Moodle
 
 * Author: Dan Marsden <dan@danmarsden.com>
-* Copyright: Prioinfo AB, http://www.urkund.com, http://www.prioinfo.se
+* Copyright: Ouriginal, http://www.ouriginal.com
 
-URKUND is a commercial Plagiarism Prevention product owned by PrioInfo AB - you must have a paid subscription to be able to use this plugin.
+Ouriginal (Previously called Urkund) is a commercial plagiarism prevention product - you must have a paid subscription to be able to use this plugin.
 
-Branches
+Supported branches
 --------
 The git branches here support the following versions.
 
 | Moodle version     | Branch      | PHP  |
 | ----------------- | ----------- | ---- |
-| Mooodle 3.3   | MOODLE_33_STABLE | 5.6+ |
-| Mooodle 3.4   | MOODLE_34_STABLE | 7.0+ |
 | Moodle 3.5 to 3.8 | MOODLE_38_STABLE | 7.0+ |
-| Moodle 3.9+ | main | 7.2+ |
+| Moodle 3.9 and higher | main | 7.2+ |
 
 ## Quiz - Essay question support.
 The latest version of this plugin provides support for essay questions within the quiz activity, however Moodle doesn't
@@ -27,7 +25,7 @@ If you are unfamiliar with using a git patch, you may need to wait unti Moodle i
 1. Place these files in a new folder in your Moodle install under /plagiarism/urkund
 2. Visit the Notifications page in Moodle to trigger the upgrade scripts
 3. Enable the Plagiarism API under admin > Advanced Features
-4. Configure the URKUND plugin under admin > plugins > Plagiarism > URKUND
+4. Configure the Ouriginal plugin under admin > plugins > Plagiarism > Ouriginal
 
 For more information see: https://docs.moodle.org/en/Plagiarism_Prevention_URKUND
 
