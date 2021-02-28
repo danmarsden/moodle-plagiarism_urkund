@@ -27,6 +27,6 @@ If you are unfamiliar with using a git patch, you may need to wait unti Moodle i
 3. Enable the Plagiarism API under admin > Advanced Features
 4. Configure the Ouriginal plugin under admin > plugins > Plagiarism > Ouriginal
 
-For more information see: https://docs.moodle.org/en/Plagiarism_Prevention_URKUND
+For more information see: https://docs.moodle.org/en/Plagiarism_Prevention_Ouriginal
 
 
