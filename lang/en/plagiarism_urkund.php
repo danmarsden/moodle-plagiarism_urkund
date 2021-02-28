@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <http://www.gnu.org/licenses/>.
 
 /**
- * Language strings for Urkund plugin.
+ * Language strings for Ouriginal plugin.
  *
  * @package    plagiarism_urkund
  * @author     Dan Marsden <dan@danmarsden.com>
@@ -57,7 +57,7 @@ $string['getallscores'] = 'Get all scores';
 $string['getscore'] = 'Get score';
 $string['getscores'] = 'Get scores';
 $string['heldevents'] = 'Held events';
-$string['heldeventsdescription'] = 'These are events that did not complete on the first attempt and were queued for resubmission - these prevent subsequent events from completing and may need further investigation. Some of these events may not be relevant to URKUND.';
+$string['heldeventsdescription'] = 'These are events that did not complete on the first attempt and were queued for resubmission - these prevent subsequent events from completing and may need further investigation. Some of these events may not be relevant to Ouriginal.';
 $string['id'] = 'ID';
 $string['identifier'] = 'Identifier';
 $string['module'] = 'Module';
@@ -74,7 +74,7 @@ $string['receivernotvalid'] = 'This is not a valid receiver address.';
 $string['recordsdeleted'] = '{$a} error(s) were deleted';
 $string['report'] = 'report';
 $string['restrictcontent'] = 'Submit attached files and in-line text';
-$string['restrictcontent_help'] = 'Ouriginal can process uploaded files but can also process in-line text from forum posts and text from the online text assignment submission type. You can decide which components to send to URKUND.';
+$string['restrictcontent_help'] = 'Ouriginal can process uploaded files but can also process in-line text from forum posts and text from the online text assignment submission type. You can decide which components to send to Ouriginal.';
 $string['restrictcontentfiles'] = 'Only submit attached files';
 $string['restrictcontentno'] = 'Submit everything';
 $string['restrictcontenttext'] = 'Only submit in-line text';
@@ -133,7 +133,7 @@ $string['urkund_lang_help'] = 'Language code provided by Ouriginal';
 $string['urkund_password'] = 'Password';
 $string['urkund_password_help'] = 'Password provided by Ouriginal to access the API';
 $string['urkund_unitid'] = 'Unit ID';
-$string['urkund_unitid_help'] = 'Ouriginal can automatically create receiver addresses for each user, leave this setting empty if you want to use the same default address for all assignments, contact Urkund for the unitid to use if you would like to use this feature. Warning: setting this value will also clear your site-level default receiver addresses as these will no longer apply.';
+$string['urkund_unitid_help'] = 'Ouriginal can automatically create receiver addresses for each user, leave this setting empty if you want to use the same default address for all assignments, contact Ouriginal for the unitid to use if you would like to use this feature. Warning: setting this value will also clear your site-level default receiver addresses as these will no longer apply.';
 $string['urkund_receiver'] = 'Receiver address';
 $string['urkund_receiver_help'] = 'This is the unique address provided from Ouriginal for the teacher';
 $string['urkund_resubmit_on_close'] = 'Resubmit on close';
