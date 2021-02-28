@@ -330,5 +330,17 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2020062500, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2021030100) {
+        // Check Student disclosure setting - if set to old default, change it to the new one.
+
+        $disclosure = get_config('plagiarism_urkund', 'student_disclosure');
+        $newstring = str_replace("URKUND", "Ouriginal", $disclosure);
+        if ($disclosure != $newstring) {
+            set_config('student_disclosure', $newstring, 'plagiarism_urkund');
+        }
+
+        upgrade_plugin_savepoint(true, 2021030100, 'plagiarism', 'urkund');
+    }
+
     return true;
 }

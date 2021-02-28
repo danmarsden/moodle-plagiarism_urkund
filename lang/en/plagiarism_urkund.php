@@ -94,7 +94,7 @@ $string['similarity'] = 'Ouriginal';
 $string['status'] = 'Status';
 $string['storedocuments'] = 'Add submissions to Ouriginal database';
 $string['storedocuments_help'] = 'If set to yes, submissions will be added to the Ouriginal database for future comparison with other submissions, if set to No the document will be deleted from Ouriginal after anaylsis is complete.';
-$string['studentdisclosure'] = 'Student Disclosure';
+$string['studentdisclosure'] = 'Student disclosure';
 $string['studentdisclosure_help'] = 'This text will be displayed to all students on the file upload page.';
 $string['studentdisclosuredefault']  = 'All files uploaded will be submitted to the plagiarism detection service Ouriginal,
 If you wish to prevent your document from being used as a source for analysis outside this site by other organisations you can use the opt-out link provided after the report has been generated.';
