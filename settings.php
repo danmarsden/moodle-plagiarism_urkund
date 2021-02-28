@@ -75,7 +75,7 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     }
     foreach ($data as $field => $value) {
         if ($field != 'submitbutton') { // Ignore the button.
-            $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with uasername/password
+            $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with username/password.
             if ($field == 'api') { // Strip trailing slash from api.
                 $value = rtrim($value, '/');
             }
