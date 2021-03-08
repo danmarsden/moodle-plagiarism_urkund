@@ -54,7 +54,7 @@ class plagiarism_urkund_setup_form extends moodleform {
         $mform->addElement('passwordunmask', 'password', get_string('urkund_password', 'plagiarism_urkund'));
         $mform->addHelpButton('password', 'urkund_password', 'plagiarism_urkund');
         $mform->addRule('password', null, 'required', null, 'client');
-        $mform->setType('password', PARAM_TEXT);
+        $mform->setType('password', PARAM_RAW);
 
         $mform->addElement('text', 'unitid', get_string('urkund_unitid', 'plagiarism_urkund'));
         $mform->addHelpButton('unitid', 'urkund_unitid', 'plagiarism_urkund');
