@@ -16,6 +16,7 @@ Feature: Enable Ouriginal
     When I set the field "Enable Ouriginal" to "1"
     And I set the field "Username" to "1"
     And I set the field "Password" to "1"
+    And I set the field "Ouriginal integration address" to "https://secure.urkund.com"
     And I set the field "Enable Ouriginal for assign" to "1"
     And I set the field "Enable Ouriginal for forum" to "1"
     And I set the field "Enable Ouriginal for workshop" to "1"
