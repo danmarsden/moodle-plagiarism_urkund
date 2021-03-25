@@ -14,18 +14,18 @@ Feature: Enable Ouriginal for modules
     And the following "course enrolments" exist:
       | user | course | role |
       | teacher1 | C1 | editingteacher |
+    And the following config values are set as admin:
+      | enableplagiarism | 1 |
+    And the following config values are set as admin:
+      | enabled | 1 | plagiarism_urkund |
+      | api | https://secure.urkund.com | plagiarism_urkund |
+      | username | 1 | plagiarism_urkund |
+      | password | 1 | plagiarism_urkund |
+      | enable_mod_assign | 1 | plagiarism_urkund |
+      | enable_mod_forum | 1 | plagiarism_urkund |
+      | enable_mod_workshop | 1 | plagiarism_urkund |
     And I log in as "admin"
-    And I navigate to "Advanced features" in site administration
-    And I set the field "Enable plagiarism plugins" to "1"
-    And I press "Save changes"
     And I navigate to "Plugins > Plagiarism > Ouriginal plagiarism plugin" in site administration
-    And I set the field "Enable Ouriginal" to "1"
-    And I set the field "Username" to "1"
-    And I set the field "Password" to "1"
-    And I set the field "Enable Ouriginal for assign" to "1"
-    And I set the field "Enable Ouriginal for forum" to "1"
-    And I set the field "Enable Ouriginal for workshop" to "1"
-    And I press "Save changes"
     And I follow "Ouriginal defaults"
     And I set the field "Show similarity score to student" to "Always"
     And I set the field "Show similarity report to student" to "Always"
