@@ -1023,6 +1023,7 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
         return;
     }
     $context = context_course::instance($formwrapper->get_course()->id);
+    $canenable = true;
     if (!empty($cmid)) {
         $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
         // If this is an older assignment, it may not have a resubmit_on_close setting in place.
@@ -1030,6 +1031,17 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
         // without being specified.
         if (!empty($plagiarismvalues) && !isset($plagiarismvalues['urkund_resubmit_on_close'])) {
             $plagiarismvalues['urkund_resubmit_on_close'] = 0;
+        }
+
+        // If preventexisting is set, only Site admins can enable urkund when submissions exist.
+        if ($modulename = 'mod_assign' && !is_siteadmin() &&
+            get_config('plagiarism_urkund', 'assignpreventexistingenable')) {
+            require_once($CFG->dirroot . '/mod/assign/locallib.php');
+            $cm = get_coursemodule_from_id('assign', $cmid);
+            if ($DB->record_exists_select('assign_submission', "assignment = ? AND status <> ?",
+                [$cm->instance, ASSIGN_SUBMISSION_STATUS_NEW])) {
+                $canenable = false;
+            }
         }
     }
     // Get Defaults - cmid(0) is the default list.
@@ -1041,7 +1053,7 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
         }
     }
 
-    if (has_capability('plagiarism/urkund:enable', $context)) {
+    if (has_capability('plagiarism/urkund:enable', $context) && $canenable) {
         urkund_get_form_elements($mform);
         if ($mform->elementExists('urkund_draft_submit') && $mform->elementExists('submissiondrafts')) {
             $mform->hideif('urkund_draft_submit', 'submissiondrafts', 'eq', 0);
@@ -1066,6 +1078,11 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
         foreach ($plagiarismelements as $element) {
             $mform->addElement('hidden', $element);
         }
+        $mform->setType('urkund_storedocuments', PARAM_INT);
+        $mform->setType('urkund_restrictcontent', PARAM_INT);
+        $mform->setType('urkund_selectfiletypes', PARAM_TAGLIST);
+        $mform->setType('urkund_allowallfile', PARAM_INT);
+        $mform->setType('urkund_resubmit_on_close', PARAM_INT);
     }
     $mform->setType('use_urkund', PARAM_INT);
     $mform->setType('urkund_show_student_score', PARAM_INT);

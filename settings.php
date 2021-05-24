@@ -73,6 +73,9 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
     if (!isset($data->assignforcesubmissionstatement)) {
         $data->assignforcesubmissionstatement = 0;
     }
+    if (!isset($data->assignpreventexistingenable)) {
+        $data->assignpreventexistingenable = 0;
+    }
     foreach ($data as $field => $value) {
         if ($field != 'submitbutton') { // Ignore the button.
             $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with username/password.
