@@ -85,7 +85,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      *
      * @return mixed - false if not enabled, or returns an array of relevant settings.
      */
-    static public function get_settings() {
+    public static function get_settings() {
         static $plagiarismsettings;
         if (!empty($plagiarismsettings) || $plagiarismsettings === false) {
             return $plagiarismsettings;
@@ -715,6 +715,10 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      * @param string $receiver
      */
     public function validate_receiver($receiver) {
+        if (defined('BEHAT_SITE_RUNNING')) {
+            // If running behat tests/ fake a failure.
+            return false;
+        }
         $plagiarismsettings = $this->get_settings();
         $url = get_config('plagiarism_urkund', 'api') .'/api/receivers'.'/'. trim($receiver);;
 
