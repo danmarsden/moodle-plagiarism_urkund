@@ -60,22 +60,15 @@ if (($data = $mform->get_data()) && confirm_sesskey()) {
             }
         }
     }
+    // This form contains some checkboxes - set them to 0 if needed.
+    $checkboxes = ['optout', 'hidefilename', 'userpref', 'assignforcesubmissionstatement',
+                   'assignpreventexistingenable', 'assignforcedisclosureagreement'];
+    foreach ($checkboxes as $c) {
+        if (!isset($data->$c)) {
+            $data->$c = 0;
+        }
+    }
 
-    if (!isset($data->optout)) {
-        $data->optout = 0;
-    }
-    if (!isset($data->hidefilename)) {
-        $data->hidefilename = 0;
-    }
-    if (!isset($data->userpref)) {
-        $data->userpref = 0;
-    }
-    if (!isset($data->assignforcesubmissionstatement)) {
-        $data->assignforcesubmissionstatement = 0;
-    }
-    if (!isset($data->assignpreventexistingenable)) {
-        $data->assignpreventexistingenable = 0;
-    }
     foreach ($data as $field => $value) {
         if ($field != 'submitbutton') { // Ignore the button.
             $value = trim($value); // Strip trailing spaces to help prevent copy/paste issues with username/password.

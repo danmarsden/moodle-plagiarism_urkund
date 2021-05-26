@@ -109,6 +109,10 @@ class plagiarism_urkund_setup_form extends moodleform {
             $mform->addElement('checkbox', 'assignpreventexistingenable',
                 get_string('assignpreventexistingenable', 'plagiarism_urkund').
                 '<br/>'.get_string('assignpreventexistingenable_desc', 'plagiarism_urkund'));
+
+            $mform->addElement('checkbox', 'assignforcedisclosureagreement',
+                get_string('assignforcedisclosureagreement', 'plagiarism_urkund').
+                '<br/>'.get_string('assignforcedisclosureagreement_desc', 'plagiarism_urkund'));
         }
 
         $this->add_action_buttons(true);

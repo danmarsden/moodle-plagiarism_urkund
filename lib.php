@@ -536,7 +536,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
      * @return string
      */
     public function print_disclosure($cmid) {
-        global $OUTPUT;
+        global $OUTPUT, $USER, $SESSION;
 
         $outputhtml = '';
 
@@ -544,11 +544,40 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $plagiarismsettings = $this->get_settings();
         if (!empty($plagiarismsettings['student_disclosure']) &&
             !empty($urkunduse)) {
-                $outputhtml .= $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
-                $formatoptions = new stdClass;
-                $formatoptions->noclean = true;
-                $outputhtml .= format_text($plagiarismsettings['student_disclosure'], FORMAT_MOODLE, $formatoptions);
-                $outputhtml .= $OUTPUT->box_end();
+            $cm = get_coursemodule_from_id('', $cmid);
+            if ($cm->modname == 'assign' && !empty($plagiarismsettings['assignforcedisclosureagreement'])) {
+                $confirmdisclosure = optional_param('ouriginalagreement', false, PARAM_BOOL);
+                $userid = optional_param('userid', false, PARAM_INT);
+                if (!empty($userid) && $userid <> $USER->id) {
+
+                    // Add the notification directly to the session.
+                    // We can't use redirect/notify here because we are mid-state.
+                    if (!isset($SESSION->notifications) || !array($SESSION->notifications)) {
+                        // Initialise $SESSION if necessary.
+                        if (!is_object($SESSION)) {
+                            $SESSION = new stdClass();
+                        }
+                        $SESSION->notifications = [];
+                    }
+                    $SESSION->notifications[] = (object) array(
+                        'message'   => get_string('cannotsubmitonbehalf', 'plagiarism_urkund'),
+                        'type'      => null,
+                    );
+
+                    $url = new moodle_url('/mod/assign/view.php', ['id' => $cmid]);
+                    redirect($url);
+                }
+                if (!$confirmdisclosure) {
+                    $url = new moodle_url('/plagiarism/urkund/agreement.php', ['id' => $cmid]);
+                    redirect($url);
+                }
+            }
+
+            $outputhtml .= $OUTPUT->box_start('generalbox boxaligncenter', 'intro');
+            $formatoptions = new stdClass;
+            $formatoptions->noclean = true;
+            $outputhtml .= format_text($plagiarismsettings['student_disclosure'], FORMAT_MOODLE, $formatoptions);
+            $outputhtml .= $OUTPUT->box_end();
         }
         return $outputhtml;
     }
