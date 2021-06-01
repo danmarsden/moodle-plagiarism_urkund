@@ -9,9 +9,9 @@ Supported branches
 --------
 The git branches here support the following versions.
 
-| Moodle version     | Branch      | PHP  |
-| ----------------- | ----------- | ---- |
-| Moodle 3.5 to 3.8 | MOODLE_38_STABLE | 7.0+ |
+| Moodle version     | Branch      | PHP  | Support |
+| ----------------- | ----------- | ---- | -------- |
+| Moodle 3.5 to 3.8 | MOODLE_38_STABLE | 7.0+ | Security fixes only - these versions are no longer supported by Moodle. |
 | Moodle 3.9 and higher | main | 7.2+ |
 
 ## Quiz - Essay question support.
