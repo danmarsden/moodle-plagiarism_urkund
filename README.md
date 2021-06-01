@@ -14,9 +14,9 @@ The git branches here support the following versions.
 | Moodle 3.5 to 3.8 | MOODLE_38_STABLE | 7.0+ | Security fixes only - these versions are no longer supported by Moodle. |
 | Moodle 3.9 and higher | main | 7.2+ |
 
-## Quiz - Essay question support.
-The latest version of this plugin provides support for essay questions within the quiz activity, however Moodle doesn't
-provide a way for you to view the score/report. To allow the report to be viewed you must add a patch to the core Moodle code-base.
+## Quiz - Essay question support for versions prior to 3.10
+The latest version of this plugin provides support for essay questions within the quiz activity, however Moodle versions prior to 3.10 don't
+provide a way for you to view the score/report. To allow the report to be viewed in older releases you must add a patch to the core Moodle code-base.
 More information on this is in the Moodle tracker: [MDL-32226](https://tracker.moodle.org/browse/MDL-32226)
 For a direct link to the patch required see: https://github.com/moodle/moodle/commit/dfe73fadfcf0bae603aa58707e48182a221eea5a
 
