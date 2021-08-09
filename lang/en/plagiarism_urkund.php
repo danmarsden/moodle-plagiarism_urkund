@@ -183,6 +183,7 @@ $string['resubmittourkund'] = 'Regenerate all Ouriginal reports';
 $string['regenerationrequested'] = 'All reports have been flagged for regeneration, it may take some time before updated reports are available.';
 $string['urkund:resubmitallfiles'] = 'Allow the teacher to resubmit ALL files to Ouriginal';
 $string['urkund:resubmitonclose'] = 'Allow the teacher to resubmit files on close/due date to Ouriginal';
+$string['errorcode'] = 'Error code';
 $string['errorcode_3'] = 'Error: Document too short';
 $string['errorcode_4'] = 'Error: Deadline exceeded';
 $string['errorcode_101'] = 'Error: Document cap reached';

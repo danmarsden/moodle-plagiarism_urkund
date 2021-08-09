@@ -47,7 +47,7 @@ $context = context_system::instance();
 $exportfilename = 'UrkundDebugOutput.csv';
 
 $limit = 50;
-$filters = array('realname' => 0, 'timesubmitted' => 0, 'statuscode' => 0, 'course' => 0);
+$filters = array('realname' => 0, 'timesubmitted' => 0, 'statuscode' => 0, 'errorcode' => 0, 'course' => 0);
 $ufiltering = new \plagiarism_urkund\output\filtering($filters, $PAGE->url);
 list($ufextrasql, $ufparams) = $ufiltering->get_sql_filter();
 

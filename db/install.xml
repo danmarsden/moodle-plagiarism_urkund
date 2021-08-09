@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="plagiarism/urkund/db" VERSION="20180117" COMMENT="XMLDB file for Moodle plagiarism/urkund plugin"
-       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-       xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
+<XMLDB PATH="plagiarism/urkund/db" VERSION="20210809" COMMENT="XMLDB file for Moodle plagiarism/urkund plugin"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
   <TABLES>
     <TABLE NAME="plagiarism_urkund_files" COMMENT="info about submitted files">
@@ -18,6 +18,7 @@
         <FIELD NAME="similarityscore" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="attempt" TYPE="int" LENGTH="5" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="errorresponse" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="errorcode" TYPE="char" LENGTH="255" NOTNULL="false" SEQUENCE="false" COMMENT="Errorcode returned by urkund api."/>
         <FIELD NAME="timesubmitted" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
         <FIELD NAME="revision" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false" COMMENT="Used when resubmitting files for re-processing."/>
       </FIELDS>

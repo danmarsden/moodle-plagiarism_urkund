@@ -53,7 +53,11 @@ class filtering extends \user_filtering {
         }
         if ($fieldname == 'statuscode') {
             return new \user_filter_simpleselect('statuscode', get_string('status', 'plagiarism_urkund'),
-                $advanced, 't.statuscode', plagiarism_urkund_errorcodes());
+                $advanced, 't.statuscode', plagiarism_urkund_statuscodes());
+        }
+        if ($fieldname == 'errorcode') {
+            return new \user_filter_simpleselect('errorcode', get_string('errorcode', 'plagiarism_urkund'),
+                $advanced, 't.errorcode', plagiarism_urkund_error_codes());
         }
         if ($fieldname == 'course') {
             return new \user_filter_text('course', get_string('courseshortname', 'plagiarism_urkund'),

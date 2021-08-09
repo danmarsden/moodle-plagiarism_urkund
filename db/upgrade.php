@@ -342,5 +342,33 @@ function xmldb_plagiarism_urkund_upgrade($oldversion) {
         upgrade_plugin_savepoint(true, 2021030100, 'plagiarism', 'urkund');
     }
 
+    if ($oldversion < 2021080901) {
+
+        // Define field errorcode to be added to plagiarism_urkund_files.
+        $table = new xmldb_table('plagiarism_urkund_files');
+        $field = new xmldb_field('errorcode', XMLDB_TYPE_CHAR, '255', null, null, null, null, 'errorresponse');
+
+        // Conditionally launch add field errorcode.
+        if (!$dbman->field_exists($table, $field)) {
+            $dbman->add_field($table, $field);
+        }
+
+        // Now look at historical error response messages (limited to last 12 months) and populate errorcode dir.
+        $errors = $DB->get_recordset_select('plagiarism_urkund_files',
+            "statuscode = 'error' AND errorresponse != '' AND timesubmitted > ?",
+                  [time() - YEARSECS]);
+        foreach ($errors as $er) {
+            $errorcode = plagiarism_get_errorcode_from_jsonresponse($er->errorresponse);
+            if (!empty($errorcode)) {
+                $er->errorcode = $errorcode;
+                $DB->update_record('plagiarism_urkund_files', $er);
+            }
+        }
+        $errors->close();
+
+        // Urkund savepoint reached.
+        upgrade_plugin_savepoint(true, 2021080901, 'plagiarism', 'urkund');
+    }
+
     return true;
 }
