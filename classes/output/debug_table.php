@@ -189,17 +189,10 @@ class debug_table extends \table_sql {
      */
     public function col_statuscode($row) {
 
-        if (strtolower($row->statuscode) == 'error' && !empty($row->errorresponse)) {
-            $json = json_decode($row->errorresponse);
-            if (json_last_error() == JSON_ERROR_NONE) {
-                $last = end($json); // When multiple results, the last one is the important one.
-                if (!empty($last->Status->ErrorCode)) {
-                    $errorcode = (int)$last->Status->ErrorCode;
-                    $errorstring = plagiarism_urkund_get_error_string($errorcode);
-                    if (!empty($errorstring)) {
-                        return $errorstring;
-                    }
-                }
+        if (strtolower($row->statuscode) == 'error' && !empty($row->errorcode)) {
+            $errorstring = plagiarism_urkund_get_error_string($row->errorcode). " ($row->errorcode)";
+            if (!empty($errorstring)) {
+                return $errorstring;
             }
         }
         if (!empty($row->statuscode) && get_string_manager()->string_exists('status_'.$row->statuscode, 'plagiarism_urkund')) {

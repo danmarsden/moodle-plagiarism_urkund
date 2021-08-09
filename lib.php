@@ -1526,9 +1526,14 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
             $plagiarismfile->statuscode = $status;
             if ($status == URKUND_STATUSCODE_ACCEPTED) {
                 $plagiarismfile->attempt = 0; // Reset attempts for status checks.
+                $plagiarismfile->errorcode = ''; // Reset errorcode, successful.
                 plagiarism_urkund_fix_temp_hash($plagiarismfile); // Fix hash if temp file used and delete temp file.
             } else {
                 $plagiarismfile->errorresponse = $response;
+                $errorcode = plagiarism_get_errorcode_from_jsonresponse($response);
+                if (!empty($errorcode)) {
+                    $plagiarismfile->errorcode = $errorcode;
+                }
             }
 
             mtrace("URKUND fileid:".$plagiarismfile->id. ' returned status: '.$status);
@@ -1540,6 +1545,10 @@ function urkund_send_file_to_urkund($plagiarismfile, $plagiarismsettings, $file)
     // Invalid response returned - increment attempt value and return false to allow this to be called again.
     $plagiarismfile->statuscode = URKUND_STATUSCODE_INVALID_RESPONSE;
     $plagiarismfile->errorresponse = $response;
+    $errorcode = plagiarism_get_errorcode_from_jsonresponse($response);
+    if (!empty($errorcode)) {
+        $plagiarismfile->errorcode = $errorcode;
+    }
     $plagiarismfile->attempt = $plagiarismfile->attempt + 1;
     $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
     return false;
@@ -1699,6 +1708,7 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
                     $plagiarismfile->reporturl = (string) $last->Report->ReportUrl;
                     $plagiarismfile->similarityscore = (int) $last->Report->Significance;
                     $plagiarismfile->optout = (string) $last->Document->OptOutInfo->Url;
+                    $plagiarismfile->errorcode = '';
                     // Now send e-mail to user.
                     $emailstudents = $DB->get_field('plagiarism_urkund_config', 'value',
                                                     array('cm' => $plagiarismfile->cm, 'name' => 'urkund_studentemail'));
@@ -1708,6 +1718,10 @@ function urkund_get_score($plagiarismsettings, $plagiarismfile, $force = false) 
                     }
                 } else {
                     $plagiarismfile->errorresponse = $response;
+                    $errorcode = plagiarism_get_errorcode_from_jsonresponse($response);
+                    if (!empty($errorcode)) {
+                        $plagiarismfile->errorcode = $errorcode;
+                    }
                 }
             } else {
                 $plagiarismfile->statuscode = $httpstatus;
@@ -2428,7 +2442,7 @@ function plagiarism_urkund_checkcronhealth() {
  *
  * @throws dml_exception
  */
-function plagiarism_urkund_errorcodes() {
+function plagiarism_urkund_statuscodes() {
     global $DB;
     $codes = array();
     $sql = "SELECT DISTINCT statuscode FROM {plagiarism_urkund_files} WHERE statuscode <> 'Analyzed' ORDER BY statuscode";
@@ -2438,6 +2452,24 @@ function plagiarism_urkund_errorcodes() {
             $codes[$code->statuscode] = get_string('status_'.$code->statuscode, 'plagiarism_urkund');
         } else {
             $codes[$code->statuscode] = $code->statuscode;
+        }
+    }
+    return $codes;
+}
+
+/**
+ * Helper function to get list of current errorcodes.
+ *
+ * @throws dml_exception
+ */
+function plagiarism_urkund_error_codes() {
+    global $DB;
+    $codes = array();
+    $sql = "SELECT DISTINCT errorcode FROM {plagiarism_urkund_files} ORDER BY errorcode";
+    $statuscodes = $DB->get_records_sql($sql);
+    foreach ($statuscodes as $code) {
+        if (!empty($code->errorcode)) {
+            $codes[$code->errorcode] = plagiarism_urkund_get_error_string($code->errorcode). " ($code->errorcode)";
         }
     }
     return $codes;
@@ -2463,4 +2495,22 @@ function plagiarism_urkund_get_error_string($errorcode) {
             return get_string('errorcode_unknown', 'plagiarism_urkund', $errorcode);
         }
     }
+}
+
+/**
+ * Get code from JSON response.
+ *
+ * @param string $errorresponse - errorresponse from URKUND API.
+ * @return lang_string|string|void|null
+ * @throws coding_exception
+ */
+function plagiarism_get_errorcode_from_jsonresponse($errorresponse) {
+    $json = json_decode($errorresponse);
+    if (json_last_error() == JSON_ERROR_NONE) {
+        $last = end($json); // When multiple results, the last one is the important one.
+        if (!empty($last->Status->ErrorCode)) {
+            return (int)$last->Status->ErrorCode;
+        }
+    }
+    return null;
 }
