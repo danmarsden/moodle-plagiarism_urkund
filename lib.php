@@ -2469,12 +2469,7 @@ function plagiarism_urkund_error_codes() {
     $statuscodes = $DB->get_records_sql($sql);
     foreach ($statuscodes as $code) {
         if (!empty($code->errorcode)) {
-            if (get_string_manager()->string_exists('errorcode_'.$code->errorcode, 'plagiarism_urkund')) {
-                $codes[$code->errorcode] = get_string('errorcode_' . $code->errorcode, 'plagiarism_urkund');
-            } else {
-                $codes[$code->errorcode] = $code->errorcode;
-            }
-
+            $codes[$code->errorcode] = plagiarism_urkund_get_error_string($code->errorcode). " ($code->errorcode)";
         }
     }
     return $codes;

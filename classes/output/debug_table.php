@@ -190,7 +190,7 @@ class debug_table extends \table_sql {
     public function col_statuscode($row) {
 
         if (strtolower($row->statuscode) == 'error' && !empty($row->errorcode)) {
-            $errorstring = plagiarism_urkund_get_error_string($row->errorcode);
+            $errorstring = plagiarism_urkund_get_error_string($row->errorcode). " ($row->errorcode)";
             if (!empty($errorstring)) {
                 return $errorstring;
             }
