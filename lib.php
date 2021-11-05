@@ -47,6 +47,9 @@ define('URKUND_STATUSCODE_NORECEIVER', '444');
 define('URKUND_STATUSCODE_INVALID_RESPONSE', '613'); // Invalid response received from URKUND.
 define('URKUND_STATUSCODE_PENDING', 'pending');
 
+// Codes relating to processing Mahara protfolios.
+define('URKUND_STATUSCODE_MAHARAWS_DOWNLOAD', 'maharawsdl');
+
 // Url to external xml that states URKUNDS allowed file type list.
 define('URKUND_FILETYPE_URL', 'https://secure.urkund.com/ws/integration/accepted-formats.xml');
 
@@ -111,7 +114,9 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
     public static function config_options($adminsettings = false) {
         $options = array('use_urkund', 'urkund_show_student_score', 'urkund_show_student_report',
                      'urkund_draft_submit', 'urkund_resubmit_on_close', 'urkund_receiver', 'urkund_studentemail',
-                     'urkund_allowallfile', 'urkund_selectfiletypes', 'urkund_restrictcontent', 'urkund_storedocuments');
+                     'urkund_allowallfile', 'urkund_selectfiletypes', 'urkund_restrictcontent', 'urkund_storedocuments',
+                     'urkund_maharawsurl', 'urkund_maharawshtmllitekey',
+                     'urkund_maharawshtmllitesecret', 'urkund_maharawshtmllitetoken');
         if ($adminsettings) {
             $options[] = 'urkund_advanceditems';
         }
@@ -632,6 +637,24 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             $result = true;
             if (isset($plagiarismvalues['urkund_draft_submit']) &&
                 $plagiarismvalues['urkund_draft_submit'] == PLAGIARISM_URKUND_DRAFTSUBMIT_FINAL) {
+
+                // If there's a Mahara portfolio submission, add it to the queue.
+                $submissionid = $eventdata['objectid'];
+                $maharasubmission = $DB->get_record('assignsubmission_maharaws', array('submission' => $submissionid));
+                if ($maharasubmission) {
+                    $data = array(
+                        'instanceid' => $cmid,
+                        'submissionid' => $submissionid,
+                        'userid' => $userid,
+                        'relateduserid' => $relateduserid
+                    );
+                    $data = json_encode($data);
+
+                    // Save Mahara file details to temp file, so the download can be in the async task queue.
+                    $file = urkund_create_temp_file($cmid, $eventdata['courseid'], $userid, $data, false);
+                    urkund_queue_file($cmid, $userid, $file, $relateduserid, URKUND_STATUSCODE_MAHARAWS_DOWNLOAD);
+                }
+
                 // Any files attached to previous events were not submitted.
                 // These files are now finalized, and should be submitted for processing.
                 require_once("$CFG->dirroot/mod/assign/locallib.php");
@@ -883,7 +906,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
  *
  * @return string
  */
-function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
+function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent, $formattempcontent = true) {
     global $CFG;
     if (!check_dir_exists($CFG->tempdir."/urkund", true, true)) {
         mkdir($CFG->tempdir."/urkund", 0700);
@@ -892,8 +915,12 @@ function urkund_create_temp_file($cmid, $courseid, $userid, $filecontent) {
     $filepath = $CFG->tempdir."/urkund/" . $filename;
     $fd = fopen($filepath, 'wb');   // Create if not exist, write binary.
 
-    // Write html and body tags as it seems that Urkund doesn't works well without them.
-    $content = plagiarism_urkund_format_temp_content($filecontent);
+    if ($formattempcontent) {
+        // Write html and body tags as it seems that Urkund doesn't works well without them.
+        $content = plagiarism_urkund_format_temp_content($filecontent);
+    } else {
+        $content = $filecontent;
+    }
 
     fwrite($fd, $content);
     fclose($fd);
@@ -1255,6 +1282,37 @@ function urkund_get_form_elements($mform) {
                        $supportedfiles, array('multiple' => true));
     $mform->setType('urkund_selectfiletypes', PARAM_TAGLIST);
 
+    // Check if maharaws is enabled.
+    $pm = \core_plugin_manager::instance();
+    $submissionplugins = $pm->get_enabled_plugins('assignsubmission');
+    if (!empty($submissionplugins) && key_exists('maharaws', $submissionplugins)) {
+        $mform->addElement('html', get_string('setmahara', 'plagiarism_urkund'));
+
+        $mform->addElement('text', 'urkund_maharawsurl', get_string('maharawsurl', 'plagiarism_urkund'),
+                array('maxlength' => 255, 'size' => 50));
+        $mform->addHelpButton('urkund_maharawsurl', 'maharawsurl', 'plagiarism_urkund');
+        $mform->setDefault('urkund_maharawsurl', '');
+        $mform->setType('urkund_maharawsurl', PARAM_URL);
+
+        $mform->addElement('text', 'urkund_maharawshtmllitekey', get_string('maharawshtmllitekey', 'plagiarism_urkund'),
+        array('maxlength' => 255, 'size' => 50));
+        $mform->addHelpButton('urkund_maharawshtmllitekey', 'maharawshtmllitekey', 'plagiarism_urkund');
+        $mform->setDefault('urkund_maharawshtmllitekey', '');
+        $mform->setType('urkund_maharawshtmllitekey', PARAM_ALPHANUM);
+
+        $mform->addElement('password', 'urkund_maharawshtmllitesecret', get_string('maharawshtmllitesecret', 'plagiarism_urkund'),
+        array('maxlength' => 255, 'size' => 50));
+        $mform->addHelpButton('urkund_maharawshtmllitesecret', 'maharawshtmllitesecret', 'plagiarism_urkund');
+        $mform->setDefault('urkund_maharawshtmllitesecret', '');
+        $mform->setType('urkund_maharawshtmllitesecret', PARAM_ALPHANUM);
+
+        $mform->addElement('password', 'urkund_maharawshtmllitetoken', get_string('maharawshtmllitetoken', 'plagiarism_urkund'),
+        array('maxlength' => 255, 'size' => 50));
+        $mform->addHelpButton('urkund_maharawshtmllitetoken', 'maharawshtmllitetoken', 'plagiarism_urkund');
+        $mform->setDefault('urkund_maharawshtmllitetoken', '');
+        $mform->setType('urkund_maharawshtmllitetoken', PARAM_ALPHANUM);
+    }
+
     $mform->addElement('select', 'urkund_storedocuments', get_string('storedocuments', 'plagiarism_urkund'), $ynoptions);
     $mform->addHelpButton('urkund_storedocuments', 'storedocuments', 'plagiarism_urkund');
     $mform->setType('urkund_storedocuments', PARAM_INT);
@@ -1331,12 +1389,20 @@ function urkund_get_plagiarism_file($cmid, $userid, $file, $relateduserid = null
  * @param int $userid - user id
  * @param varied $file string if path to temp file or full Moodle file object.
  * @param int $relateduserid - related user if if passed. (use when sending to URKUND.
+ * @param string $statusoverride - Override the file's initial queue status. Used for queuing a Mahara HTML Lite download.
  * @return boolean
  */
-function urkund_queue_file($cmid, $userid, $file, $relateduserid = null) {
+function urkund_queue_file($cmid, $userid, $file, $relateduserid = null, $statusoverride = null) {
     global $DB;
     $plagiarismfile = urkund_get_plagiarism_file($cmid, $userid, $file, $relateduserid);
     $plagiarismvalues = $DB->get_records_menu('plagiarism_urkund_config', array('cm' => $cmid), '', 'name, value');
+
+    // Check if $plagiarismfile needs to be downloaded from Mahara.
+    if (!empty($statusoverride)) {
+        $plagiarismfile->statuscode = $statusoverride;
+        $DB->update_record('plagiarism_urkund_files', $plagiarismfile);
+        return '';
+    }
 
     // Check if $plagiarismfile actually needs to be submitted.
     if ($plagiarismfile->statuscode <> 'pending') {
@@ -2021,6 +2087,11 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
             foreach ($submissionplugins as $submissionplugin) {
                 $component = $submissionplugin->get_subtype() . '_' . $submissionplugin->get_type();
                 $fileareas = $submissionplugin->get_file_areas();
+                if ($component == 'assignsubmission_maharaws') {
+                    // File area for scanning maharaws files is set in plagiarism_urkund\helper\mahara_portfolio.
+                    $component = 'plagiarism_urkund';
+                    $fileareas = array('htmllite' => 'maharawsfiles');
+                }
                 foreach ($fileareas as $filearea => $name) {
                     if (debugging()) {
                         mtrace("URKUND fileid:" . $plagiarismfile->id . " Check component:" . $component . " Filearea:" .
@@ -2169,6 +2240,46 @@ function plagiarism_urkund_send_files() {
                 $pf = plagiarism_urkund_check_group($pf);
             }
             urkund_send_file_to_urkund($pf, $plagiarismsettings, $file);
+        }
+    }
+}
+
+/**
+ * Function called by scheduled task to get files from Mahara.
+ *
+ */
+function plagiarism_urkund_fetch_mahara() {
+    global $DB;
+
+    $plagiarismsettings = plagiarism_plugin_urkund::get_settings();
+    if (!empty($plagiarismsettings)) {
+        // Get all files awaiting Mahara download.
+        $sql = 'statuscode = ? AND attempt <= ?';
+        $plagiarismfiles = $DB->get_recordset_select("plagiarism_urkund_files", $sql,
+            array(URKUND_STATUSCODE_MAHARAWS_DOWNLOAD, PLAGIARISM_URKUND_MAXATTEMPTS));
+        foreach ($plagiarismfiles as $pf) {
+            // Check to make sure cm exists. - delete record if cm has been deleted.
+            $sql = "SELECT m.name
+                      FROM {modules} m
+                      JOIN {course_modules} cm ON cm.module = m.id
+                     WHERE cm.id = ?";
+            $modulename = $DB->get_field_sql($sql, array($pf->cm));
+            if (empty($modulename)) {
+                // The coursemodule related to this file has been deleted, delete the urkund entry.
+                mtrace("URKUND fileid:$pf->id Course module id:".$pf->cm. " does not exist, deleting record");
+                $DB->delete_records('plagiarism_urkund_files', array('id' => $pf->id));
+                continue;
+            }
+            mtrace("URKUND fileid:".$pf->id. ' sending for processing');
+            $file = plagiarism_urkund_get_file_object($pf);
+            // Get Mahara file details from temp file.
+            $data = json_decode(file_get_contents($file->filepath));
+
+            // Create helper with assignment submission details.
+            $portfolio = new \plagiarism_urkund\helper\mahara_portfolio($data);
+
+            // Call Mahara to get the portfolio.
+            $portfolio->download_to_queue();
         }
     }
 }
