@@ -227,6 +227,10 @@ class mahara_portfolio {
         $packer = new \zip_packer();
         $zipcontents = $zipfile->extract_to_storage($packer, $this->context->id, $fileinfo['component'],
                 $fileinfo['filearea'], $this->submission->submission, $dirpath, $theuserid);
+        if (!$zipcontents) {
+            mtrace('urkund: mahara_portfolio: Extracting zip failed - aborting');
+            return false;
+        }
         $fs = get_file_storage();
         foreach (array_keys($zipcontents) as $entry) {
             if ($pos = strpos($entry, '/')) {
@@ -241,10 +245,13 @@ class mahara_portfolio {
             // Load as a Moodle file object, suitable for adding to the queue.
             $file = $fs->get_file($this->context->id, $fileinfo['component'], $fileinfo['filearea'],
                     $this->submission->submission, $thisdir, $thisfile);
-            mtrace('urkund: mahara_portfolio: Queue file: ' . $entry);
-            $result = urkund_queue_file($this->instanceid, $this->userid, $file, $this->relateduserid);
-            if (!$result) {
-                $success = false;
+            if ($file->get_filename() != '.') {
+                mtrace('urkund: mahara_portfolio: Queue file: ' . $entry);
+                $result = urkund_queue_file($this->instanceid, $this->userid, $file, $this->relateduserid);
+                if (!$result) {
+                    $success = false;
+                    mtrace('urkund: mahara_portfolio: Queue file failed - aborting: ' . $entry);
+                }
             }
         }
 
