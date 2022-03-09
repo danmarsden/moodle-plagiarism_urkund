@@ -24,7 +24,8 @@
 
 namespace plagiarism_urkund\output;
 
-use moodle_url, html_writer;
+use moodle_url;
+use html_writer;
 
 /**
  * Table to display list backups.
