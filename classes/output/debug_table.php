@@ -24,8 +24,6 @@
 
 namespace plagiarism_urkund\output;
 
-defined('MOODLE_INTERNAL') || die();
-
 use moodle_url, html_writer;
 
 /**

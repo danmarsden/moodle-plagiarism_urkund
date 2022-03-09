@@ -25,8 +25,6 @@
 namespace plagiarism_urkund\form;
 use \moodleform;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Class agreement
  *

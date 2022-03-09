@@ -25,8 +25,6 @@
 
 namespace plagiarism_urkund\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Resubmit work to URKUND upon closure of submission period.
  *

@@ -25,8 +25,6 @@
 
 namespace plagiarism_urkund\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Get list of allowed filetypes from urkund and delete old records.
  *

@@ -24,7 +24,6 @@
  */
 
 namespace plagiarism_urkund\event;
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Event for when an assessment is resubmitted to URKUND.

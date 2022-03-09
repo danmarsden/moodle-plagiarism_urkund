@@ -25,8 +25,6 @@
 
 namespace plagiarism_urkund\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * get_scores class, used to get scores for submitted files.
  *

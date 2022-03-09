@@ -25,8 +25,6 @@
 
 namespace plagiarism_urkund\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * send_files class, used to send queued files to Urkund.
  *

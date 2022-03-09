@@ -24,8 +24,6 @@
  */
 namespace plagiarism_urkund\task;
 
-defined('MOODLE_INTERNAL') || die();
-
 /**
  * Adhoc class, used to Resubmit all files for a cm.
  *

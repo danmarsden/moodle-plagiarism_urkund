@@ -23,7 +23,6 @@
  * @copyright  2015 Ramindu Deshapriya <rasade88@gmail.com>
  * @license    http://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
-defined('MOODLE_INTERNAL') || die();
 
 /**
  * Class plagiarism_urkund_observer
