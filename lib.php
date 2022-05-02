@@ -1065,7 +1065,7 @@ function plagiarism_urkund_coursemodule_standard_elements($formwrapper, $mform) 
         }
 
         // If preventexisting is set, only Site admins can enable urkund when submissions exist.
-        if ($modulename = 'mod_assign' && !is_siteadmin() &&
+        if ($modulename == 'mod_assign' && !is_siteadmin() &&
             get_config('plagiarism_urkund', 'assignpreventexistingenable')) {
             require_once($CFG->dirroot . '/mod/assign/locallib.php');
             $cm = get_coursemodule_from_id('assign', $cmid);
