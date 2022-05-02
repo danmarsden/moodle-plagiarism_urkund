@@ -2485,8 +2485,6 @@ function plagiarism_get_errorcode_from_jsonresponse($errorresponse) {
 /**
  * Add resubmit button to overall grading pages.
  *
- * @param object $course - full Course object
- * @param object $cm - full cm object
  */
 function plagiarism_urkund_before_standard_top_of_body_html() {
     global $PAGE, $OUTPUT, $DB;
