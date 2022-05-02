@@ -270,7 +270,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         $output = '';
         if ($results['statuscode'] == 'pending') {
             // TODO: check to make sure there is a pending event entry for this file - if not add one.
-            $output .= '<span class="plagiarismreport">' .
+            $output .= '<span class="plagiarism_urkund_report">' .
                 '<img src="' . $OUTPUT->image_url('processing', 'plagiarism_urkund') .
                 '" alt="' . get_string('pending', 'plagiarism_urkund') . '" ' .
                 '" title="' . get_string('pending', 'plagiarism_urkund') . '" />' .
@@ -280,7 +280,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
         if ($results['statuscode'] == 'Analyzed') {
             // Normal situation - URKUND has successfully analyzed the file.
             $rank = urkund_get_css_rank($results['score']);
-            $output .= '<span class="plagiarismreport">';
+            $output .= '<span class="plagiarism_urkund_report">';
             if (!empty($results['reporturl'])) {
                 // User is allowed to view the report.
                 // Score is contained in report, so they can see the score too.
@@ -305,19 +305,19 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
             }
             $output .= '</span>';
         } else if ($results['statuscode'] == URKUND_STATUSCODE_ACCEPTED) {
-            $output .= '<span class="plagiarismreport">' .
+            $output .= '<span class="plagiarism_urkund_report">' .
                 '<img src="' . $OUTPUT->image_url('processing', 'plagiarism_urkund') .
                 '" alt="' . get_string('processing', 'plagiarism_urkund') . '" ' .
                 '" title="' . get_string('processing', 'plagiarism_urkund') . '" />' .
                 '</span>';
         } else if ($results['statuscode'] == URKUND_STATUSCODE_UNSUPPORTED) {
-            $output .= '<span class="plagiarismreport">' .
+            $output .= '<span class="plagiarism_urkund_report">' .
                 '<img src="' . $OUTPUT->image_url('warning', 'plagiarism_urkund') .
                 '" alt="' . get_string('unsupportedfiletype', 'plagiarism_urkund') . '" ' .
                 '" title="' . get_string('unsupportedfiletype', 'plagiarism_urkund') . '" />' .
                 '</span>';
         } else if ($results['statuscode'] == URKUND_STATUSCODE_TOO_LARGE) {
-            $output .= '<span class="plagiarismreport">' .
+            $output .= '<span class="plagiarism_urkund_report">' .
                 '<img src="' . $OUTPUT->image_url('warning', 'plagiarism_urkund') .
                 '" alt="' . get_string('toolarge', 'plagiarism_urkund') . '" ' .
                 '" title="' . get_string('toolarge', 'plagiarism_urkund') . '" />' .
@@ -349,7 +349,7 @@ class plagiarism_plugin_urkund extends plagiarism_plugin {
                     'sesskey' => sesskey()));
                 $reset = "<a href='$url'>" . get_string('reset') . "</a>";
             }
-            $output .= '<span class="plagiarismreport">' .
+            $output .= '<span class="plagiarism_urkund_report">' .
                 '<img src="' . $OUTPUT->image_url('warning', 'plagiarism_urkund') .
                 '" alt="' . get_string('unknownwarning', 'plagiarism_urkund') . '" ' .
                 '" title="' . $title . '" />' . $reset . '</span>';
