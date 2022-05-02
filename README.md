@@ -12,7 +12,8 @@ The git branches here support the following versions.
 | Moodle version     | Branch      | PHP  | Support |
 | ----------------- | ----------- | ---- | -------- |
 | Moodle 3.5 to 3.8 | MOODLE_38_STABLE | 7.0+ | Security fixes only - these versions are no longer supported by Moodle. |
-| Moodle 3.9 and higher | main | 7.2+ |
+| Moodle 3.9 to 3.11 | MOODLE_39_STABLE | 7.2+ |
+| Moodle 4.0 | MOODLE_400_STABLE | 7.2+ |
 
 ## Quiz - Essay question support for versions prior to 3.10
 The latest version of this plugin provides support for essay questions within the quiz activity, however Moodle versions prior to 3.10 don't
