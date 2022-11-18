@@ -2014,7 +2014,7 @@ function plagiarism_urkund_get_file_object($plagiarismfile) {
             // Could not find the file using hash - check if this is a content file and recreate it.
             if (strpos($plagiarismfile->filename, 'content-') === 0) {
                 // This is probably an online file submission - check and regenerate the file if required.
-                $sql = "SELECT a.id, o.one73fe0fff330c5ce6718df3d9440bf9bd6316623linetext
+                $sql = "SELECT a.id, o.onlinetext
                               FROM {assignsubmission_onlinetext} o
                               JOIN {assign_submission} a ON a.id = o.submission
                              WHERE a.userid = ? AND o.assignment = ?
