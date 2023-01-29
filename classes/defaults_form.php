@@ -109,12 +109,53 @@ class plagiarism_urkund_defaults_form extends moodleform {
             $mform->addHelpButton('urkund_storedocuments_'.$sm, 'storedocuments', 'plagiarism_urkund');
             $mform->setType('urkund_storedocuments_'.$sm, PARAM_INT);
 
+            if ($sm == 'assign') {
+                // Check if maharaws is enabled.
+                $pm = \core_plugin_manager::instance();
+                $submissionplugins = $pm->get_enabled_plugins('assignsubmission');
+                if (!empty($submissionplugins) && key_exists('maharaws', $submissionplugins)) {
+                    $mform->addElement('html', get_string('setmahara', 'plagiarism_urkund'));
+
+                    $mform->addElement('text', 'urkund_maharawsurl_' . $sm,
+                            get_string('maharawsurl', 'plagiarism_urkund'),
+                            array('maxlength' => 255, 'size' => 50));
+                    $mform->addHelpButton('urkund_maharawsurl_' . $sm, 'maharawsurl', 'plagiarism_urkund');
+                    $mform->setDefault('urkund_maharawsurl_' . $sm, '');
+                    $mform->setType('urkund_maharawsurl_' . $sm, PARAM_URL);
+
+                    $mform->addElement('text', 'urkund_maharawshtmllitekey_' . $sm,
+                            get_string('maharawshtmllitekey', 'plagiarism_urkund'),
+                            array('maxlength' => 255, 'size' => 50));
+                    $mform->addHelpButton('urkund_maharawshtmllitekey_' . $sm, 'maharawshtmllitekey', 'plagiarism_urkund');
+                    $mform->setDefault('urkund_maharawshtmllitekey_' . $sm, '');
+                    $mform->setType('urkund_maharawshtmllitekey_' . $sm, PARAM_ALPHANUM);
+
+                    $mform->addElement('text', 'urkund_maharawshtmllitesecret_' . $sm,
+                            get_string('maharawshtmllitesecret', 'plagiarism_urkund'),
+                            array('maxlength' => 255, 'size' => 50));
+                    $mform->addHelpButton('urkund_maharawshtmllitesecret_' . $sm, 'maharawshtmllitesecret', 'plagiarism_urkund');
+                    $mform->setDefault('urkund_maharawshtmllitesecret_' . $sm, '');
+                    $mform->setType('urkund_maharawshtmllitesecret_' . $sm, PARAM_ALPHANUM);
+
+                    $mform->addElement('text', 'urkund_maharawshtmllitetoken_' . $sm,
+                            get_string('maharawshtmllitetoken', 'plagiarism_urkund'),
+                            array('maxlength' => 255, 'size' => 50));
+                    $mform->addHelpButton('urkund_maharawshtmllitetoken_' . $sm, 'maharawshtmllitetoken', 'plagiarism_urkund');
+                    $mform->setDefault('urkund_maharawshtmllitetoken_' . $sm, '');
+                    $mform->setType('urkund_maharawshtmllitetoken_' . $sm, PARAM_ALPHANUM);
+                }
+            }
+
             $items = array();
             $aliases = array(
                 'use_urkund' => 'useurkund',
                 'urkund_allowallfile' => 'allowallsupportedfiles',
                 'urkund_selectfiletypes' => 'restrictfiles',
                 'urkund_restrictcontent' => 'restrictcontent',
+                'urkund_maharawshtmllitekey' => 'maharawshtmllitekey',
+                'urkund_maharawshtmllitesecret' => 'maharawshtmllitesecret',
+                'urkund_maharawshtmllitetoken' => 'maharawshtmllitetoken',
+                'urkund_maharawsurl' => 'maharawsurl',
                 'urkund_storedocuments' => 'storedocuments'
             );
             foreach (plagiarism_plugin_urkund::config_options() as $setting) {
