@@ -1,7 +1,6 @@
 # Ouriginal Plagiarism plugin for Moodle
-
-* Author: Dan Marsden <dan@danmarsden.com>
 * Copyright: Ouriginal, http://www.ouriginal.com
+## Note: This plugin is no longer mainted by Dan Marsden and is now maintained by the Turnitin Development team
 
 Ouriginal (Previously called Urkund) is a commercial plagiarism prevention product - you must have a paid subscription to be able to use this plugin.
 
