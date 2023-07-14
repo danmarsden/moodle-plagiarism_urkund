@@ -2496,7 +2496,7 @@ function plagiarism_urkund_before_standard_top_of_body_html() {
     }
     if ($PAGE->url->compare(new moodle_url('/mod/quiz/report.php'), URL_MATCH_BASE)) {
         $module = 'quiz';
-    } else if ($PAGE->url->compare(new moodle_url('/mod/assign/report.php'), URL_MATCH_BASE)) {
+    } else if ($PAGE->url->compare(new moodle_url('/mod/assign/view.php'), URL_MATCH_BASE)) {
         $module = 'assign';
     } else {
         return;
